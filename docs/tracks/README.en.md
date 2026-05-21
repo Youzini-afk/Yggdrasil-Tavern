@@ -20,7 +20,7 @@ YdlTavern implementation moves in parallel by track, not by linear milestone. Ea
 ## Progress principles
 
 - Each track has independent progress and can be released independently.
-- Not serial — while B builds importers, C can build connectors and G can build the UI skeleton.
+- Not serial — while B builds importers, C can align request/prompt behavior and G only consumes the D contract as a surface.
 - Cross-track dependencies are decoupled through D: D is the contract, and all UI and extensions consume it.
 - Every item implemented by each track must update [`../COMPATIBILITY_MATRIX.en.md`](../COMPATIBILITY_MATRIX.en.md).
 - Inventory is ground truth, not a source of guesses.

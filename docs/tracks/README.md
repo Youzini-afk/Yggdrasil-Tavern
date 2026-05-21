@@ -20,7 +20,7 @@ YdlTavern 实现按轨道并行推进，不按线性 milestone。每条轨道一
 ## 推进原则
 
 - 每条轨道独立有进度，独立可发布。
-- 不串行——B 在做 importer 时 C 同步做 connector，G 同步做 UI 骨架。
+- 不串行——B 在做 importer 时 C 同步做 request/prompt 对齐，G 只作为 D contract 的 surface 消费者。
 - 跨轨道依赖通过 D 解耦：D 是 contract，所有 UI 与扩展都消费它。
 - 每条轨道实现的每一项都要更新 [`../COMPATIBILITY_MATRIX.md`](../COMPATIBILITY_MATRIX.md)。
 - inventory 是 ground truth，不是猜测来源。

@@ -51,6 +51,19 @@ If prompt assembly order is slightly wrong, ST users will feel it immediately. T
 
 YdlTavern only handles: translate ST preset + Turn model into "which provider, what request body, how to parse the stream".
 
+## Current status
+
+`packages/ydltavern-engine-core` now has a structure-level alignment spine:
+
+- sampler alias normalization;
+- prompt block ordering and `chatHistory` insertion;
+- OpenAI request shape builder;
+- fixtures for OpenAI preset, prompt blocks, Turn chat, and expected request.
+
+`packages/ydltavern-engine` connects `preset.compile` and `turn.generate` to engine-core, but generation is still deterministic fake behavior with no network and no secrets.
+
+This is not a byte-level ST PromptManager clone yet; world info, persona, author's note, instruct, token budgeting, and provider-specific streaming remain to be implemented.
+
 ## Out of scope
 
 - A real self-built model inference engine (use Yggdrasil model-provider-lab)

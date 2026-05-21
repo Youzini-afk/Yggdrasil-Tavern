@@ -45,6 +45,18 @@ Every track D item in `COMPATIBILITY_MATRIX.en.md` corresponds to a fixture.
 - Projection rules ([`../architecture/COMPAT_PROJECTION.en.md`](../architecture/COMPAT_PROJECTION.en.md)) ✓
 - Does not depend on other tracks; all other tracks depend on it in reverse
 
+## Current status
+
+The Phase D contract MVP has landed in `packages/ydltavern-st-compat`:
+
+- live `chat[]` Proxy writes update an internal Turn store;
+- `getContext()` returns a stable context with common fields, `eventSource`, and `event_types`;
+- `addOneMessage`, `saveChat`, `saveSettingsDebounced`, `Generate`, and `substituteParams` have minimal real behavior;
+- fake generation dispatches generation lifecycle events and appends an assistant message;
+- unit tests cover push/edit/delete/splice, event dispatch, fake generation, and basic macro replacement.
+
+This is still `partial`, not byte-level ST alignment. Next work is to expand globals, slash/STScript entry points, and real ST payload alignment.
+
 ## Out of scope
 
 - Inventing a whole new modern API — new extensions can directly use the Yggdrasil public protocol and are not forced through D

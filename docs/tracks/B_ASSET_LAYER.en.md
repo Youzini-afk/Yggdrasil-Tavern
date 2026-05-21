@@ -46,6 +46,18 @@ Each importer is paired with an alignment fixture:
 - Internal Turn model ([`../architecture/TURN_MODEL.en.md`](../architecture/TURN_MODEL.en.md)) is set ✓
 - Does not depend on any other track
 
+## Current status
+
+`packages/ydltavern-importers` now has an ST-like fixture spine:
+
+- character V2/V3 JSON fixtures;
+- world book fixture;
+- JSONL chat fixture;
+- PNG `chara` metadata extraction test;
+- importers conservatively preserve unknown fields and raw payloads.
+
+This is not the full asset layer yet: exporters, CharX, preset/persona/theme/quick reply/regex/instruct remain to be implemented.
+
 ## Out of scope
 
 - Bidirectional sync between modified ST data and the YdlTavern internal schema — import once only

@@ -49,7 +49,20 @@ prompt 拼装顺序错一点 ST 用户立刻能感觉到——他们调过的预
 - `secret_ref`、HTTPS-only、出站审计、流式生命周期都来自 Yggdrasil
 - C 轨道不重写 HTTP 层、不存 API key、不做权限审计
 
-YdlTavern 自己只负责：把 ST preset + Turn 模型翻译成"哪个 provider、什么请求体、怎么解析流"。
+YdlTavern 自己只负责：把 ST preset + Turn 模型翻译成“哪个 provider、什么请求体、怎么解析流”。
+
+## 当前状态
+
+`packages/ydltavern-engine-core` 已有结构级 alignment spine：
+
+- sampler alias normalization；
+- prompt block 排序和 `chatHistory` 插入；
+- OpenAI request shape builder；
+- fixture 覆盖 OpenAI preset、prompt blocks、Turn chat、expected request。
+
+`packages/ydltavern-engine` 已把 `preset.compile` 和 `turn.generate` 接到 engine-core，但仍是 deterministic fake generation，不出网、不用 secret。
+
+这还不是 ST PromptManager 字节级复刻；world info、persona、author's note、instruct、token 预算和 provider-specific streaming 仍待实现。
 
 ## 不在范围内
 

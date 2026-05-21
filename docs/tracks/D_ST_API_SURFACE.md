@@ -45,6 +45,18 @@ YdlTavern 自己的 UI 也消费同一份 contract。这是关键——核心团
 - 投影规则 ([`../architecture/COMPAT_PROJECTION.md`](../architecture/COMPAT_PROJECTION.md)) ✓
 - 不依赖其他轨道；所有其他轨道反过来依赖它
 
+## 当前状态
+
+Phase D contract MVP 已落地到 `packages/ydltavern-st-compat`：
+
+- live `chat[]` Proxy 读写会更新内部 Turn store；
+- `getContext()` 返回稳定 context，包含常用字段、`eventSource`、`event_types`；
+- `addOneMessage`、`saveChat`、`saveSettingsDebounced`、`Generate`、`substituteParams` 有最小真实行为；
+- fake generation 会派发 generation lifecycle 事件并追加 assistant message；
+- 单元测试覆盖 push/edit/delete/splice、事件派发、fake generation、基础宏替换。
+
+这仍是 `partial`，不是字节级 ST 对齐；下一步要继续补全 globals、slash/STScript 入口和真实 ST payload 对齐。
+
 ## 不在范围内
 
 - 重新发明一套全新的现代 API——新扩展可以直接用 Yggdrasil 公开协议，不强求走 D

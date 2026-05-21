@@ -116,4 +116,4 @@ No matter how YdlTavern evolves:
 
 ## Status
 
-M2 foundation is in place. The repo contains shared types, asset importers, the ST compatibility runtime, engine core, a Yggdrasil subprocess package skeleton, and the `@ydltavern/surface` bundle. Behavior is still `stubbed` / `partial`; the compatibility matrix is the source of truth.
+The contract slice is in place. The repo contains shared types, asset importers, the ST compatibility runtime, engine core, a Yggdrasil subprocess capability package, and the `@ydltavern/surface` bundle; it can run a thin path through import / live `chat[]` edit / fake Generate / prompt request shape / surface event log. Byte-level ST alignment is still tracked only by the compatibility matrix.

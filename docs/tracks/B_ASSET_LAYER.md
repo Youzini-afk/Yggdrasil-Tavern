@@ -46,6 +46,18 @@
 - 内部 Turn 模型 ([`../architecture/TURN_MODEL.md`](../architecture/TURN_MODEL.md)) 已定 ✓
 - 不依赖任何其他轨道
 
+## 当前状态
+
+`packages/ydltavern-importers` 已有 ST-like fixture spine：
+
+- 角色卡 V2/V3 JSON fixture；
+- world book fixture；
+- JSONL chat fixture；
+- PNG `chara` 元数据提取测试；
+- importer 保守保留未知字段和 raw payload。
+
+这还不是完整资产层：exporter、CharX、preset/persona/theme/quick reply/regex/instruct 等仍未实现。
+
 ## 不在范围内
 
 - ST 数据修改后跟 YdlTavern 内部 schema 的双向同步——只导入一次

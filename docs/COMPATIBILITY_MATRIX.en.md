@@ -20,13 +20,13 @@ Implementation status:
 - `deferred` — intentionally not implemented by internal decision
 - `blocked` — waiting on another track
 
-Current stage: M2 foundation complete. ST source remains the ground truth; B/C/D/G now have v0 code paths, but nothing is claimed as byte-level aligned unless explicitly stated.
+Current stage: contract slice complete. ST source remains the ground truth; B/C/D/G now have a runnable thin vertical path, but nothing is claimed as byte-level aligned unless explicitly stated.
 
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
 |---|---:|---:|---|---|---|
-| event_types | 104 | 104 stub | stubbed | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
+| event_types | 104 | constants + core event dispatch | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
 | built-in slash commands | 153 | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | macros / macros | 80+ | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
@@ -35,10 +35,10 @@ Current stage: M2 foundation complete. ST source remains the ground truth; B/C/D
 | world info trigger types | 32 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info entry schema fields | 50+ | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info evaluation pipeline steps | 39 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
-| character card V1 fields | 16 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| character card V2 fields | 33 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| character card V3 fields | 14 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema fields | 75 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| character card V1 fields | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| character card V2 fields | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| character card V3 fields | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| OpenAI preset schema fields | 75 | fixture request shape | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager identifiers | 13 typed | v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | built-in extensions | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema fields | 20 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -54,10 +54,10 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 | Package | Track | Coverage | Status |
 |---|---|---|---|
 | `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
-| `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers | partial |
-| `@ydltavern/st-compat` | D | eventSource, event_types, `getContext()`, `chat[]` Proxy | stubbed |
-| `@ydltavern/engine-core` | C | sampler normalization, prompt builder, OpenAI request builder (no network) | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface, Settings/Extensions placeholders, Turn renderer, diagnostics preview | scaffold |
+| `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers + ST-like fixtures | partial |
+| `@ydltavern/st-compat` | D | live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `addOneMessage`, `Generate`, `substituteParams` | partial |
+| `@ydltavern/engine-core` | C | sampler normalization, prompt builder, OpenAI request builder (no network) + fixture request shape | partial |
+| `@ydltavern/surface` | G | TavernPlaySurface contract slice: send/edit/fake generate/event log; Settings/Extensions slots | partial |
 
 ## Built-in extension coverage (track F)
 

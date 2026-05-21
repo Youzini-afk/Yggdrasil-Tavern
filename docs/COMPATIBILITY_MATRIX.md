@@ -20,13 +20,13 @@
 - `deferred` —— 内部决定不做
 - `blocked` —— 等其他轨道
 
-当前阶段：M2 基础层完成。ST 源码仍是 ground truth；B/C/D/G 已有 v0 代码路径，但除明确说明外还不是字节级对齐。
+当前阶段：contract slice 完成。ST 源码仍是 ground truth；B/C/D/G 已有可运行纵切片，但除明确说明外还不是字节级对齐。
 
 ## 总览
 
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
 |---|---:|---:|---|---|---|
-| event_types | 104 | 104 stub | stubbed | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
+| event_types | 104 | 常量 + 核心事件派发 | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
 | 内置 slash commands | 153 | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | 宏 / macros | 80+ | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
@@ -35,10 +35,10 @@
 | world info trigger types | 32 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info entry schema 字段 | 50+ | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info 评估流水线步骤 | 39 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
-| 角色卡 V1 字段 | 16 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| 角色卡 V2 字段 | 33 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| 角色卡 V3 字段 | 14 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema 字段 | 75 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| 角色卡 V1 字段 | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| 角色卡 V2 字段 | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| 角色卡 V3 字段 | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| OpenAI preset schema 字段 | 75 | fixture request shape | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager 标识符 | 13 typed | v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | 内置扩展 | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema 字段 | 20 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -54,10 +54,10 @@
 | 包 | 轨道 | 覆盖 | 状态 |
 |---|---|---|---|
 | `@ydltavern/types` | 全部 | Turn 模型、ST event/slash/macro/connector/sampler/world-info/prompt-manager 常量 | stubbed 基础 |
-| `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer | partial |
-| `@ydltavern/st-compat` | D | eventSource、event_types、`getContext()`、`chat[]` Proxy | stubbed |
-| `@ydltavern/engine-core` | C | sampler normalization、prompt builder、OpenAI request builder（无网络） | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface、Settings/Extensions placeholder、Turn renderer、diagnostics preview | scaffold |
+| `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
+| `@ydltavern/st-compat` | D | live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`addOneMessage`、`Generate`、`substituteParams` | partial |
+| `@ydltavern/engine-core` | C | sampler normalization、prompt builder、OpenAI request builder（无网络）+ fixture request shape | partial |
+| `@ydltavern/surface` | G | TavernPlaySurface contract slice：send/edit/fake generate/event log；Settings/Extensions slots | partial |
 
 ## 内置扩展覆盖度（F 轨道）
 
