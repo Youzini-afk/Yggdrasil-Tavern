@@ -1,0 +1,53 @@
+export const ST_CHAT_COMPLETION_SOURCES = [
+  'openai',
+  'claude',
+  'openrouter',
+  'ai21',
+  'makersuite',
+  'vertexai',
+  'mistralai',
+  'custom',
+  'cohere',
+  'perplexity',
+  'groq',
+  'electronhub',
+  'chutes',
+  'nanogpt',
+  'deepseek',
+  'aimlapi',
+  'xai',
+  'pollinations',
+  'moonshot',
+  'fireworks',
+  'cometapi',
+  'azure_openai',
+  'zai',
+  'siliconflow',
+  'workers_ai',
+  'minimax',
+] as const;
+
+export type STChatCompletionSource = (typeof ST_CHAT_COMPLETION_SOURCES)[number];
+
+export const ST_TEXT_COMPLETION_SOURCES = [
+  'ooba',
+  'mancer',
+  'vllm',
+  'aphrodite',
+  'tabby',
+  'koboldcpp',
+  'togetherai',
+  'llamacpp',
+  'ollama',
+  'infermaticai',
+  'dreamgen',
+  'openrouter',
+  'featherless',
+  'huggingface',
+  'generic',
+  'kobold',
+  'koboldhorde',
+  'novel',
+] as const;
+
+export type STTextCompletionSource = (typeof ST_TEXT_COMPLETION_SOURCES)[number];
