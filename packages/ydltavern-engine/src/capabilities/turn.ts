@@ -1,4 +1,8 @@
-import { PACKAGE_ID, createStubMeta, stableInputRef, type HandlerRecord } from "../types.js";
+import { buildOpenAIChatRequest, buildPrompt, normalizeSamplerSettings, type PromptBlock } from "@ydltavern/engine-core";
+import { projectTurnToSTChatMessage } from "@ydltavern/st-compat";
+import type { Chat, Turn } from "@ydltavern/types";
+
+import { PACKAGE_ID, createCapabilityMeta, inputRecord, isRecord, stableInputRef, stringField, type HandlerRecord } from "../types.js";
 
 const GENERATE_ID = `${PACKAGE_ID}/turn.generate`;
 const SWIPE_ID = `${PACKAGE_ID}/turn.swipe`;
@@ -6,56 +10,136 @@ const REGENERATE_ID = `${PACKAGE_ID}/turn.regenerate`;
 const CONTINUE_ID = `${PACKAGE_ID}/turn.continue`;
 
 export async function* generateTurnFrames(input: unknown): AsyncGenerator<unknown> {
-  yield generateTurnSnapshot(input);
+  for (const frame of generateTurnSnapshot(input).frames) {
+    yield frame;
+  }
 }
 
-const generateTurnSnapshot = (input: unknown) => ({
-  meta: createStubMeta(GENERATE_ID),
-  // TODO: streaming when SDK is reachable.
-  streaming: {
-    mode: "snapshot",
-    frames: [
-      {
-        type: "final",
-        text: "Stub assistant response from YdlTavern Engine.",
-      },
-    ],
-  },
-  turn: {
-    id: `stub-assistant-turn-for-${stableInputRef(input)}`,
+export const generateTurnSnapshot = (input: unknown) => {
+  const record = inputRecord(input);
+  const chat = readChat(record["chat"]);
+  const promptBlocks = readPromptBlocks(record["prompt_blocks"]);
+  const sampler = normalizeSamplerSettings(record["sampler"]);
+  const model = stringField(record, "model", "ydltavern-fake-model");
+  const prompt = buildPrompt(promptBlocks, chat, { mode: "chat" });
+  const requestShape = buildOpenAIChatRequest({ model, messages: prompt.messages, sampler, stream: false });
+  const text = deterministicGenerationText(record, prompt.text || prompt.messages.map((message) => message.content).join("\n"));
+  const createdAt = 0;
+  const turn: Turn = {
+    id: `fake_turn_${stableInputRef(input)}`,
+    index: chat.turns.length,
     role: "assistant",
-    active_variant_index: 0,
+    speaker: { name: "Assistant", kind: "character" },
     variants: [
       {
-        index: 0,
-        text: "Stub assistant response from YdlTavern Engine.",
-        finish_reason: "stub",
+        id: `fake_variant_${stableInputRef(input)}_0`,
+        generation_id: `fake_generation_${stableInputRef(input)}`,
+        model,
+        subs: [{ kind: "text", text }],
+        meta: { finish_reason: "deterministic_fake", provider: "ydltavern-engine", model },
+        created_at: createdAt,
       },
     ],
-  },
-});
+    active_variant: 0,
+    source: "generation",
+    created_at: createdAt,
+  };
+  const frames = [
+    { type: "started", generation_id: `fake_generation_${stableInputRef(input)}`, model },
+    { type: "token", text },
+    { type: "completed", finish_reason: "deterministic_fake" },
+  ];
 
-const nextVariant = (capabilityId: string, input: unknown, mode: "swipe" | "regenerate") => ({
-  meta: createStubMeta(capabilityId),
-  turn_id: stableInputRef(input),
-  mode,
-  variant: {
-    index: 1,
-    text: `Stub ${mode} assistant response from YdlTavern Engine.`,
-    finish_reason: "stub",
-  },
-});
+  return {
+    meta: createCapabilityMeta(GENERATE_ID, { deterministic: true, fake_generation: true, model }),
+    prompt,
+    request_shape: requestShape,
+    frames,
+    turn,
+    message: projectTurnToSTChatMessage(turn),
+  };
+};
+
+const nextVariant = (capabilityId: string, input: unknown, operation: "swipe" | "regenerate") => {
+  const record = inputRecord(input);
+  const turnId = stableInputRef(input);
+  const baseText = typeof record["text"] === "string" && record["text"].trim().length > 0 ? record["text"].trim() : "assistant response";
+  return {
+    meta: createCapabilityMeta(capabilityId, { deterministic: true, fake_generation: true }),
+    operation,
+    turn_id: turnId,
+    variant: {
+      id: `fake_${operation}_variant_${turnId}`,
+      index: readVariantIndex(record["variant_index"], 1),
+      text: `[ydltavern fake ${operation}] ${baseText}`,
+      finish_reason: "deterministic_fake",
+    },
+  };
+};
 
 export const turnHandlers: HandlerRecord = {
   [GENERATE_ID]: (input: unknown) => generateTurnSnapshot(input),
   [SWIPE_ID]: (input: unknown) => nextVariant(SWIPE_ID, input, "swipe"),
   [REGENERATE_ID]: (input: unknown) => nextVariant(REGENERATE_ID, input, "regenerate"),
-  [CONTINUE_ID]: (input: unknown) => ({
-    meta: createStubMeta(CONTINUE_ID),
-    turn_id: stableInputRef(input),
-    append: {
-      target: "last_variant.text",
-      text: " Stub continuation from YdlTavern Engine.",
-    },
-  }),
+  [CONTINUE_ID]: (input: unknown) => {
+    const record = inputRecord(input);
+    const turnId = stableInputRef(input);
+    const baseText = typeof record["text"] === "string" && record["text"].trim().length > 0 ? record["text"].trim() : "assistant response";
+    return {
+      meta: createCapabilityMeta(CONTINUE_ID, { deterministic: true, fake_generation: true }),
+      operation: "continue",
+      turn_id: turnId,
+      continuation: {
+        text: `[ydltavern fake continuation] ${baseText}`,
+        target: "last_variant.text",
+        finish_reason: "deterministic_fake",
+      },
+    };
+  },
 };
+
+function deterministicGenerationText(record: Record<string, unknown>, promptText: string): string {
+  if (typeof record["text"] === "string" && record["text"].trim().length > 0) {
+    return `[ydltavern fake generation] ${record["text"].trim()}`;
+  }
+
+  const seed = promptText.trim().replace(/\s+/gu, " ").slice(0, 80);
+  return seed.length > 0 ? `[ydltavern fake generation] ${seed}` : "[ydltavern fake generation]";
+}
+
+function readChat(value: unknown): Chat {
+  if (isRecord(value) && Array.isArray(value["turns"])) {
+    return value as unknown as Chat;
+  }
+
+  return { id: "chat_empty", meta: {}, turns: [] };
+}
+
+function readPromptBlocks(value: unknown): readonly PromptBlock[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item, index): PromptBlock[] => {
+    if (!isRecord(item) || typeof item["content"] !== "string") {
+      return [];
+    }
+
+    return [{
+      identifier: typeof item["identifier"] === "string" ? item["identifier"] : `block_${index}`,
+      role: readPromptRole(item["role"]),
+      content: item["content"],
+      enabled: typeof item["enabled"] === "boolean" ? item["enabled"] : undefined,
+      position: typeof item["position"] === "number" ? item["position"] : undefined,
+      order: typeof item["order"] === "number" ? item["order"] : undefined,
+    }];
+  });
+}
+
+function readPromptRole(value: unknown): PromptBlock["role"] {
+  return value === "system" || value === "user" || value === "assistant" || value === "tool" ? value : undefined;
+}
+
+function readVariantIndex(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : fallback;
+}

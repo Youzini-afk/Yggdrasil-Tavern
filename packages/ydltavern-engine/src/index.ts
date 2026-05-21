@@ -49,7 +49,7 @@ const handshake = (): JsonValue => ({
   ready: true,
   package_id: PACKAGE_ID,
   package_protocol_version: PROTOCOL_VERSION,
-  mode: "skeleton",
+  mode: "phase3-contract-slice",
   capabilities: Object.keys(handlers).sort(),
 });
 
@@ -112,17 +112,19 @@ const serveFallback = (): void => {
 };
 
 const main = async (): Promise<void> => {
-  try {
-    const sdk = (await import("@yggdrasil/subprocess")) as unknown as SdkModule;
-    if (typeof sdk.serveSubprocessPackage === "function") {
-      sdk.serveSubprocessPackage({
-        onHandshake: () => handshake(),
-        onInvoke: (params: CapabilityInvokeParams) => invoke(params),
-      });
-      return;
+  if (process.env["YDLTAVERN_ENGINE_FORCE_FALLBACK"] !== "1") {
+    try {
+      const sdk = (await import("@yggdrasil/subprocess")) as unknown as SdkModule;
+      if (typeof sdk.serveSubprocessPackage === "function") {
+        sdk.serveSubprocessPackage({
+          onHandshake: () => handshake(),
+          onInvoke: (params: CapabilityInvokeParams) => invoke(params),
+        });
+        return;
+      }
+    } catch {
+      // Fall back to the self-contained JSON-RPC stdio loop when the SDK package is not installed yet.
     }
-  } catch {
-    // Fall back to the self-contained JSON-RPC stdio loop when the SDK package is not installed yet.
   }
 
   serveFallback();

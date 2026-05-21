@@ -12,6 +12,8 @@ export interface InvocationCounters {
   byCapability: Record<string, number>;
 }
 
+export type UnknownRecord = Record<string, unknown>;
+
 export const createStubMeta = (capabilityId: string) => ({
   capability_id: capabilityId,
   package_id: PACKAGE_ID,
@@ -20,9 +22,27 @@ export const createStubMeta = (capabilityId: string) => ({
   side_effects: "none",
 });
 
+export const createCapabilityMeta = (capabilityId: string, details: Record<string, unknown> = {}) => ({
+  capability_id: capabilityId,
+  package_id: PACKAGE_ID,
+  engine_version: ENGINE_VERSION,
+  side_effects: "none",
+  ...details,
+});
+
+export const isRecord = (value: unknown): value is UnknownRecord =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+export const inputRecord = (input: unknown): UnknownRecord => (isRecord(input) ? input : {});
+
+export const stringField = (input: UnknownRecord, fieldName: string, fallback: string): string => {
+  const value = input[fieldName];
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+};
+
 export const stableInputRef = (input: unknown): string => {
-  if (input && typeof input === "object") {
-    const record = input as Record<string, unknown>;
+  if (isRecord(input)) {
+    const record = input;
     const explicitId = record["id"] ?? record["turn_id"] ?? record["preset_id"] ?? record["chat_state_ref"];
     if (typeof explicitId === "string" && explicitId.length > 0) {
       return explicitId;

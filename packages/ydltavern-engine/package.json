@@ -6,9 +6,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "dev": "tsc -w -p tsconfig.json"
+    "dev": "tsc -w -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
+    "@ydltavern/engine-core": "file:../ydltavern-engine-core",
+    "@ydltavern/importers": "file:../ydltavern-importers",
+    "@ydltavern/st-compat": "file:../ydltavern-st-compat",
+    "@ydltavern/types": "file:../ydltavern-types",
     "@yggdrasil/subprocess": "file:../../../Yggdrasil/sdk/typescript/subprocess"
   },
   "devDependencies": {
