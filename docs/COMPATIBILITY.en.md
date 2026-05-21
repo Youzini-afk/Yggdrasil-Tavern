@@ -1,12 +1,12 @@
-# Inheriting from SillyTavern
+# SillyTavern compatibility scope
 
 > [English](./COMPATIBILITY.en.md) · [中文](./COMPATIBILITY.md)
 
-YdlTavern aims for near-complete coverage of SillyTavern. This document is the high-level map. The detailed compatibility matrix, extension API surface, and migration paths fill in as implementation rolls out.
+YdlTavern is compatible with SillyTavern's content formats and extension API. This document is the high-level map of that scope. The detailed compatibility matrix, extension API surface, and migration paths fill in as implementation rolls out.
 
-## Three layers of inheritance
+## Three layers of compatibility
 
-Coverage isn't one-size-fits-all. It splits cleanly into three layers.
+Compatibility isn't one-size-fits-all. It splits cleanly into three layers.
 
 ### 1. Assets — direct import
 
@@ -46,9 +46,9 @@ Old SillyTavern extensions, sorted by the runtime shape they assume:
 
 Loading: the old extension layout (`manifest.json` + `index.js`) is supported directly — drop it in and it loads.
 
-## What YdlTavern brings that's new
+## What YdlTavern brings that's modern
 
-While inheriting from the old, the engine underneath is modern. These come from Yggdrasil — YdlTavern doesn't reinvent them:
+Beyond the compatibility layer, the engine underneath is modern. These come from Yggdrasil — YdlTavern doesn't reinvent them:
 
 - Modern database / variable storage (not cramming everything into one JSON read-write cycle).
 - Modern tool calls and function calling.
@@ -75,7 +75,7 @@ The exact API surfaces, extensions, and asset formats covered will be tracked in
 
 ## Verification
 
-Every claim of coverage gets a verification path:
+Every compatibility claim gets a verification path:
 
 - Assets: regression imports against real SillyTavern character cards, world books, presets, and chat histories.
 - UI: side-by-side screenshots plus walkthroughs with longtime users.

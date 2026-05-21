@@ -100,7 +100,7 @@ No matter how YdlTavern evolves:
 - it always speaks Yggdrasil's public protocol, never reads internals;
 - it always lives in a separate repo from Yggdrasil;
 - it never asks Yggdrasil for Tavern-specific APIs;
-- the inheritance baseline for old SillyTavern assets, UI structure, and extension APIs only goes up, not down.
+- compatibility coverage for SillyTavern assets, UI structure, and extension APIs only grows, never shrinks.
 
 ## Status
 

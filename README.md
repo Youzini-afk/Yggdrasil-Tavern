@@ -2,40 +2,42 @@
 
 > [English](./README.en.md) · [中文](./README.md)
 
-**SillyTavern 的下一代，跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 平台之上。**
+**一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 平台上的对话与角色扮演项目，兼容 SillyTavern 的角色卡、世界书、预设、聊天与扩展。**
 
-YdlTavern 的目标是承接 SillyTavern 的用户、扩展、角色卡、世界书、预设、聊天历史、UI 形态，同时把底下那套已经跟不上时代的引擎换掉——换成现代的存储、变量、工具调用、MCP、skills、多 agent。
+YdlTavern 把 SillyTavern 社区多年沉淀下来的内容格式和扩展生态接进 Yggdrasil 平台底座。前端体验保持熟悉，引擎层走 Yggdrasil 的现代实现。
 
-## 为什么有这个项目
+## 它做什么
 
-SillyTavern 在 RP / 角色扮演 / 创作社区里积累了大量资源和用户习惯。但今天的它在性能、数据库、变量存取、工具调用、MCP、agent 框架等几个方向上，明显落后于时代。
-
-YdlTavern 的解法不是 fork SillyTavern，也不是替代 SillyTavern。它是 SillyTavern 用户的下一站：
-
-- **承前**：基本 100% 承接 SillyTavern 的 API、扩展、角色卡、世界书、预设、聊天、UI 操作习惯。
-- **启后**：底层换成 Yggdrasil 平台。引擎、存储、agent 是新的；用户、内容、扩展生态是原来的。
+- 直接导入 SillyTavern 的角色卡（V1 / V2 / V3）、世界书、提示词预设、聊天历史。
+- 兼容 SillyTavern 扩展 API（`getContext()`、`eventSource`、slash commands 等），让大量扩展能直接跑起来。
+- UI 结构和操作流程对老用户保持熟悉，前端代码全新写一遍。
+- 引擎层走 Yggdrasil：模型接入、`secret_ref`、流式生命周期、提案审批、外发审计、记忆/检索、agent 框架，都来自平台。
 
 ## 跟 Yggdrasil 的关系
 
-YdlTavern 是 Yggdrasil 上的一个接入项目，通过公开协议（HTTP `/rpc` + SSE）消费平台。
+YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + SSE）消费平台。
 
-- 它不在 Yggdrasil 仓库里。平台是平台，产品是产品。
+- 它不在 Yggdrasil 仓库里。平台与产品分开。
 - 它跟其他第三方项目享有同样的待遇：同一份清单、同一套权限、同一道审计闸门。
-- 它会用上 Yggdrasil 已经做好的：模型接入（OpenAI/Anthropic/Gemini/OpenAI-compatible/OpenRouter/DeepSeek/xAI/Fireworks）、`secret_ref`、流式与取消生命周期、提案与审批、记忆、分享、外发审计。
+- 它会用上 Yggdrasil 已经做好的：模型接入、`secret_ref`、流式与取消生命周期、提案与审批、记忆、分享、外发审计。
 - 它会用上 Yggdrasil 即将做的：从 GitHub 地址安装能力包——这是 YdlTavern 扩展生态的关键前提。
 
-Yggdrasil 那边相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.md)。
+Yggdrasil 那边的相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.md)。
+
+## 致谢
+
+SillyTavern 的角色卡、世界书、预设、聊天历史和扩展 API，都是 SillyTavern 团队和社区多年的工作。YdlTavern 在此之上做兼容工作，归功于他们。
 
 ## 项目状态
 
-骨架阶段。仓库目前只有立场文档和路线说明，代码尚未开始。
+骨架阶段。仓库目前只有立场文档和方向说明，代码尚未开始。
 
-详细规划与原则见 [`docs/`](docs/README.md)：
+详细规划见 [`docs/`](docs/README.md)：
 
 - [`docs/CHARTER.md`](docs/CHARTER.md) —— 不变的根本原则
-- [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) —— SillyTavern 承接范围与方式
+- [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) —— SillyTavern 资源与扩展的兼容范围
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— YdlTavern 与 Yggdrasil 的关系
 
 ## 协议
 
-YdlTavern 以 GNU Affero General Public License v3.0（AGPLv3）发布，与 SillyTavern 和 Yggdrasil 一致。详见 [`LICENSE`](LICENSE)。
+YdlTavern 以 GNU Affero General Public License v3.0（AGPLv3）发布。详见 [`LICENSE`](LICENSE)。

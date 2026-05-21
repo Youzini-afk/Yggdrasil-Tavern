@@ -100,7 +100,7 @@ YdlTavern 不自己接 OpenAI / Anthropic / Gemini。它通过 Yggdrasil 的 `mo
 - 永远跑在 Yggdrasil 公开协议上，不读内部；
 - 永远跟 Yggdrasil 在不同仓库；
 - 永远不要求 Yggdrasil 加 Tavern 专属 API；
-- 老 SillyTavern 资产、UI 结构、扩展 API，承接基线不会下降。
+- SillyTavern 资产、UI 结构、扩展 API 的兼容覆盖范围只会扩大，不会缩。
 
 ## 当前状态
 

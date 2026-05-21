@@ -2,50 +2,43 @@
 
 > [English](./CHARTER.en.md) · [中文](./CHARTER.md)
 
-YdlTavern 是 SillyTavern 的下一代。它跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 平台之上，承接 SillyTavern 的用户、扩展、内容与 UI 习惯。
+YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 平台上的对话与角色扮演项目，兼容 SillyTavern 的角色卡、世界书、预设、聊天与扩展生态。
 
-这份章程界定 YdlTavern 是什么、不是什么，以及不会改变的原则。
+这份章程界定 YdlTavern 是什么，以及不会改变的原则。
 
 ## 身份
 
 YdlTavern 是：
 
 - 跑在 Yggdrasil 上的接入项目；
-- SillyTavern 的下一站，承前启后——前是六年的社区资源与用户习惯，后是现代化的引擎、存储、agent；
-- 一个产品，不是平台。
+- 一个走 SillyTavern 兼容路线的独立产品——能跑老的角色卡、世界书、预设、聊天和扩展；
+- 一个把成熟内容格式和扩展生态搬到现代平台底座上的项目。
 
 YdlTavern 不是：
 
 - SillyTavern 的 fork；
 - Yggdrasil 的官方包；
-- 一个新平台；
-- 一个内核里塞了对话、角色、世界、提示词的整体框架。
+- 一个新平台。
 
 ## 不变的原则
 
 ### 1. 平台与产品分开
 
-YdlTavern 永远跟 Yggdrasil 在不同的仓库里，通过公开协议消费平台。Yggdrasil 不会为 YdlTavern 加任何特权路径；YdlTavern 也不会读 Yggdrasil 内部。
+YdlTavern 永远跟 Yggdrasil 在不同仓库里，通过公开协议消费平台。Yggdrasil 不会为 YdlTavern 加任何特权路径；YdlTavern 也不会读 Yggdrasil 内部。
 
-### 2. 承接 SillyTavern，不取代
+### 2. 现代底座，熟悉的体验
 
-SillyTavern 的角色卡、世界书、预设、聊天历史、扩展 API、UI 操作习惯——目标是基本 100% 承接，让老用户的「行李」全部能搬过来。
+存储、变量、工具调用、MCP、skills、多 agent、向量记忆——这些走 Yggdrasil 平台原生方式，不重新造轮子。
 
-不打算让 SillyTavern 关停。它是上一代，YdlTavern 是下一代。
+UI 结构、操作流、配色——对 SillyTavern 老用户保持友好。前端是全新写的，但学习成本接近为零。
 
-### 3. 引擎换掉，体验保留
+### 3. 扩展生态尽量直接复用
 
-底下那套跟不上时代的——存储、变量、工具调用、MCP、skills、多 agent——全部换成 Yggdrasil 平台原生方式。
+老的 SillyTavern 扩展，目标是通过兼容层尽可能直接跑起来。具体哪些 API 表面被覆盖、用什么方式覆盖，见 [`COMPATIBILITY.md`](COMPATIBILITY.md)。承诺会保持现实——不用「100%」这种压力性数字。
 
-但用户看到的——UI 结构、配色、操作流——保持熟悉。
+### 4. 不污染上游
 
-### 4. 扩展生态共用
-
-老的 SillyTavern 扩展，目标是通过兼容层尽可能直接跑起来。具体哪些 API 表面承接、用什么方式承接，见 [`COMPATIBILITY.md`](COMPATIBILITY.md)。
-
-### 5. 不污染上游
-
-任何 SillyTavern 形态的特殊处理都待在 YdlTavern 这一层。Yggdrasil 内核不会因为 YdlTavern 多重要就开特殊待遇。
+任何 SillyTavern 形态的特殊处理都待在 YdlTavern 这一层。Yggdrasil 内核不会因为 YdlTavern 有多大而开特殊待遇。
 
 ## 非目标
 
@@ -56,12 +49,10 @@ YdlTavern 不会做：
 - 自己写权限、审计、流式生命周期（用 Yggdrasil 的）；
 - 把自己变成「大全套」——记忆、agent、工具调用这些，能用 Yggdrasil 普通能力包就用。
 
-## 对 SillyTavern 社区的态度
+## 致谢
 
-承接，不是替代，也不是借用。
-
-老用户搬家是平滑过渡：能直接导入老内容，能直接跑老扩展（兼容层覆盖范围内）。新用户上来直接用现代的引擎，看不到两层的区别。
+YdlTavern 兼容的内容格式（角色卡、世界书、预设、聊天历史）和扩展 API，是 SillyTavern 团队和社区多年工作的成果。归功于他们。
 
 ## 稳定性承诺
 
-这份章程通过显式修订才会变。具体的产品形态、UI、扩展兼容矩阵会演化；身份、跟 Yggdrasil 的边界、对 SillyTavern 的承接立场——不会变。
+这份章程通过显式修订才会变。具体的产品形态、UI、扩展兼容矩阵会演化；身份、跟 Yggdrasil 的边界——不会变。
