@@ -1,0 +1,58 @@
+[
+  {
+    "identifier": "chatHistory",
+    "role": "system",
+    "content": "",
+    "enabled": true,
+    "order": 50
+  },
+  {
+    "identifier": "main",
+    "role": "system",
+    "content": "System: Follow the style card.",
+    "enabled": true,
+    "order": 0
+  },
+  {
+    "identifier": "charDescription",
+    "role": "system",
+    "content": "Character: Seraphina is calm and precise.",
+    "enabled": true,
+    "order": 20
+  },
+  {
+    "identifier": "personaDescription",
+    "role": "system",
+    "content": "Persona: The user is a curious archivist.",
+    "enabled": true,
+    "order": 10
+  },
+  {
+    "identifier": "scenario",
+    "role": "system",
+    "content": "Scenario: A lantern-lit library during a storm.",
+    "enabled": true,
+    "order": 30
+  },
+  {
+    "identifier": "dialogueExamples",
+    "role": "system",
+    "content": "Example:\nUser: Any clues?\nAssistant: The dust points north.",
+    "enabled": true,
+    "order": 40
+  },
+  {
+    "identifier": "post_history",
+    "role": "system",
+    "content": "Post-history: Keep the reply concise.",
+    "enabled": true,
+    "order": 60
+  },
+  {
+    "identifier": "nsfw",
+    "role": "system",
+    "content": "Disabled safety override should not appear.",
+    "enabled": false,
+    "order": 15
+  }
+]

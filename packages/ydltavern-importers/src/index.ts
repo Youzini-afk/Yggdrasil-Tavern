@@ -10,9 +10,15 @@ export interface ImportDiagnostic {
 
 export type CharacterCardFormat = 'st_v1' | 'st_v2' | 'st_v3' | 'png_st' | 'unknown_json';
 
+export interface ImportedCharacterCardVersion {
+  readonly spec?: string;
+  readonly spec_version?: string;
+}
+
 export interface ImportedCharacterCard {
   readonly kind: 'character_card';
   readonly format: CharacterCardFormat;
+  readonly version?: ImportedCharacterCardVersion;
   readonly name: string;
   readonly description?: string;
   readonly personality?: string;
@@ -132,6 +138,7 @@ function normalizeCharacterCard(payload: JsonObject, format: CharacterCardFormat
   return {
     kind: 'character_card',
     format,
+    version: extractCharacterVersion(payload, data),
     name: name && name.length > 0 ? name : 'Untitled Character',
     description: stringProp(data, 'description') ?? stringProp(payload, 'description'),
     personality: stringProp(data, 'personality') ?? stringProp(payload, 'personality'),
@@ -148,11 +155,19 @@ function normalizeCharacterCard(payload: JsonObject, format: CharacterCardFormat
 
 function detectCharacterFormat(payload: JsonObject): CharacterCardFormat {
   const spec = stringProp(payload, 'spec');
-  const specVersion = stringProp(payload, 'spec_version') ?? numberProp(payload, 'spec_version')?.toString();
-  if (spec?.toLowerCase().includes('chara_card_v3') || specVersion === '3') return 'st_v3';
-  if (spec?.toLowerCase().includes('chara_card_v2') || specVersion === '2' || objectProp(payload, 'data') !== undefined) return 'st_v2';
+  const data = objectProp(payload, 'data');
+  const specVersion = stringProp(payload, 'spec_version') ?? numberProp(payload, 'spec_version')?.toString() ?? (data === undefined ? undefined : stringProp(data, 'spec_version') ?? numberProp(data, 'spec_version')?.toString());
+  if (spec?.toLowerCase().includes('chara_card_v3') || specVersion === '3' || specVersion?.startsWith('3.')) return 'st_v3';
+  if (spec?.toLowerCase().includes('chara_card_v2') || specVersion === '2' || specVersion?.startsWith('2.') || objectProp(payload, 'data') !== undefined) return 'st_v2';
   if (stringProp(payload, 'char_name') !== undefined || stringProp(payload, 'name') !== undefined) return 'st_v1';
   return 'unknown_json';
+}
+
+function extractCharacterVersion(payload: JsonObject, data: JsonObject): ImportedCharacterCardVersion | undefined {
+  const spec = stringProp(payload, 'spec') ?? stringProp(data, 'spec');
+  const specVersion = stringProp(payload, 'spec_version') ?? numberProp(payload, 'spec_version')?.toString() ?? stringProp(data, 'spec_version') ?? numberProp(data, 'spec_version')?.toString();
+  if (spec === undefined && specVersion === undefined) return undefined;
+  return { spec, spec_version: specVersion };
 }
 
 function extractPngCharacterPayload(input: Uint8Array, diagnostics: ImportDiagnostic[]): { readonly payload: JsonObject; readonly format: 'png_st' } {

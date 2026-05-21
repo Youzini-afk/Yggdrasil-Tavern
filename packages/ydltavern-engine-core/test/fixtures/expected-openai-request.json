@@ -1,0 +1,48 @@
+{
+  "temperature": 0.65,
+  "top_p": 0.92,
+  "frequency_penalty": 0.15,
+  "presence_penalty": 0.25,
+  "max_tokens": 320,
+  "stream": false,
+  "stop": ["<|im_end|>", "###"],
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "System: Follow the style card."
+    },
+    {
+      "role": "system",
+      "content": "Persona: The user is a curious archivist."
+    },
+    {
+      "role": "system",
+      "content": "Character: Seraphina is calm and precise."
+    },
+    {
+      "role": "system",
+      "content": "Scenario: A lantern-lit library during a storm."
+    },
+    {
+      "role": "system",
+      "content": "Example:\nUser: Any clues?\nAssistant: The dust points north."
+    },
+    {
+      "role": "user",
+      "content": "Hello, can you identify this map?"
+    },
+    {
+      "role": "assistant",
+      "content": "It shows the old observatory ridge."
+    },
+    {
+      "role": "system",
+      "content": "System reminder from chat log."
+    },
+    {
+      "role": "system",
+      "content": "Post-history: Keep the reply concise."
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "spec": "chara_card_v3",
+  "data": {
+    "spec_version": "3.0",
+    "name": "Vega Fixture",
+    "description": "A V3-like character card with asset metadata.",
+    "personality": "Analytical and friendly.",
+    "scenario": "Testing V3 fixture preservation.",
+    "first_message": "V3 fixture online.",
+    "example_dialogue": "<START>\n{{char}}: Assets should be preserved.",
+    "creator_notes": "V3 fixture for importer alignment.",
+    "tags": ["fixture", "v3", "assets"],
+    "extensions": {
+      "fav": true,
+      "ydltavern_fixture": {
+        "phase": "2A"
+      }
+    },
+    "assets": [
+      {
+        "type": "icon",
+        "uri": "assets/vega-icon.png",
+        "mime": "image/png",
+        "name": "Vega Icon"
+      },
+      {
+        "type": "avatar",
+        "uri": "assets/vega-avatar.webp",
+        "mime": "image/webp"
+      }
+    ],
+    "character_book": {
+      "name": "Vega Fixture Lore",
+      "entries": {
+        "0": {
+          "key": ["Vega"],
+          "content": "Vega carries V3-like asset fields.",
+          "disable": false
+        }
+      }
+    },
+    "fixture_v3_unknown": ["preserve", "raw"]
+  },
+  "fixture_unknown_top_level": {
+    "v3": true
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "id": "chat-alignment-1",
+  "meta": {
+    "title": "Alignment spine fixture",
+    "source_format": "ydltavern_native"
+  },
+  "turns": [
+    {
+      "id": "turn-user-1",
+      "index": 0,
+      "role": "user",
+      "source": "user_input",
+      "variants": [
+        {
+          "id": "turn-user-1-variant",
+          "subs": [{ "kind": "text", "text": "Hello, can you identify this map?" }],
+          "meta": {},
+          "created_at": 1700000000000
+        }
+      ],
+      "active_variant": 0,
+      "created_at": 1700000000000
+    },
+    {
+      "id": "turn-assistant-1",
+      "index": 1,
+      "role": "assistant",
+      "source": "generation",
+      "variants": [
+        {
+          "id": "turn-assistant-1-variant",
+          "subs": [{ "kind": "text", "text": "It shows the old observatory ridge." }],
+          "meta": {},
+          "created_at": 1700000001000
+        }
+      ],
+      "active_variant": 0,
+      "created_at": 1700000001000
+    },
+    {
+      "id": "turn-hidden-1",
+      "index": 2,
+      "role": "user",
+      "source": "user_input",
+      "hidden": true,
+      "variants": [
+        {
+          "id": "turn-hidden-1-variant",
+          "subs": [{ "kind": "text", "text": "Hidden note must not appear." }],
+          "meta": {},
+          "created_at": 1700000002000
+        }
+      ],
+      "active_variant": 0,
+      "created_at": 1700000002000
+    },
+    {
+      "id": "turn-deleted-1",
+      "index": 3,
+      "role": "assistant",
+      "source": "generation",
+      "deleted": true,
+      "variants": [
+        {
+          "id": "turn-deleted-1-variant",
+          "subs": [{ "kind": "text", "text": "Deleted answer must not appear." }],
+          "meta": {},
+          "created_at": 1700000003000
+        }
+      ],
+      "active_variant": 0,
+      "created_at": 1700000003000
+    },
+    {
+      "id": "turn-system-1",
+      "index": 4,
+      "role": "system",
+      "source": "system",
+      "variants": [
+        {
+          "id": "turn-system-1-variant",
+          "subs": [{ "kind": "text", "text": "System reminder from chat log." }],
+          "meta": {},
+          "created_at": 1700000004000
+        }
+      ],
+      "active_variant": 0,
+      "created_at": 1700000004000
+    }
+  ]
+}

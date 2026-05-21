@@ -1,0 +1,37 @@
+{
+  "name": "Fixture World Book",
+  "entries": {
+    "0": {
+      "key": ["Aster", "fixture"],
+      "secondary_key": ["alignment"],
+      "comment": "Primary enabled entry",
+      "content": "Aster is a fixture character used by importer tests.",
+      "position": 0,
+      "order": 10,
+      "depth": 3,
+      "disable": false,
+      "selective": true,
+      "constant": false,
+      "extensions": {
+        "source": "fixture"
+      },
+      "fixture_unknown_entry_field": "preserve me"
+    },
+    "1": {
+      "keys": ["Vega", "asset"],
+      "secondary_keys": ["v3"],
+      "comment": "Disabled asset entry",
+      "content": "Vega has V3-like asset metadata.",
+      "position": "after_char",
+      "order": 20,
+      "depth": 5,
+      "disable": true,
+      "probability": 75,
+      "selective": false,
+      "constant": true
+    }
+  },
+  "fixture_unknown_top_level": {
+    "preserve": true
+  }
+}

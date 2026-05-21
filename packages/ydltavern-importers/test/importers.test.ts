@@ -1,61 +1,126 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
+import { join } from 'node:path';
 
+import type { JsonObject } from '@ydltavern/types';
 import { extractPngTextChunks, importCharacterCard, importChatHistory, importWorldBook } from '../src/index.js';
 
-test('imports a V2 JSON character card', () => {
-  const card = importCharacterCard({
-    spec: 'chara_card_v2',
-    spec_version: '2.0',
-    data: {
-      name: 'Aster',
-      description: 'A helpful test character.',
-      personality: 'Warm',
-      scenario: 'Testing',
-      first_mes: 'Hello!',
-      mes_example: '<START>',
-      creator_notes: 'Created for tests.',
-      tags: ['test', 'v2'],
-      extensions: { ydltavern: true },
-    },
-  });
+const fixturesDir = join(process.cwd(), 'test', 'fixtures');
+
+test('imports a V2 JSON character card fixture with raw payload preservation', async () => {
+  const fixture = await readJsonFixture('character-v2.json');
+  const card = importCharacterCard(fixture);
 
   assert.equal(card.kind, 'character_card');
   assert.equal(card.format, 'st_v2');
-  assert.equal(card.name, 'Aster');
-  assert.equal(card.first_mes, 'Hello!');
-  assert.deepEqual(card.tags, ['test', 'v2']);
+  assert.deepEqual(card.version, { spec: 'chara_card_v2', spec_version: '2.0' });
+  assert.equal(card.name, 'Aster Fixture');
+  assert.equal(card.first_mes, 'Hello from the V2 fixture!');
+  assert.deepEqual(card.tags, ['fixture', 'v2', 'asset-spine']);
+  assert.deepEqual(card.extensions, {
+    talkativeness: 0.65,
+    depth_prompt: {
+      prompt: 'Remember the imported fixture source.',
+      depth: 4,
+    },
+    ydltavern_fixture: true,
+  });
   assert.equal(card.preserved.format, 'st_v2');
+  assert.deepEqual(card.preserved.payload, fixture);
+  assert.equal(asObject(card.preserved.payload)['fixture_unknown_top_level'], 'top-level unknown value');
+  assert.deepEqual(asObject(asObject(card.preserved.payload)['data'])['fixture_unknown_data_field'], { preserve: true, note: 'must remain in raw payload' });
+  assert.ok(asObject(asObject(card.preserved.payload)['data'])['character_book']);
+  assert.deepEqual(card.diagnostics, []);
 });
 
-test('imports a world book with two entries', () => {
-  const book = importWorldBook({
-    name: 'Test Lore',
-    entries: [
-      { key: ['alpha'], comment: 'A', content: 'Alpha content', disable: false, order: 10 },
-      { keys: ['beta', 'gamma'], content: 'Beta content', enabled: false, position: 1, probability: 50, depth: 4, selective: true, constant: false },
-    ],
-  });
+test('imports a V3-like JSON character card fixture and detects data spec version', async () => {
+  const fixture = await readJsonFixture('character-v3.json');
+  const card = importCharacterCard(fixture);
+
+  assert.equal(card.kind, 'character_card');
+  assert.equal(card.format, 'st_v3');
+  assert.deepEqual(card.version, { spec: 'chara_card_v3', spec_version: '3.0' });
+  assert.equal(card.name, 'Vega Fixture');
+  assert.equal(card.first_mes, 'V3 fixture online.');
+  assert.deepEqual(card.tags, ['fixture', 'v3', 'assets']);
+  assert.equal(card.preserved.format, 'st_v3');
+  assert.deepEqual(card.preserved.payload, fixture);
+  assert.deepEqual(asObject(asObject(card.preserved.payload)['data'])['assets'], [
+    {
+      type: 'icon',
+      uri: 'assets/vega-icon.png',
+      mime: 'image/png',
+      name: 'Vega Icon',
+    },
+    {
+      type: 'avatar',
+      uri: 'assets/vega-avatar.webp',
+      mime: 'image/webp',
+    },
+  ]);
+  assert.deepEqual(asObject(asObject(card.preserved.payload)['data'])['fixture_v3_unknown'], ['preserve', 'raw']);
+  assert.deepEqual(card.diagnostics, []);
+});
+
+test('imports a world book fixture preserving key fields and raw entries', async () => {
+  const fixture = await readJsonFixture('world-book.json');
+  const book = importWorldBook(fixture);
 
   assert.equal(book.kind, 'world_book');
+  assert.equal(book.name, 'Fixture World Book');
   assert.equal(book.entries.length, 2);
-  assert.deepEqual(book.entries[0]?.keys, ['alpha']);
+  assert.deepEqual(book.entries[0]?.keys, ['Aster', 'fixture']);
   assert.equal(book.entries[0]?.enabled, true);
-  assert.deepEqual(book.entries[1]?.keys, ['beta', 'gamma']);
+  assert.equal(book.entries[0]?.position, 0);
+  assert.equal(book.entries[0]?.order, 10);
+  assert.equal(book.entries[0]?.depth, 3);
+  assert.deepEqual(asObject(book.entries[0]?.preserved.payload)['secondary_key'], ['alignment']);
+  assert.equal(asObject(book.entries[0]?.preserved.payload)['fixture_unknown_entry_field'], 'preserve me');
+  assert.deepEqual(book.entries[1]?.keys, ['Vega', 'asset']);
   assert.equal(book.entries[1]?.enabled, false);
-  assert.equal(book.entries[1]?.depth, 4);
+  assert.equal(book.entries[1]?.position, 'after_char');
+  assert.equal(book.entries[1]?.order, 20);
+  assert.equal(book.entries[1]?.depth, 5);
+  assert.equal(book.entries[1]?.probability, 75);
+  assert.equal(book.entries[1]?.constant, true);
+  assert.deepEqual(asObject(book.entries[1]?.preserved.payload)['secondary_keys'], ['v3']);
+  assert.deepEqual(book.preserved.payload, fixture);
+  assert.deepEqual(asObject(book.preserved.payload)['fixture_unknown_top_level'], { preserve: true });
+  assert.deepEqual(book.diagnostics, []);
 });
 
-test('imports JSONL chat history into Turn model', () => {
-  const history = importChatHistory('{"name":"User","is_user":true,"mes":"Hi"}\n{"name":"Bot","is_user":false,"mes":"Hello","extra":{"mood":"ok"}}');
+test('imports JSONL chat fixture into Turn model with conservative raw extra preservation', async () => {
+  const fixture = await readFile(join(fixturesDir, 'chat.jsonl'), 'utf8');
+  const history = importChatHistory(fixture);
 
   assert.equal(history.kind, 'chat_history');
-  assert.equal(history.chat.turns.length, 2);
-  assert.equal(history.chat.turns[0]?.role, 'user');
-  assert.equal(history.chat.turns[1]?.role, 'assistant');
-  assert.equal(history.chat.turns[1]?.variants[0]?.subs[0]?.kind, 'text');
-  assert.deepEqual(history.chat.turns[1]?.variants[0]?.subs[0], { kind: 'text', text: 'Hello' });
-  assert.deepEqual(history.chat.turns[1]?.variants[0]?.meta.raw, { name: 'Bot', is_user: false, extra: { mood: 'ok' } });
+  assert.equal(history.chat.turns.length, 3);
+  assert.equal(history.chat.turns[0]?.index, 0);
+  assert.equal(history.chat.turns[0]?.role, 'system');
+  assert.equal(history.chat.turns[0]?.speaker?.name, 'Narrator');
+  assert.deepEqual(history.chat.turns[0]?.variants[0]?.subs[0], { kind: 'text', text: 'System fixture setup.' });
+  assert.equal(history.chat.turns[1]?.index, 1);
+  assert.equal(history.chat.turns[1]?.role, 'user');
+  assert.equal(history.chat.turns[1]?.speaker?.name, 'User');
+  assert.deepEqual(history.chat.turns[1]?.variants[0]?.subs[0], { kind: 'text', text: 'Can you inspect the fixture?' });
+  assert.equal(history.chat.turns[2]?.index, 2);
+  assert.equal(history.chat.turns[2]?.role, 'assistant');
+  assert.equal(history.chat.turns[2]?.speaker?.name, 'Aster Fixture');
+  assert.deepEqual(history.chat.turns[2]?.variants[0]?.subs[0], { kind: 'text', text: 'I preserved the raw fields.' });
+
+  const userRaw = asObject(history.chat.turns[1]?.variants[0]?.meta.raw);
+  assert.deepEqual(userRaw['swipes'], ['Can you inspect the fixture?', 'Please inspect the fixture.']);
+  assert.deepEqual(asObject(userRaw['extra'])['reasoning'], 'User wants fixture coverage.');
+
+  const assistantRaw = asObject(history.chat.turns[2]?.variants[0]?.meta.raw);
+  const assistantExtra = asObject(assistantRaw['extra']);
+  assert.equal(assistantExtra['reasoning'], 'Need to keep unknown data visible.');
+  assert.deepEqual(assistantExtra['tool_invocations'], [{ id: 'call_fixture', name: 'inspect_fixture', arguments: { path: 'chat.jsonl' } }]);
+  assert.deepEqual(assistantExtra['notes'], ['assistant note']);
+  assert.deepEqual(assistantRaw['fixture_unknown_message_field'], { preserve: true });
+  assert.ok(Array.isArray(history.preserved.payload));
+  assert.deepEqual(history.diagnostics, []);
 });
 
 test('extracts PNG tEXt chara metadata without CRC validation', () => {
@@ -84,4 +149,20 @@ function makeChunk(type: string, data: Buffer): Buffer {
   const typeBytes = Buffer.from(type, 'ascii');
   const crc = Buffer.alloc(4); // The parser intentionally does not validate PNG CRC bytes.
   return Buffer.concat([length, typeBytes, data, crc]);
+}
+
+async function readJsonFixture(fileName: string): Promise<JsonObject> {
+  const text = await readFile(join(fixturesDir, fileName), 'utf8');
+  const parsed: unknown = JSON.parse(text);
+  assert.ok(isJsonObject(parsed), `${fileName} must contain a JSON object`);
+  return parsed;
+}
+
+function asObject(value: unknown): JsonObject {
+  assert.ok(isJsonObject(value), 'expected JSON object');
+  return value;
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
