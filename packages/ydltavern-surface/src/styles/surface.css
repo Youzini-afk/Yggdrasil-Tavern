@@ -871,7 +871,265 @@
   color: var(--color-text-faint);
 }
 
-/* ---------- Responsive --------------------------------------------------- */
+/* ---------- Common sub-section inside a diag panel ----------------------- */
+
+.diag-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diag-subsection h3 {
+  margin: 0 0 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+/* ---------- Generic diagnostic list (key-value-like rows) ---------------- */
+
+.diag-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diag-list-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  font-size: 12.5px;
+}
+
+.diag-list-item-dim {
+  opacity: 0.7;
+}
+
+.diag-list-key {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.diag-list-pos {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-cyan-soft);
+  white-space: nowrap;
+}
+
+.diag-list-reason {
+  font-size: 12px;
+  color: var(--color-rose);
+  white-space: nowrap;
+}
+
+.diag-list-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.diag-list-text {
+  color: var(--color-text-soft);
+  word-break: break-word;
+  flex: 1 1 0;
+}
+
+.diag-list-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+/* ---------- Prompt-Critical panel ---------------------------------------- */
+
+.diag-panel-prompt-critical {
+  border-top: 1px solid var(--color-emerald, #67c19f);
+  background:
+    linear-gradient(180deg, rgba(103, 193, 159, 0.07), transparent 40%),
+    var(--color-bg-raised);
+}
+
+.diag-panel-prompt-critical .diag-panel-eyebrow {
+  color: var(--color-emerald, #67c19f);
+}
+
+.diag-panel-prompt-critical .value-large {
+  color: var(--color-emerald, #67c19f);
+}
+
+.diag-panel-prompt-critical .diag-list-key {
+  color: var(--color-emerald, #67c19f);
+}
+
+/* ---------- Slash diagnostics panel -------------------------------------- */
+
+.diag-panel-slash {
+  border-top: 1px solid var(--color-rose, #d97a7a);
+  background:
+    linear-gradient(180deg, rgba(217, 122, 122, 0.07), transparent 40%),
+    var(--color-bg-raised);
+}
+
+.diag-panel-slash .diag-panel-eyebrow {
+  color: var(--color-rose, #d97a7a);
+}
+
+.diag-panel-slash .value-large {
+  color: var(--color-rose, #d97a7a);
+}
+
+.slash-input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slash-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  resize: vertical;
+}
+
+.slash-input:focus {
+  border-color: var(--color-rose);
+  box-shadow: 0 0 0 2px rgba(217, 122, 122, 0.15);
+}
+
+.slash-subheading {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.slash-execution-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slash-execution-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  font-size: 12.5px;
+}
+
+.slash-execution-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slash-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.slash-ok {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-emerald, #67c19f);
+}
+
+.slash-error {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-rose, #d97a7a);
+}
+
+.slash-raw {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-faint);
+  word-break: break-all;
+}
+
+.slash-output {
+  font-size: 13px;
+  color: var(--color-text-soft);
+  word-break: break-word;
+}
+
+.slash-diag-list {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.slash-diag-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-rose, #d97a7a);
+}
+
+.slash-diag-code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(217, 122, 122, 0.1);
+  color: var(--color-rose, #d97a7a);
+  white-space: nowrap;
+}
+
+.value-ok {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-emerald, #67c19f);
+}
+
+.value-error {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-rose, #d97a7a);
+}
 
 /* ---------- Live controls (Phase 4 contract slice) ----------------------- */
 

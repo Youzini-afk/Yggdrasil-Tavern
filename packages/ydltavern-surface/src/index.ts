@@ -25,6 +25,12 @@ export type { EngineCorePreviewPanelProps } from './components/EngineCorePreview
 
 export { ImportersPanel } from './components/ImportersPanel.js';
 
+export { PromptCriticalPanel } from './components/PromptCriticalPanel.js';
+export type { PromptCriticalPanelProps } from './components/PromptCriticalPanel.js';
+
+export { SlashDiagnosticsPanel } from './components/SlashDiagnosticsPanel.js';
+export type { SlashDiagnosticsPanelProps } from './components/SlashDiagnosticsPanel.js';
+
 // ---- Surface compositions -------------------------------------------------
 
 export { TavernPlaySurface } from './surfaces/TavernPlaySurface.js';

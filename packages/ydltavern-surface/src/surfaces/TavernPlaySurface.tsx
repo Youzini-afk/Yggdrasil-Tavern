@@ -5,6 +5,8 @@ import { TurnView } from '../components/TurnView.js';
 import { STDiagnosticsPanel } from '../components/STDiagnosticsPanel.js';
 import { EngineCorePreviewPanel } from '../components/EngineCorePreviewPanel.js';
 import { ImportersPanel } from '../components/ImportersPanel.js';
+import { PromptCriticalPanel } from '../components/PromptCriticalPanel.js';
+import { SlashDiagnosticsPanel } from '../components/SlashDiagnosticsPanel.js';
 import { sampleChat } from '../fixtures/sample-chat.js';
 
 export interface TavernPlaySurfaceProps {
@@ -201,6 +203,8 @@ export function TavernPlaySurface({
           <div className="diag-stack">
             <STDiagnosticsPanel runtime={runtime} />
             <EngineCorePreviewPanel chat={liveChat} />
+            <PromptCriticalPanel runtime={runtime} chat={liveChat} />
+            <SlashDiagnosticsPanel runtime={runtime} />
             <ImportersPanel />
           </div>
         </section>

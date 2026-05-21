@@ -31,7 +31,7 @@
     {
       "id": "ydltavern/play",
       "title": "Tavern · Play",
-      "description": "Contract-backed thin slice: live ST context runtime, Turn list projected from mirrored store snapshot, send / generate / edit wired to real proxy, event diagnostics.",
+      "description": "Contract-backed thin slice: live ST context runtime, Turn list projected from mirrored store snapshot, send / generate / edit wired, event diagnostics, prompt-critical & world-info diagnostics, and slash diagnostics.",
       "status": "contract-slice",
       "entry": {
         "module": "@ydltavern/surface",
@@ -94,6 +94,6 @@
     "This descriptor is project-local and intentionally does not claim final Yggdrasil surface loader semantics.",
     "Surfaces are pure React components — hosts may embed them directly or wire them through a Yggdrasil surface registry once one exists.",
     "YdlTavern owns Tavern UI surfaces, not the desktop/web/app shell. There is no main.tsx, no router, no Tauri config in this package.",
-    "ydltavern/play is a contract-backed thin slice: it consumes createSTContext, addOneMessage, Generate, proxy edits, and eventSource dispatch, then projects the resulting Turn list live."
+    "ydltavern/play is a contract-backed thin slice: it consumes createSTContext, addOneMessage, Generate, proxy edits, eventSource dispatch, prompt-critical blocks, world-info evaluation, slash diagnostics, and then projects the resulting Turn list live."
   ]
 }
