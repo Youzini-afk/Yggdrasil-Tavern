@@ -873,6 +873,165 @@
 
 /* ---------- Responsive --------------------------------------------------- */
 
+/* ---------- Live controls (Phase 4 contract slice) ----------------------- */
+
+.live-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-emerald);
+  border: 1px solid rgba(103, 193, 159, 0.25);
+  border-radius: 999px;
+  background: rgba(103, 193, 159, 0.08);
+}
+
+.chat-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--color-rule);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-text);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: var(--color-violet-edge);
+  box-shadow: 0 0 0 2px rgba(154, 163, 255, 0.12);
+}
+
+.chat-button {
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-panel);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.chat-button:hover {
+  background: var(--color-panel-2);
+  color: var(--color-text);
+}
+
+.chat-button-send {
+  background: var(--color-violet-bg);
+  border-color: var(--color-violet-edge);
+  color: var(--color-violet-soft);
+}
+
+.chat-button-send:hover {
+  background: var(--color-violet-edge);
+  color: var(--color-text);
+}
+
+.chat-button-generate {
+  background: var(--color-amber-bg);
+  border-color: var(--color-amber-edge);
+  color: var(--color-amber-soft);
+}
+
+.chat-button-generate:hover {
+  background: var(--color-amber-edge);
+  color: var(--color-text);
+}
+
+.chat-button-edit {
+  background: var(--color-bg-sunken);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.chat-button-edit:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-soft);
+}
+
+.chat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ---------- Event log (ST diagnostics) ----------------------------------- */
+
+.event-log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.event-log-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  font-size: 12.5px;
+}
+
+.event-log-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+.event-log-type {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-violet-soft);
+  white-space: nowrap;
+}
+
+.event-log-payload {
+  color: var(--color-text-muted);
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* ---------- Responsive --------------------------------------------------- */
+
 @media (max-width: 720px) {
   .tavern-surface {
     padding: 32px 18px 64px;

@@ -31,8 +31,8 @@
     {
       "id": "ydltavern/play",
       "title": "Tavern · Play",
-      "description": "Turn-based conversation surface: chat hero, turn stream with thinking/tool subs, swipe variant placeholder, optional diagnostics panels.",
-      "status": "scaffold",
+      "description": "Contract-backed thin slice: live ST context runtime, Turn list projected from mirrored store snapshot, send / generate / edit wired to real proxy, event diagnostics.",
+      "status": "contract-slice",
       "entry": {
         "module": "@ydltavern/surface",
         "export": "TavernPlaySurface"
@@ -54,7 +54,7 @@
       "id": "ydltavern/settings",
       "title": "Tavern · Settings",
       "description": "Settings surface placeholder. Scaffold only — no settings schema, no persistence wiring.",
-      "status": "scaffold",
+      "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
         "export": "TavernSettingsSurface"
@@ -69,7 +69,7 @@
       "id": "ydltavern/extensions",
       "title": "Tavern · Extensions",
       "description": "Extensions surface placeholder. Scaffold only — no loader, no registry, no install flow.",
-      "status": "scaffold",
+      "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
         "export": "TavernExtensionsSurface"
@@ -93,6 +93,7 @@
   "notes": [
     "This descriptor is project-local and intentionally does not claim final Yggdrasil surface loader semantics.",
     "Surfaces are pure React components — hosts may embed them directly or wire them through a Yggdrasil surface registry once one exists.",
-    "YdlTavern owns Tavern UI surfaces, not the desktop/web/app shell. There is no main.tsx, no router, no Tauri config in this package."
+    "YdlTavern owns Tavern UI surfaces, not the desktop/web/app shell. There is no main.tsx, no router, no Tauri config in this package.",
+    "ydltavern/play is a contract-backed thin slice: it consumes createSTContext, addOneMessage, Generate, proxy edits, and eventSource dispatch, then projects the resulting Turn list live."
   ]
 }

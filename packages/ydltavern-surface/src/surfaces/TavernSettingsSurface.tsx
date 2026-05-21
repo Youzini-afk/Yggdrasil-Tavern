@@ -13,10 +13,9 @@ const PENDING_ITEMS = [
 ] as const;
 
 /**
- * Settings surface placeholder. Scaffold only — there is no settings schema,
- * no persistence wiring, and no API contract here yet. Declared in
- * `surface.manifest.json` so hosts can route to it; the rendered placeholder
- * is honest about the gap.
+ * Settings surface placeholder. This is a surface slot — no schema, no
+ * persistence wiring, no API contract yet. Hosts can route to it via the
+ * manifest; the gap is honest and scoped.
  */
 export function TavernSettingsSurface({ className }: TavernSettingsSurfaceProps): JSX.Element {
   const rootClass = composeClass(SURFACE_ROOT_CLASSES, className);
@@ -24,7 +23,7 @@ export function TavernSettingsSurface({ className }: TavernSettingsSurfaceProps)
   return (
     <div className={rootClass}>
       <section className="placeholder-hero">
-        <span className="placeholder-eyebrow">ydltavern/settings · scaffold</span>
+        <span className="placeholder-eyebrow">ydltavern/settings · surface slot</span>
         <h1 className="placeholder-title">
           <span className="placeholder-line-1">Settings,</span>
           <span className="placeholder-line-2">but not yet wired.</span>

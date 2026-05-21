@@ -13,9 +13,9 @@ const PENDING_ITEMS = [
 ] as const;
 
 /**
- * Extensions surface placeholder. Scaffold only — there is no loader, no
- * registry, and no install flow here yet. The rendered placeholder names the
- * tracks that will land each piece, so the gap stays legible.
+ * Extensions surface placeholder. This is a surface slot — no loader, no
+ * registry, no install flow yet. The manifest declares it; the gap is honest
+ * and scoped to future tracks.
  */
 export function TavernExtensionsSurface({
   className,
@@ -25,7 +25,7 @@ export function TavernExtensionsSurface({
   return (
     <div className={rootClass}>
       <section className="placeholder-hero">
-        <span className="placeholder-eyebrow">ydltavern/extensions · scaffold</span>
+        <span className="placeholder-eyebrow">ydltavern/extensions · surface slot</span>
         <h1 className="placeholder-title">
           <span className="placeholder-line-1">Extensions,</span>
           <span className="placeholder-line-2">no loader, no registry.</span>
