@@ -20,26 +20,26 @@ Implementation status:
 - `deferred` — intentionally not implemented by internal decision
 - `blocked` — waiting on another track
 
-Current stage: M1 complete. Everything is `inventoried`. Coverage is all 0.
+Current stage: M2 foundation complete. ST source remains the ground truth; B/C/D/G now have v0 code paths, but nothing is claimed as byte-level aligned unless explicitly stated.
 
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
 |---|---:|---:|---|---|---|
-| event_types | 99 | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
+| event_types | 104 | 104 stub | stubbed | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
 | built-in slash commands | 153 | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | macros / macros | 80+ | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| chat completion sources | 26 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| samplers (including aliases) | 80+ | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| samplers (including aliases) | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | world info trigger types | 32 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info entry schema fields | 50+ | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info evaluation pipeline steps | 39 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
-| character card V1 fields | 16 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| character card V2 fields | 33 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| character card V3 fields | 14 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| character card V1 fields | 16 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| character card V2 fields | 33 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| character card V3 fields | 14 | v0 importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | OpenAI preset schema fields | 75 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
-| prompt manager identifiers | 26 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
+| prompt manager identifiers | 13 typed | v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | built-in extensions | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema fields | 20 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -47,7 +47,17 @@ Current stage: M1 complete. Everything is `inventoried`. Coverage is all 0.
 | Quick reply schema fields | recorded | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
 | theme schema | recorded | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 
-Numbers are approximate counts. Inventory is the source of truth for exact numbers. Each inventory file lists every record by section.
+The numbers are approximate. The inventory files and `@ydltavern/types` constants are the source of truth. `stubbed` means the API surface exists but behavior is not fully aligned; `partial` means tested code paths exist but no byte-level compatibility is claimed yet.
+
+## M2 code paths now present
+
+| Package | Track | Coverage | Status |
+|---|---|---|---|
+| `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
+| `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers | partial |
+| `@ydltavern/st-compat` | D | eventSource, event_types, `getContext()`, `chat[]` Proxy | stubbed |
+| `@ydltavern/engine-core` | C | sampler normalization, prompt builder, OpenAI request builder (no network) | partial |
+| `clients/desktop` | G | Turn renderer, compat diagnostics, engine/importer preview | scaffold |
 
 ## Built-in extension coverage (track F)
 

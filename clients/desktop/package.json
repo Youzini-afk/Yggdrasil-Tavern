@@ -10,6 +10,10 @@
     "lint": "echo skipped"
   },
   "dependencies": {
+    "@ydltavern/engine-core": "file:../../packages/ydltavern-engine-core",
+    "@ydltavern/importers": "file:../../packages/ydltavern-importers",
+    "@ydltavern/st-compat": "file:../../packages/ydltavern-st-compat",
+    "@ydltavern/types": "file:../../packages/ydltavern-types",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.6.0"

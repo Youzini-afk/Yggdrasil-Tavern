@@ -25,16 +25,20 @@ Yggdrasil 那边的相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](http
 
 ## 项目状态
 
-M1 启动条件已落地。代码骨架在位，行为尚未实现。
+M2 基础层已落地。YdlTavern 已从纯骨架进入可测试 contract 阶段：类型、导入器、ST API 兼容运行时、引擎核心和桌面预览都已有 v0 代码路径。
 
 - **机械扫描的 ST 源码 inventory**：99 个 event_types、153 个 slash commands、80+ 个宏、26 个 chat completion source、17 个 text completion source、80+ 个采样参数、32 个 world info trigger、14 个内置扩展。位于 [`docs/inventory/`](docs/inventory/)。
 - **内部数据模型与兼容投影**：Turn 模型 + ST `chat[]` / `eventSource` / `getContext()` 投影规范。位于 [`docs/architecture/`](docs/architecture/)。
 - **8 条并行实现轨道**：B 资产 / C 引擎核心 / D ST API / E STScript / F 内置扩展 / G UI / H 扩展加载 / I 高级特性。位于 [`docs/tracks/`](docs/tracks/)。
-- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— 当前全部为 `inventoried`，覆盖率 0。
-- **桌面客户端骨架**：[`clients/desktop/`](clients/desktop/) —— React + TypeScript + Vite + Tauri，能起 dev server，能调 Yggdrasil host。
+- **共享类型包**：[`packages/ydltavern-types/`](packages/ydltavern-types/) —— Turn 模型与 ST event/slash/macro/connector/sampler/world-info 常量。
+- **资产导入器**：[`packages/ydltavern-importers/`](packages/ydltavern-importers/) —— 角色卡 JSON/PNG、世界书、JSONL chat importer v0。
+- **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— `eventSource`、`event_types`、`getContext()`、`chat[]` Proxy v0。
+- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络）。
+- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/G 进入 `stubbed` / `partial`，未宣称字节级对齐。
+- **桌面客户端骨架**：[`clients/desktop/`](clients/desktop/) —— React + TypeScript + Vite + Tauri，展示 Turn renderer、ST compat diagnostics、engine/importer preview。
 - **引擎包骨架**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，全部 stub 响应，无真实模型调用、无网络。
 
-下一步：B/C/D/G 四条主轨道并行推进。详细文档导航见 [`docs/`](docs/README.md)。
+下一步：继续把 D 轨 runtime 从 stub 推到真实 API 行为，同时让 B/C 轨进入 ST fixture 对齐测试。详细文档导航见 [`docs/`](docs/README.md)。
 
 ## 致谢
 

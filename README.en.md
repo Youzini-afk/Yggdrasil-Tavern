@@ -25,16 +25,20 @@ For Yggdrasil's side of the boundary, see [Yggdrasil/docs/tavern/TAVERN_COMPAT.m
 
 ## Status
 
-M1 launch conditions are in place. Code skeletons exist; behavior is not yet implemented.
+M2 foundation is in place. YdlTavern has moved from pure scaffolding to testable contracts: types, importers, ST API compatibility runtime, engine core, and desktop preview all have v0 code paths.
 
 - **Mechanical inventory of ST source**: 99 event_types, 153 slash commands, 80+ macros, 26 chat completion sources, 17 text completion sources, 80+ sampler parameters, 32 world info triggers, 14 built-in extensions. Under [`docs/inventory/`](docs/inventory/).
 - **Internal data model and compatibility projection**: the Turn model plus the projection rules for ST `chat[]` / `eventSource` / `getContext()`. Under [`docs/architecture/`](docs/architecture/).
 - **Eight parallel implementation tracks**: B assets / C engine core / D ST API / E STScript / F built-in extensions / G UI / H extension loader / I advanced. Under [`docs/tracks/`](docs/tracks/).
-- **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — currently every row is `inventoried`, coverage 0.
-- **Desktop client skeleton**: [`clients/desktop/`](clients/desktop/) — React + TypeScript + Vite + Tauri; the dev server runs and can talk to a Yggdrasil host.
+- **Shared types package**: [`packages/ydltavern-types/`](packages/ydltavern-types/) — Turn model plus ST event/slash/macro/connector/sampler/world-info constants.
+- **Asset importers**: [`packages/ydltavern-importers/`](packages/ydltavern-importers/) — character JSON/PNG, world book, and JSONL chat importer v0.
+- **ST compatibility runtime**: [`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) — `eventSource`, `event_types`, `getContext()`, and `chat[]` Proxy v0.
+- **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, prompt builder, and OpenAI request builder (no network).
+- **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — B/C/D/G are now `stubbed` / `partial`; byte-level alignment is not claimed yet.
+- **Desktop client skeleton**: [`clients/desktop/`](clients/desktop/) — React + TypeScript + Vite + Tauri, showing Turn renderer, ST compat diagnostics, and engine/importer preview.
 - **Engine package skeleton**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package; stub responses only, no real model calls and no network.
 
-Next: parallel work on the four main tracks B / C / D / G. Full documentation index in [`docs/`](docs/README.en.md).
+Next: move D-track runtime from stubs toward real API behavior, while B/C add ST fixture alignment tests. Full documentation index in [`docs/`](docs/README.en.md).
 
 ## Acknowledgements
 
