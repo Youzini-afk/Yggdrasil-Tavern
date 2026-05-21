@@ -1,5 +1,11 @@
 import type { STChatMessage, STMessageExtra } from '@ydltavern/types';
-import { activeVariant, type Chat, type JsonValue, type SubMessage, type TextSubMessage, type Turn } from '@ydltavern/types';
+import type { Chat } from '@ydltavern/types';
+import {
+  createTurnStore,
+  type STChatMessagePatch,
+  type STChatProxyMessage,
+  type TurnStore,
+} from './turn-store.js';
 
 export interface STChatProxyHooks {
   readonly onPush?: (messages: readonly STChatMessage[]) => void;
@@ -7,34 +13,48 @@ export interface STChatProxyHooks {
   readonly onDelete?: (index: number, message: STChatMessage) => void;
 }
 
-export type STChatProxy = STChatMessage[];
+export type STChatProxy = STChatProxyMessage[];
 
 type ArrayMutator = 'push' | 'pop' | 'splice';
 
 const ARRAY_MUTATORS = new Set<PropertyKey>(['push', 'pop', 'splice']);
+const MESSAGE_PATCH_PROPERTIES = new Set<PropertyKey>(['mes', 'name', 'is_user', 'is_system', 'extra']);
 
 export function createSTChatProxy(chat: Chat, hooks: STChatProxyHooks = {}): STChatProxy {
-  const projected = chat.turns.map(projectTurnToSTChatMessage);
+  return createSTChatProxyFromStore(createTurnStore(chat), hooks);
+}
+
+export function createSTChatProxyFromStore(store: TurnStore, hooks: STChatProxyHooks = {}): STChatProxy {
   const target: STChatMessage[] = [];
 
   return new Proxy(target, {
     get(_target, property) {
       if (property === 'length') {
-        return projected.length;
+        return store.length;
       }
 
       if (property === Symbol.iterator) {
-        return projected[Symbol.iterator].bind(projected);
+        return function* iterator(): IterableIterator<STChatProxyMessage> {
+          for (let index = 0; index < store.length; index += 1) {
+            const message = store.messageAt(index);
+            if (message !== undefined) {
+              yield createMessageProxy(store, hooks, index, message);
+            }
+          }
+        };
       }
 
       if (ARRAY_MUTATORS.has(property)) {
-        return createMutator(projected, hooks, property as ArrayMutator);
+        return createMutator(store, hooks, property as ArrayMutator);
       }
 
       if (typeof property === 'string' && isArrayIndex(property)) {
-        return projected[Number(property)];
+        const index = Number(property);
+        const message = store.messageAt(index);
+        return message === undefined ? undefined : createMessageProxy(store, hooks, index, message);
       }
 
+      const projected = store.messages();
       const value = Reflect.get(projected, property, projected) as unknown;
       if (typeof value === 'function') {
         return value.bind(projected);
@@ -47,8 +67,15 @@ export function createSTChatProxy(chat: Chat, hooks: STChatProxyHooks = {}): STC
       if (typeof property === 'string' && isArrayIndex(property)) {
         const message = asSTChatMessage(value);
         const index = Number(property);
-        projected[index] = message;
-        hooks.onEdit?.(index, message);
+        if (index < store.length) {
+          store.updateMessage(index, messageToPatch(message));
+          hooks.onEdit?.(index, store.messageAt(index) ?? message);
+        } else if (index === store.length) {
+          store.pushMessage(message);
+          hooks.onPush?.([message]);
+        } else {
+          return false;
+        }
         return true;
       }
 
@@ -57,13 +84,14 @@ export function createSTChatProxy(chat: Chat, hooks: STChatProxyHooks = {}): STC
           return false;
         }
 
-        while (projected.length > value) {
-          const removed = projected.pop();
+        while (store.length > value) {
+          const removedIndex = store.length - 1;
+          const removed = store.messageAt(removedIndex);
           if (removed !== undefined) {
-            hooks.onDelete?.(projected.length, removed);
+            store.deleteMessage(removedIndex);
+            hooks.onDelete?.(removedIndex, removed);
           }
         }
-        projected.length = value;
         return true;
       }
 
@@ -76,12 +104,13 @@ export function createSTChatProxy(chat: Chat, hooks: STChatProxyHooks = {}): STC
       }
 
       const index = Number(property);
-      if (index >= projected.length) {
+      if (index >= store.length) {
         return true;
       }
 
-      const [removed] = projected.splice(index, 1);
+      const removed = store.messageAt(index);
       if (removed !== undefined) {
+        store.deleteMessage(index);
         hooks.onDelete?.(index, removed);
       }
       return true;
@@ -93,83 +122,45 @@ export function createSTChatProxy(chat: Chat, hooks: STChatProxyHooks = {}): STC
       }
 
       if (typeof property === 'string' && isArrayIndex(property)) {
-        return Number(property) < projected.length;
+        return Number(property) < store.length;
       }
 
+      const projected = store.messages();
       return property in projected;
-    },
-
-    ownKeys() {
-      return [...projected.map((_message, index) => String(index)), 'length'];
-    },
-
-    getOwnPropertyDescriptor(_target, property) {
-      if (property === 'length') {
-        return {
-          configurable: false,
-          enumerable: false,
-          value: projected.length,
-          writable: true,
-        };
-      }
-
-      if (typeof property === 'string' && isArrayIndex(property) && Number(property) < projected.length) {
-        return {
-          configurable: true,
-          enumerable: true,
-          value: projected[Number(property)],
-          writable: true,
-        };
-      }
-
-      return undefined;
     },
   }) as STChatProxy;
 }
 
-export function projectTurnToSTChatMessage(turn: Turn): STChatMessage {
-  const variant = activeVariant(turn);
-  const subs = variant?.subs ?? [];
-  const extra = projectExtra(subs);
-  const message: STChatMessage = {
-    is_user: turn.role === 'user',
-    is_system: turn.role === 'system',
-    name: turn.speaker?.name,
-    send_date: new Date(turn.created_at).toISOString(),
-    mes: projectMainText(subs),
-    swipe_id: turn.active_variant,
-    swipes: turn.variants.map((candidate) => projectMainText(candidate.subs)),
-    extra,
-  };
+export { projectTurnToSTChatMessage } from './turn-store.js';
 
-  return message;
-}
-
-function createMutator(projected: STChatMessage[], hooks: STChatProxyHooks, mutator: ArrayMutator): unknown {
+function createMutator(store: TurnStore, hooks: STChatProxyHooks, mutator: ArrayMutator): unknown {
   if (mutator === 'push') {
     return (...items: readonly STChatMessage[]): number => {
-      projected.push(...items);
+      items.forEach((item) => store.pushMessage(item));
       if (items.length > 0) {
         hooks.onPush?.(items);
       }
-      return projected.length;
+      return store.length;
     };
   }
 
   if (mutator === 'pop') {
     return (): STChatMessage | undefined => {
-      const removed = projected.pop();
+      const removedIndex = store.length - 1;
+      const removed = removedIndex >= 0 ? store.messageAt(removedIndex) : undefined;
       if (removed !== undefined) {
-        hooks.onDelete?.(projected.length, removed);
+        store.deleteMessage(removedIndex);
+        hooks.onDelete?.(removedIndex, removed);
       }
       return removed;
     };
   }
 
   return (start: number, deleteCount?: number, ...items: readonly STChatMessage[]): STChatMessage[] => {
-    const normalizedStart = normalizeSpliceStart(start, projected.length);
-    const effectiveDeleteCount = deleteCount ?? projected.length - normalizedStart;
-    const removed = projected.splice(start, effectiveDeleteCount, ...items);
+    const normalizedStart = normalizeSpliceStart(start, store.length);
+    const effectiveDeleteCount = deleteCount ?? store.length - normalizedStart;
+    const removed = store.messages().slice(normalizedStart, normalizedStart + effectiveDeleteCount);
+    store.spliceMessages(normalizedStart, effectiveDeleteCount, ...items);
 
     removed.forEach((message, offset) => {
       hooks.onDelete?.(normalizedStart + offset, message);
@@ -183,62 +174,76 @@ function createMutator(projected: STChatMessage[], hooks: STChatProxyHooks, muta
   };
 }
 
-function projectMainText(subs: readonly SubMessage[]): string {
-  return subs
-    .filter(isMainTextSubMessage)
-    .map((sub) => sub.text)
-    .join('\n');
+function createMessageProxy(
+  store: TurnStore,
+  hooks: STChatProxyHooks,
+  index: number,
+  message: STChatMessage,
+): STChatProxyMessage {
+  const target = { ...message } as STChatProxyMessage;
+
+  return new Proxy(target, {
+    set(proxyTarget, property, value) {
+      if (!MESSAGE_PATCH_PROPERTIES.has(property)) {
+        return Reflect.set(proxyTarget, property, value);
+      }
+
+      const patch = createPatch(property, value);
+      const updated = store.updateMessage(index, patch);
+      if (updated === undefined) {
+        return false;
+      }
+
+      Reflect.set(proxyTarget, property, value);
+      hooks.onEdit?.(index, store.messageAt(index) ?? message);
+      return true;
+    },
+  });
 }
 
-function isMainTextSubMessage(sub: SubMessage): sub is TextSubMessage {
-  return sub.kind === 'text' && (sub.segment_role === undefined || sub.segment_role === 'main');
+function createPatch(property: PropertyKey, value: unknown): STChatMessagePatch {
+  if (property === 'mes') {
+    if (typeof value !== 'string' && value !== undefined) {
+      throw new TypeError('ST message mes must be a string');
+    }
+    return { mes: value };
+  }
+
+  if (property === 'name') {
+    if (typeof value !== 'string' && value !== undefined) {
+      throw new TypeError('ST message name must be a string');
+    }
+    return { name: value };
+  }
+
+  if (property === 'is_user') {
+    if (typeof value !== 'boolean' && value !== undefined) {
+      throw new TypeError('ST message is_user must be a boolean');
+    }
+    return { is_user: value };
+  }
+
+  if (property === 'is_system') {
+    if (typeof value !== 'boolean' && value !== undefined) {
+      throw new TypeError('ST message is_system must be a boolean');
+    }
+    return { is_system: value };
+  }
+
+  if (value !== undefined && !isRecord(value)) {
+    throw new TypeError('ST message extra must be an object');
+  }
+  return { extra: value as STMessageExtra | undefined };
 }
 
-function projectExtra(subs: readonly SubMessage[]): STMessageExtra | undefined {
-  const reasoning = subs
-    .filter((sub) => sub.kind === 'thinking')
-    .map((sub) => sub.text)
-    .join('\n');
-  const toolInvocations = subs.flatMap((sub) => projectToolInvocation(sub));
-  const notes = subs.filter((sub) => sub.kind === 'note').map((sub) => sub.text);
-
-  const extra: STMessageExtra = {
-    ...(reasoning.length > 0 ? { reasoning } : {}),
-    ...(toolInvocations.length > 0 ? { tool_invocations: toolInvocations } : {}),
-    ...(notes.length > 0 ? { notes } : {}),
+function messageToPatch(message: STChatMessage): STChatMessagePatch {
+  return {
+    mes: message.mes,
+    name: message.name,
+    is_user: message.is_user,
+    is_system: message.is_system,
+    extra: message.extra,
   };
-
-  return Object.keys(extra).length > 0 ? extra : undefined;
-}
-
-function projectToolInvocation(sub: SubMessage): readonly Record<string, unknown>[] {
-  if (sub.kind === 'tool_call') {
-    return [
-      {
-        type: 'tool_call',
-        call_id: sub.call_id,
-        tool: sub.tool,
-        arguments: jsonValueToUnknown(sub.arguments),
-      },
-    ];
-  }
-
-  if (sub.kind === 'tool_result') {
-    return [
-      {
-        type: 'tool_result',
-        call_id: sub.call_id,
-        status: sub.status,
-        result: jsonValueToUnknown(sub.result),
-      },
-    ];
-  }
-
-  return [];
-}
-
-function jsonValueToUnknown(value: JsonValue): unknown {
-  return value;
 }
 
 function asSTChatMessage(value: unknown): STChatMessage {
@@ -247,6 +252,10 @@ function asSTChatMessage(value: unknown): STChatMessage {
   }
 
   return value as STChatMessage;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isArrayIndex(property: string): boolean {
