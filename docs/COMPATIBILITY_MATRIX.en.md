@@ -57,7 +57,7 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 | `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers | partial |
 | `@ydltavern/st-compat` | D | eventSource, event_types, `getContext()`, `chat[]` Proxy | stubbed |
 | `@ydltavern/engine-core` | C | sampler normalization, prompt builder, OpenAI request builder (no network) | partial |
-| `clients/desktop` | G | Turn renderer, compat diagnostics, engine/importer preview | scaffold |
+| `@ydltavern/surface` | G | TavernPlaySurface, Settings/Extensions placeholders, Turn renderer, diagnostics preview | scaffold |
 
 ## Built-in extension coverage (track F)
 

@@ -1,7 +1,7 @@
 import { activeVariant, type Turn } from '@ydltavern/types';
-import { SubMessageView } from './SubMessageView';
+import { SubMessageView } from './SubMessageView.js';
 
-interface TurnViewProps {
+export interface TurnViewProps {
   readonly turn: Turn;
 }
 

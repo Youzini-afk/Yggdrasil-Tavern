@@ -1,0 +1,47 @@
+{
+  "name": "@ydltavern/surface",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "YdlTavern surface package: reusable React components and surface manifests for Yggdrasil-hosted Tavern UI. Not an app shell.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./manifest": "./surface.manifest.json",
+    "./styles/surface.css": "./dist/styles/surface.css",
+    "./fixtures": {
+      "types": "./dist/fixtures/sample-chat.d.ts",
+      "default": "./dist/fixtures/sample-chat.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "surface.manifest.json"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc && node scripts/copy-assets.mjs",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "dependencies": {
+    "@ydltavern/engine-core": "file:../ydltavern-engine-core",
+    "@ydltavern/importers": "file:../ydltavern-importers",
+    "@ydltavern/st-compat": "file:../ydltavern-st-compat",
+    "@ydltavern/types": "file:../ydltavern-types"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.9.3"
+  }
+}

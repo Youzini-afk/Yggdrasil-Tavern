@@ -1,0 +1,98 @@
+{
+  "manifest_version": "0.1-draft",
+  "package": "@ydltavern/surface",
+  "kind": "yggdrasil.surface_bundle",
+  "status": "draft",
+  "summary": "Reusable Tavern UI surfaces for Yggdrasil-hosted YdlTavern. Project-local descriptor; intentionally does not claim final Yggdrasil surface loader semantics.",
+  "host": {
+    "framework": "react",
+    "version": "^18.3.1",
+    "module_format": "esm",
+    "wrapper_class_convention": "ydltavern-surface"
+  },
+  "stylesheets": [
+    {
+      "id": "ydltavern.surface.tokens_and_layout",
+      "path": "./dist/styles/surface.css",
+      "scope": "wrapper-class",
+      "wrapper_class": "ydltavern-surface",
+      "note": "All design tokens are scoped under .ydltavern-surface; the package never assigns to :root."
+    }
+  ],
+  "fonts": {
+    "expected": [
+      { "family": "Fraunces", "weights": [400, 500, 700], "italics": true, "fallback": "Iowan Old Style, Georgia, serif" },
+      { "family": "Inter", "weights": [400, 500, 600, 700], "fallback": "ui-sans-serif, system-ui" },
+      { "family": "JetBrains Mono", "weights": [400, 500], "fallback": "SF Mono, Menlo, monospace" }
+    ],
+    "note": "Fonts are NOT bundled. Hosts should load them at the page/app level. Fallback chains render acceptably without."
+  },
+  "surfaces": [
+    {
+      "id": "ydltavern/play",
+      "title": "Tavern · Play",
+      "description": "Turn-based conversation surface: chat hero, turn stream with thinking/tool subs, swipe variant placeholder, optional diagnostics panels.",
+      "status": "scaffold",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernPlaySurface"
+      },
+      "props": [
+        { "name": "chat", "type": "@ydltavern/types#Chat", "required": false, "note": "defaults to bundled sampleChat fixture" },
+        { "name": "showDiagnostics", "type": "boolean", "required": false, "default": true },
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [
+        "@ydltavern/types",
+        "@ydltavern/st-compat",
+        "@ydltavern/engine-core",
+        "@ydltavern/importers"
+      ],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/settings",
+      "title": "Tavern · Settings",
+      "description": "Settings surface placeholder. Scaffold only — no settings schema, no persistence wiring.",
+      "status": "scaffold",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernSettingsSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/extensions",
+      "title": "Tavern · Extensions",
+      "description": "Extensions surface placeholder. Scaffold only — no loader, no registry, no install flow.",
+      "status": "scaffold",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernExtensionsSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "ydltavern.sample_chat",
+      "module": "@ydltavern/surface",
+      "export": "sampleChat",
+      "type": "@ydltavern/types#Chat",
+      "purpose": "demo + test fixture exercising every Turn sub-message kind the renderer handles"
+    }
+  ],
+  "notes": [
+    "This descriptor is project-local and intentionally does not claim final Yggdrasil surface loader semantics.",
+    "Surfaces are pure React components — hosts may embed them directly or wire them through a Yggdrasil surface registry once one exists.",
+    "YdlTavern owns Tavern UI surfaces, not the desktop/web/app shell. There is no main.tsx, no router, no Tauri config in this package."
+  ]
+}

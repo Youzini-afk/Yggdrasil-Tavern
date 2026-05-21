@@ -15,7 +15,7 @@ YdlTavern brings the content formats and extension ecosystem the SillyTavern com
 
 ## Relationship to Yggdrasil
 
-YdlTavern is an integration project on top of Yggdrasil. It consumes the platform through the public protocol (HTTP `/rpc` plus SSE).
+YdlTavern is an integration project on top of Yggdrasil. It consumes the platform through the public protocol (HTTP `/rpc` plus SSE), and provides its own Tavern frontend as a surface bundle for Yggdrasil to host. Yggdrasil owns the platform shell; YdlTavern owns the product UI.
 
 - It does not live in the Yggdrasil repo. Platform and product stay separate.
 - It gets the same treatment as any third-party project: same manifest, same permissions, same audit boundary.
@@ -25,7 +25,7 @@ For Yggdrasil's side of the boundary, see [Yggdrasil/docs/tavern/TAVERN_COMPAT.m
 
 ## Status
 
-M2 foundation is in place. YdlTavern has moved from pure scaffolding to testable contracts: types, importers, ST API compatibility runtime, engine core, and desktop preview all have v0 code paths.
+M2 foundation is in place. YdlTavern has moved from pure scaffolding to testable contracts: types, importers, ST API compatibility runtime, engine core, and surface preview all have v0 code paths.
 
 - **Mechanical inventory of ST source**: 99 event_types, 153 slash commands, 80+ macros, 26 chat completion sources, 17 text completion sources, 80+ sampler parameters, 32 world info triggers, 14 built-in extensions. Under [`docs/inventory/`](docs/inventory/).
 - **Internal data model and compatibility projection**: the Turn model plus the projection rules for ST `chat[]` / `eventSource` / `getContext()`. Under [`docs/architecture/`](docs/architecture/).
@@ -35,7 +35,7 @@ M2 foundation is in place. YdlTavern has moved from pure scaffolding to testable
 - **ST compatibility runtime**: [`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) — `eventSource`, `event_types`, `getContext()`, and `chat[]` Proxy v0.
 - **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, prompt builder, and OpenAI request builder (no network).
 - **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — B/C/D/G are now `stubbed` / `partial`; byte-level alignment is not claimed yet.
-- **Desktop client skeleton**: [`clients/desktop/`](clients/desktop/) — React + TypeScript + Vite + Tauri, showing Turn renderer, ST compat diagnostics, and engine/importer preview.
+- **YdlTavern frontend surface**: [`packages/ydltavern-surface/`](packages/ydltavern-surface/) — React component library / surface bundle that provides TavernPlaySurface, Settings, and Extensions UI for Yggdrasil hosting; it does not include an independent desktop/web/app shell.
 - **Engine package skeleton**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package; stub responses only, no real model calls and no network.
 
 Next: move D-track runtime from stubs toward real API behavior, while B/C add ST fixture alignment tests. Full documentation index in [`docs/`](docs/README.en.md).

@@ -6,10 +6,10 @@ YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 
 
 ```text
 ┌──────────────────────────────────────────────┐
-│  YdlTavern 前端                                │
-│  · 仿 SillyTavern UI 结构与操作                 │
-│  · ST 扩展兼容层（getContext / eventSource 等）│
-│  · 资产 importer（角色卡 / 世界书 / 预设 / 聊天）│
+│  YdlTavern 包族                                 │
+│  · Tavern 前端 surface（聊天 / 设置 / 扩展面板）│
+│  · ST 扩展兼容层（getContext / eventSource 等） │
+│  · 引擎与资产 importer（角色卡 / 世界书 / 预设）│
 └──────────────────────────────────────────────┘
                     ▲
                     │ HTTP /rpc + SSE
@@ -30,6 +30,7 @@ YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 
 YdlTavern 这边管：
 
 - 产品定位、UI 设计语言、操作流；
+- Tavern 产品前端 surface（聊天界面、角色卡面板、世界书面板、预设编辑器、扩展管理、设置 UI）；
 - SillyTavern 资产 importer；
 - SillyTavern 扩展兼容层（API 表面、加载器、运行时桥）；
 - 跟 SillyTavern 社区直接对接的所有内容（迁移指南、扩展兼容矩阵、社区频道）；
@@ -38,11 +39,12 @@ YdlTavern 这边管：
 Yggdrasil 那边管：
 
 - 平台底座、内核、公开协议；
+- 桌面壳、Web 壳、App 壳、Home / Play / Forge / Assistant 容器，以及 surface hosting；
 - 通用能力包（模型接入、persona、knowledge、context、memory、sharing 等）；
 - 安全执行（`secret_ref`、网络声明、外发审计、流式生命周期）；
 - 平台规范、conformance 用例、跨项目纪律。
 
-边界划清楚的好处：YdlTavern 怎么演化都不会把 Tavern 形态渗进 Yggdrasil 内核；Yggdrasil 演化也不会因为顾及 YdlTavern 而扭曲。
+边界划清楚的好处：YdlTavern 怎么演化都不会把 Tavern 形态渗进 Yggdrasil 内核；Yggdrasil 演化也不会因为顾及 YdlTavern 而扭曲。Yggdrasil 不写 YdlTavern 的聊天 UI；YdlTavern 不写独立桌面/Web/App 壳。
 
 ## 依赖方式
 
@@ -56,24 +58,33 @@ some-parent/
 └── YdlTavern/      （本仓库）
 ```
 
-YdlTavern 调用 Yggdrasil 时走本地 host：用 Yggdrasil 的 CLI 起一个 `ygg host serve --http 127.0.0.1:8787`，YdlTavern 前端和后端通过 `127.0.0.1:8787` 上的 `/rpc` + SSE 跟它说话。
+YdlTavern 调用 Yggdrasil 时走本地 host：用 Yggdrasil 的 CLI 起一个 `ygg host serve --http 127.0.0.1:8787`。YdlTavern 的 engine 包通过 `/rpc` + SSE 消费平台；YdlTavern 的 frontend 以 `@ydltavern/surface` 形式交给 Yggdrasil shell 挂载。
 
 YdlTavern 不依赖 Yggdrasil 的源码路径，也不直接 import Yggdrasil 的内部模块——只通过协议。
 
+### 呈现方式
+
+YdlTavern 前端不是一个独立 app。它是 surface bundle：
+
+- `packages/ydltavern-surface` 提供 React components、样式和 surface descriptor 草案。
+- Yggdrasil 的 Web / Desktop / App shell 负责发现、加载、挂载这些 surface。
+- YdlTavern surface 负责 Tavern 产品 UI；Yggdrasil shell 负责导航、窗口、权限弹窗、安装、审计和平台生命周期。
+
+未来的本地一体安装可以把 Yggdrasil host 与 YdlTavern 包族打在同一个发行包里，但壳仍归 Yggdrasil，产品前端仍归 YdlTavern。
+
 ### 发行期
 
-最终用户两种用法都支持：
-
-- **本地一体安装**：单个安装包同时带上 Yggdrasil host 和 YdlTavern 前端，启动后内部互连。
-- **连接独立 host**：YdlTavern 作为客户端，连接已经在跑的 Yggdrasil host（本地或远端）。
-
-不论哪种用法，YdlTavern 都只通过公开协议跟 Yggdrasil 说话。
+最终用户可以通过 Yggdrasil 的安装/加载机制获得 YdlTavern 包族。无论本地还是远端 host，YdlTavern 都只通过公开协议和 surface contract 与 Yggdrasil 交互。
 
 ## 关键机制
 
 ### 模型调用
 
 YdlTavern 不自己接 OpenAI / Anthropic / Gemini。它通过 Yggdrasil 的 `model-provider-lab` 等能力包发起调用，享受 Yggdrasil 的 `secret_ref`、网络声明、外发审计、HTTPS-only 出站执行器。
+
+### 前端 surface
+
+YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。
 
 ### 扩展生态分发
 
@@ -100,8 +111,9 @@ YdlTavern 不自己接 OpenAI / Anthropic / Gemini。它通过 Yggdrasil 的 `mo
 - 永远跑在 Yggdrasil 公开协议上，不读内部；
 - 永远跟 Yggdrasil 在不同仓库；
 - 永远不要求 Yggdrasil 加 Tavern 专属 API；
+- 永远自己提供 Tavern 产品 UI surface，但不自己拥有平台壳；
 - SillyTavern 资产、UI 结构、扩展 API 的兼容覆盖范围只会扩大，不会缩。
 
 ## 当前状态
 
-骨架阶段。代码尚未开始，文档只固定立场。具体实现路线、UI 设计语言、扩展兼容矩阵、迁移工具，会随实现展开陆续加入。
+M2 基础层已落地。仓库包含 shared types、资产导入器、ST 兼容运行时、引擎核心、Yggdrasil 子进程包骨架和 `@ydltavern/surface` surface bundle。具体行为仍处于 `stubbed` / `partial`，以兼容矩阵为准。

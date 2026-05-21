@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Chat } from '@ydltavern/types';
 import { createSTContext } from '@ydltavern/st-compat';
 
-interface STDiagnosticsPanelProps {
+export interface STDiagnosticsPanelProps {
   readonly chat: Chat;
 }
 

@@ -4,7 +4,7 @@
 
 ## Scope
 
-The YdlTavern frontend is newly written with React + TypeScript + Vite + Tauri. The visual design and operation flow stay familiar to old ST users, while performance and maintainability are rebuilt.
+The YdlTavern frontend is newly written with React + TypeScript as a Yggdrasil-hosted surface. The visual design and operation flow stay familiar to old ST users, while performance and maintainability are rebuilt. YdlTavern does not provide an independent desktop/web/app shell; the platform shell belongs to Yggdrasil.
 
 Includes:
 
@@ -41,7 +41,7 @@ Current ST pain points:
 - Streaming output rerenders the whole message on each token
 - WI triggers are slow because they use JS string contains loops
 
-YdlTavern goals (Tauri desktop + ordinary i5):
+YdlTavern surface goals (hosted by a Yggdrasil shell + ordinary i5):
 
 - 10K Turn list scrolls at 60 FPS
 - Streaming token receive at 200+ token/s without dropped frames

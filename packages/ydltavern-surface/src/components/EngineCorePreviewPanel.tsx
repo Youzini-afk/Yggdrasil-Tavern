@@ -7,7 +7,7 @@ import {
   type PromptBlock,
 } from '@ydltavern/engine-core';
 
-interface EngineCorePreviewPanelProps {
+export interface EngineCorePreviewPanelProps {
   readonly chat: Chat;
 }
 

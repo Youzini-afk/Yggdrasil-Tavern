@@ -1,6 +1,6 @@
 import type { SubMessage } from '@ydltavern/types';
 
-interface SubMessageViewProps {
+export interface SubMessageViewProps {
   readonly sub: SubMessage;
 }
 

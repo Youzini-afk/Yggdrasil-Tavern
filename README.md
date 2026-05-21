@@ -15,7 +15,7 @@ YdlTavern 把 SillyTavern 社区多年沉淀下来的内容格式和扩展生态
 
 ## 跟 Yggdrasil 的关系
 
-YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + SSE）消费平台。
+YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + SSE）消费平台，并通过 surface bundle 向 Yggdrasil 提供自己的 Tavern 前端。Yggdrasil 负责平台壳，YdlTavern 负责产品 UI。
 
 - 它不在 Yggdrasil 仓库里。平台与产品分开。
 - 它跟其他第三方项目享有同样的待遇：同一份清单、同一套权限、同一道审计闸门。
@@ -25,7 +25,7 @@ Yggdrasil 那边的相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](http
 
 ## 项目状态
 
-M2 基础层已落地。YdlTavern 已从纯骨架进入可测试 contract 阶段：类型、导入器、ST API 兼容运行时、引擎核心和桌面预览都已有 v0 代码路径。
+M2 基础层已落地。YdlTavern 已从纯骨架进入可测试 contract 阶段：类型、导入器、ST API 兼容运行时、引擎核心和 surface 预览都有 v0 代码路径。
 
 - **机械扫描的 ST 源码 inventory**：99 个 event_types、153 个 slash commands、80+ 个宏、26 个 chat completion source、17 个 text completion source、80+ 个采样参数、32 个 world info trigger、14 个内置扩展。位于 [`docs/inventory/`](docs/inventory/)。
 - **内部数据模型与兼容投影**：Turn 模型 + ST `chat[]` / `eventSource` / `getContext()` 投影规范。位于 [`docs/architecture/`](docs/architecture/)。
@@ -35,7 +35,7 @@ M2 基础层已落地。YdlTavern 已从纯骨架进入可测试 contract 阶段
 - **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— `eventSource`、`event_types`、`getContext()`、`chat[]` Proxy v0。
 - **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络）。
 - **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/G 进入 `stubbed` / `partial`，未宣称字节级对齐。
-- **桌面客户端骨架**：[`clients/desktop/`](clients/desktop/) —— React + TypeScript + Vite + Tauri，展示 Turn renderer、ST compat diagnostics、engine/importer preview。
+- **YdlTavern 前端 surface**：[`packages/ydltavern-surface/`](packages/ydltavern-surface/) —— React 组件库 / surface bundle，提供 TavernPlaySurface、Settings、Extensions 等 Yggdrasil-hosted UI，不包含独立桌面/Web/App 壳。
 - **引擎包骨架**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，全部 stub 响应，无真实模型调用、无网络。
 
 下一步：继续把 D 轨 runtime 从 stub 推到真实 API 行为，同时让 B/C 轨进入 ST fixture 对齐测试。详细文档导航见 [`docs/`](docs/README.md)。

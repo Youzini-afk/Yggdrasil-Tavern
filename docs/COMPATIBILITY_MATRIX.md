@@ -57,7 +57,7 @@
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer | partial |
 | `@ydltavern/st-compat` | D | eventSource、event_types、`getContext()`、`chat[]` Proxy | stubbed |
 | `@ydltavern/engine-core` | C | sampler normalization、prompt builder、OpenAI request builder（无网络） | partial |
-| `clients/desktop` | G | Turn renderer、compat diagnostics、engine/importer preview | scaffold |
+| `@ydltavern/surface` | G | TavernPlaySurface、Settings/Extensions placeholder、Turn renderer、diagnostics preview | scaffold |
 
 ## 内置扩展覆盖度（F 轨道）
 

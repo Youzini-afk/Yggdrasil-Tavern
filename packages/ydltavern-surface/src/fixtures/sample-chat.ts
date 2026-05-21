@@ -1,8 +1,8 @@
 import type { Chat, JsonObject } from '@ydltavern/types';
 
-// A small fixture exercised by every panel on the Chat route. All four
-// packages — types, st-compat, engine-core, importers — see the same Chat
-// instance, which is the point of this Phase 3 scaffold.
+// A small fixture exercised by the bundled surfaces and any host-side
+// demos/tests. All four sibling packages — types, st-compat, engine-core,
+// importers — see the same Chat instance.
 
 const calendarArguments: JsonObject = {
   day: 'tomorrow',

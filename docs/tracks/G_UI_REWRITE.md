@@ -4,7 +4,7 @@
 
 ## 范围
 
-YdlTavern 前端用 React + TypeScript + Vite + Tauri 全新写。视觉与操作流对老 ST 用户保持熟悉，性能与可维护性彻底改造。
+YdlTavern 前端用 React + TypeScript 作为 Yggdrasil-hosted surface 全新写。视觉与操作流对老 ST 用户保持熟悉，性能与可维护性彻底改造。YdlTavern 不提供独立桌面/Web/App 壳；平台壳由 Yggdrasil 负责。
 
 包括：
 
@@ -41,7 +41,7 @@ ST 现在的痛点：
 - 流式输出每个 token 触发整条消息重渲染
 - WI 触发用 JS 字符串 contains 循环慢
 
-YdlTavern 目标（Tauri 桌面 + 普通 i5）：
+YdlTavern surface 目标（由 Yggdrasil 壳承载 + 普通 i5）：
 
 - 10K Turn 列表滚动 60 FPS
 - 流式 token 接收 200+ token/s 不掉帧
