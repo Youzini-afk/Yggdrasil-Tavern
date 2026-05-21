@@ -178,6 +178,108 @@ describe('context runtime', () => {
       'Alice greets Carol at 10:30 on 2026-05-21',
     );
   });
+
+  it('substituteParams replaces expanded macros and exposes trace', () => {
+    const runtime = createSTContext({
+      chat: createChat([]),
+      name1: 'Alice',
+      name2: 'Bob',
+      description: 'Helpful bot',
+      personality: 'Kind',
+      scenario: 'A tavern',
+      persona: 'Adventurer',
+      charDepthPrompt: 'Deep lore',
+      creatorNotes: 'Use carefully',
+      mesExamples: 'Hi there',
+      model: 'test-model',
+    });
+
+    const traced = runtime.context.substituteParamsTrace(
+      '{{user}}/{{char}}/{{description}}/{{personality}}/{{scenario}}/{{persona}}/{{charDepthPrompt}}/{{creatorNotes}}/{{mesExamples}}/{{model}}/{{custom}}',
+      { custom: 'dynamic value', model: 'override-model' },
+    );
+
+    assert.equal(
+      traced.text,
+      'Alice/Bob/Helpful bot/Kind/A tavern/Adventurer/Deep lore/Use carefully/Hi there/override-model/dynamic value',
+    );
+    assert.deepEqual(
+      traced.trace.map((entry) => [entry.name, entry.source]),
+      [
+        ['user', 'context'],
+        ['char', 'context'],
+        ['description', 'context'],
+        ['personality', 'context'],
+        ['scenario', 'context'],
+        ['persona', 'context'],
+        ['charDepthPrompt', 'context'],
+        ['creatorNotes', 'context'],
+        ['mesExamples', 'context'],
+        ['model', 'dynamic'],
+        ['custom', 'dynamic'],
+      ],
+    );
+  });
+
+  it('executes /setvar and /getvar', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    assert.equal(runtime.context.executeSlashCommands('/setvar mood=happy').output, 'happy');
+    assert.equal(runtime.context.executeSlashCommands('/getvar mood').output, 'happy');
+    assert.equal(runtime.context.executeSlashCommands('/setvar place tavern').output, 'tavern');
+    assert.equal(runtime.context.executeSlashCommands('/getvar place').output, 'tavern');
+  });
+
+  it('/gen triggers Generate and appends a message', () => {
+    const runtime = createSTContext({ chat: createChat([]), name2: 'Bot' });
+
+    const result = runtime.context.executeSlashCommands('/gen Slash generated text');
+
+    assert.equal(result.ok, true);
+    assert.equal(result.output, 'Slash generated text');
+    assert.equal(runtime.context.chat.length, 1);
+    assert.equal(runtime.context.chat[0]?.mes, 'Slash generated text');
+    assert.equal(runtime.context.chat[0]?.name, 'Bot');
+  });
+
+  it('/continue and /swipe return deterministic generated output', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    assert.equal(runtime.context.executeSlashCommands('/continue').output, '[ydltavern fake continue]');
+    assert.equal(runtime.context.executeSlashCommands('/swipe').output, '[ydltavern fake swipe]');
+    assert.deepEqual(
+      [...runtime.context.chat].map((message) => message.mes),
+      ['[ydltavern fake continue]', '[ydltavern fake swipe]'],
+    );
+  });
+
+  it('/if executes then and else subcommands using variables and literals', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    runtime.context.executeSlashCommands('/setvar mood happy');
+
+    assert.equal(runtime.context.executeSlashCommands('/if mood == happy then /getvar mood else sad').output, 'happy');
+    assert.equal(runtime.context.executeSlashCommands('/if mood == sad then wrong else /gen fallback').output, 'fallback');
+    assert.equal(runtime.context.chat[0]?.mes, 'fallback');
+  });
+
+  it('registers and executes a custom command with aliases', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    runtime.context.registerSlashCommand('shout', ({ args }) => args.toUpperCase(), ['yell']);
+
+    assert.equal(runtime.context.executeSlashCommands('/yell hello tavern').output, 'HELLO TAVERN');
+    assert.equal(runtime.context.slashCommands().some((command) => command.name === 'shout' && command.aliases.includes('yell')), true);
+  });
+
+  it('/run reports an unknown target diagnostic', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    const result = runtime.context.executeSlashCommands('/run missingClosure');
+
+    assert.equal(result.ok, false);
+    assert.equal(result.diagnostics[0]?.code, 'unknown-run-target');
+  });
 });
 
 function isSTChatMessage(value: unknown): value is STChatMessage {

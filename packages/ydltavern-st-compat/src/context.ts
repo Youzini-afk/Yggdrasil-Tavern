@@ -3,6 +3,8 @@ import { ST_EVENT_TYPES } from '@ydltavern/types/st';
 import type { Chat } from '@ydltavern/types';
 import { createSTChatProxyFromStore, type STChatProxy, type STChatProxyHooks } from './chat-proxy.js';
 import { createEventSource, type STEventSource } from './events.js';
+import { substituteSTMacros, type STMacroContext, type STMacroTraceEntry, type STMacroValue } from './macros.js';
+import { createSlashHost, type ExecuteSlashCommandsOptions, type ExecuteSlashCommandsResult, type SlashCommandCallback, type SlashCommandDescriptor, type SlashDiagnostic } from './slash.js';
 import { createTurnStore } from './turn-store.js';
 
 export interface STContextOptions {
@@ -17,6 +19,14 @@ export interface STContextOptions {
   readonly characterId?: number | string;
   readonly groupId?: number | string;
   readonly onlineStatus?: string;
+  readonly description?: STMacroValue;
+  readonly personality?: STMacroValue;
+  readonly scenario?: STMacroValue;
+  readonly persona?: STMacroValue;
+  readonly charDepthPrompt?: STMacroValue;
+  readonly creatorNotes?: STMacroValue;
+  readonly mesExamples?: STMacroValue;
+  readonly model?: STMacroValue;
 }
 
 export interface STSaveChatResult {
@@ -36,7 +46,12 @@ export interface STGenerateResult {
   readonly index: number;
 }
 
-export type STSubstituteParamsValues = Record<string, string | number | boolean | null | undefined>;
+export type STSubstituteParamsValues = Record<string, STMacroValue>;
+
+export interface STSubstituteParamsTraceResult {
+  readonly text: string;
+  readonly trace: readonly STMacroTraceEntry[];
+}
 
 export interface STContext {
   readonly chat: STChatProxy;
@@ -52,11 +67,17 @@ export interface STContext {
   readonly groupId: number | string | undefined;
   readonly onlineStatus: string;
   generationStarted: boolean;
+  readonly variables: Map<string, string>;
+  readonly slashDiagnostics: readonly SlashDiagnostic[];
+  readonly slashCommands: () => readonly SlashCommandDescriptor[];
+  readonly registerSlashCommand: (name: string, callback: SlashCommandCallback, aliases?: readonly string[]) => void;
+  readonly executeSlashCommands: (input: string, options?: ExecuteSlashCommandsOptions) => ExecuteSlashCommandsResult;
   readonly saveSettingsDebounced: () => void;
   readonly addOneMessage: (message: STChatMessage) => STChatMessage;
   readonly saveChat: () => STSaveChatResult;
   readonly Generate: (options?: STGenerateOptions | string) => STGenerateResult;
   readonly substituteParams: (text: string, values?: STSubstituteParamsValues) => string;
+  readonly substituteParamsTrace: (text: string, values?: STSubstituteParamsValues) => STSubstituteParamsTraceResult;
 }
 
 export interface STContextRuntime {
@@ -67,9 +88,12 @@ export interface STContextRuntime {
 export function createSTContext(options: STContextOptions): STContextRuntime {
   const store = createTurnStore(options.chat);
   const eventSource = createEventSource();
+  const variables = new Map<string, string>();
   let saveSettingsDebouncedCalls = 0;
+  let context: STContext;
+  const slashHost = createSlashHost(() => context, variables);
 
-  const context: STContext = {
+  context = {
     chat: createSTChatProxyFromStore(store, options.chatHooks),
     eventSource,
     event_types: ST_EVENT_TYPES,
@@ -83,6 +107,11 @@ export function createSTContext(options: STContextOptions): STContextRuntime {
     groupId: options.groupId,
     onlineStatus: options.onlineStatus ?? 'no_connection',
     generationStarted: false,
+    variables,
+    slashDiagnostics: slashHost.diagnostics,
+    slashCommands: slashHost.slashCommands,
+    registerSlashCommand: slashHost.registerSlashCommand,
+    executeSlashCommands: slashHost.executeSlashCommands,
     saveSettingsDebounced: () => {
       saveSettingsDebouncedCalls += 1;
     },
@@ -115,14 +144,10 @@ export function createSTContext(options: STContextOptions): STContextRuntime {
       return { ok: true, message: storedMessage, index };
     },
     substituteParams: (text, values) => {
-      const replacements: Record<string, string> = {
-        user: stringifyMacroValue(values?.user) ?? context.name1,
-        char: stringifyMacroValue(values?.char) ?? context.name2,
-        time: stringifyMacroValue(values?.time) ?? currentTime(),
-        date: stringifyMacroValue(values?.date) ?? currentDate(),
-      };
-
-      return text.replace(/{{\s*(user|char|time|date)\s*}}/g, (_match, key: string) => replacements[key] ?? '');
+      return substituteContextParams(context, options, text, values).text;
+    },
+    substituteParamsTrace: (text, values) => {
+      return substituteContextParams(context, options, text, values);
     },
   };
 
@@ -156,18 +181,25 @@ function generationName(options: STGenerateOptions | string | undefined): string
   return typeof options === 'string' ? undefined : options?.name;
 }
 
-function stringifyMacroValue(value: string | number | boolean | null | undefined): string | undefined {
-  if (value === undefined || value === null) {
-    return undefined;
-  }
+function substituteContextParams(
+  context: STContext,
+  options: STContextOptions,
+  text: string,
+  values: STSubstituteParamsValues | undefined,
+): STSubstituteParamsTraceResult {
+  const macroContext: STMacroContext = {
+    user: context.name1,
+    char: context.name2,
+    description: options.description,
+    personality: options.personality,
+    scenario: options.scenario,
+    persona: options.persona,
+    charDepthPrompt: options.charDepthPrompt,
+    creatorNotes: options.creatorNotes,
+    mesExamples: options.mesExamples,
+    model: options.model,
+    overrides: values,
+  };
 
-  return String(value);
-}
-
-function currentTime(): string {
-  return new Date().toLocaleTimeString('en-US', { hour12: false });
-}
-
-function currentDate(): string {
-  return new Date().toLocaleDateString('en-US');
+  return substituteSTMacros(text, macroContext, { overrides: values });
 }
