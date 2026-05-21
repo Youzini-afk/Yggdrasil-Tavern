@@ -1,8 +1,10 @@
-import { buildOpenAIChatRequest, buildPrompt, normalizeSamplerSettings, type PromptBlock } from "@ydltavern/engine-core";
+import { buildOpenAIChatRequest, buildPrompt, normalizeSamplerSettings } from "@ydltavern/engine-core";
 import { projectTurnToSTChatMessage } from "@ydltavern/st-compat";
-import type { Chat, Turn } from "@ydltavern/types";
+import type { Turn } from "@ydltavern/types";
 
-import { PACKAGE_ID, createCapabilityMeta, inputRecord, isRecord, stableInputRef, stringField, type HandlerRecord } from "../types.js";
+import { PACKAGE_ID, createCapabilityMeta, inputRecord, stableInputRef, stringField, type HandlerRecord } from "../types.js";
+
+import { readChat, readPromptBlocks, readPromptCriticalInput } from "./prompt-critical.js";
 
 const GENERATE_ID = `${PACKAGE_ID}/turn.generate`;
 const SWIPE_ID = `${PACKAGE_ID}/turn.swipe`;
@@ -21,7 +23,8 @@ export const generateTurnSnapshot = (input: unknown) => {
   const promptBlocks = readPromptBlocks(record["prompt_blocks"]);
   const sampler = normalizeSamplerSettings(record["sampler"]);
   const model = stringField(record, "model", "ydltavern-fake-model");
-  const prompt = buildPrompt(promptBlocks, chat, { mode: "chat" });
+  const promptCritical = readPromptCriticalInput(record, chat, model);
+  const prompt = buildPrompt([...promptCritical.blocks, ...promptBlocks], chat, { mode: "chat" });
   const requestShape = buildOpenAIChatRequest({ model, messages: prompt.messages, sampler, stream: false });
   const text = deterministicGenerationText(record, prompt.text || prompt.messages.map((message) => message.content).join("\n"));
   const createdAt = 0;
@@ -46,6 +49,12 @@ export const generateTurnSnapshot = (input: unknown) => {
   };
   const frames = [
     { type: "started", generation_id: `fake_generation_${stableInputRef(input)}`, model },
+    {
+      type: "prompt_critical",
+      diagnostics: promptCritical.promptCritical.diagnostics,
+      world_info: promptCritical.worldInfo.diagnostics,
+      activated_world_info: promptCritical.worldInfo.activated.length,
+    },
     { type: "token", text },
     { type: "completed", finish_reason: "deterministic_fake" },
   ];
@@ -54,6 +63,8 @@ export const generateTurnSnapshot = (input: unknown) => {
     meta: createCapabilityMeta(GENERATE_ID, { deterministic: true, fake_generation: true, model }),
     prompt,
     request_shape: requestShape,
+    prompt_critical: promptCritical.promptCritical.diagnostics,
+    world_info: promptCritical.worldInfo,
     frames,
     turn,
     message: projectTurnToSTChatMessage(turn),
@@ -105,39 +116,6 @@ function deterministicGenerationText(record: Record<string, unknown>, promptText
 
   const seed = promptText.trim().replace(/\s+/gu, " ").slice(0, 80);
   return seed.length > 0 ? `[ydltavern fake generation] ${seed}` : "[ydltavern fake generation]";
-}
-
-function readChat(value: unknown): Chat {
-  if (isRecord(value) && Array.isArray(value["turns"])) {
-    return value as unknown as Chat;
-  }
-
-  return { id: "chat_empty", meta: {}, turns: [] };
-}
-
-function readPromptBlocks(value: unknown): readonly PromptBlock[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.flatMap((item, index): PromptBlock[] => {
-    if (!isRecord(item) || typeof item["content"] !== "string") {
-      return [];
-    }
-
-    return [{
-      identifier: typeof item["identifier"] === "string" ? item["identifier"] : `block_${index}`,
-      role: readPromptRole(item["role"]),
-      content: item["content"],
-      enabled: typeof item["enabled"] === "boolean" ? item["enabled"] : undefined,
-      position: typeof item["position"] === "number" ? item["position"] : undefined,
-      order: typeof item["order"] === "number" ? item["order"] : undefined,
-    }];
-  });
-}
-
-function readPromptRole(value: unknown): PromptBlock["role"] {
-  return value === "system" || value === "user" || value === "assistant" || value === "tool" ? value : undefined;
 }
 
 function readVariantIndex(value: unknown, fallback: number): number {

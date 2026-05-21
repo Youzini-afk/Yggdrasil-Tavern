@@ -5,6 +5,7 @@ import test from "node:test";
 import { assetHandlers } from "../dist/capabilities/asset.js";
 import { presetHandlers } from "../dist/capabilities/preset.js";
 import { turnHandlers } from "../dist/capabilities/turn.js";
+import { worldInfoHandlers } from "../dist/capabilities/world-info.js";
 
 const PACKAGE_ID = "ydltavern/engine";
 
@@ -37,6 +38,28 @@ const promptBlocks = [
   { identifier: "chatHistory", content: "", order: 1 },
 ];
 
+const loreBook = {
+  name: "Test Lore",
+  entries: [
+    { uid: "engine-lore", key: ["engine"], content: "World info says engines run on moonlight.", position: "before", order: 0 },
+    { uid: "quiet-lore", key: ["absent-key"], content: "This should not activate.", position: "after", order: 1 },
+  ],
+};
+
+test("world_info.evaluate activates matching world info entries", () => {
+  const output = worldInfoHandlers[`${PACKAGE_ID}/world_info.evaluate`]({
+    chat: sampleChat,
+    world_book: loreBook,
+  });
+
+  assert.equal(output.activated.length, 1);
+  assert.equal(output.activated[0].id, "engine-lore");
+  assert.deepEqual(output.activated[0].matchedKeys, ["engine"]);
+  assert.equal(output.buckets.before[0], "World info says engines run on moonlight.");
+  assert.equal(output.skipped[0].id, "quiet-lore");
+  assert.equal(output.diagnostics.iterations, 1);
+});
+
 test("preset.compile builds prompt and OpenAI request shape", () => {
   const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
     chat: sampleChat,
@@ -54,6 +77,28 @@ test("preset.compile builds prompt and OpenAI request shape", () => {
   assert.equal(output.diagnostics.insertedHistoryTurns, 1);
 });
 
+test("preset.compile includes prompt-critical WI, persona, and author note", () => {
+  const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
+    chat: sampleChat,
+    prompt_blocks: [{ identifier: "chatHistory", content: "", order: 100 }],
+    world_info: loreBook,
+    prompt_context: {
+      persona: "Persona enjoys deterministic engines.",
+      author_note: { content: "Author note mentions {{persona}}.", position: "bottom" },
+      macro_context: { persona: "macro persona" },
+    },
+    model: "phase3-model",
+  });
+
+  const contents = output.prompt.messages.map((message) => message.content);
+  assert.ok(contents.includes("World info says engines run on moonlight."));
+  assert.ok(contents.includes("Persona enjoys deterministic engines."));
+  assert.ok(contents.includes("Author note mentions macro persona."));
+  assert.equal(output.world_info.activated.length, 1);
+  assert.ok(output.prompt_critical.includedBlocks.includes("worldInfoBefore"));
+  assert.ok(output.diagnostics.prompt_critical.includedBlocks.includes("personaDescription"));
+});
+
 test("turn.generate returns lifecycle frames and assistant outputs", () => {
   const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
     id: "generate_test",
@@ -63,11 +108,29 @@ test("turn.generate returns lifecycle frames and assistant outputs", () => {
     text: "sample response",
   });
 
-  assert.deepEqual(output.frames.map((frame) => frame.type), ["started", "token", "completed"]);
+  assert.deepEqual(output.frames.map((frame) => frame.type), ["started", "prompt_critical", "token", "completed"]);
   assert.equal(output.turn.role, "assistant");
   assert.equal(output.turn.variants[0].subs[0].text, "[ydltavern fake generation] sample response");
   assert.equal(output.message.mes, "[ydltavern fake generation] sample response");
   assert.equal(output.request_shape.model, "phase3-model");
+});
+
+test("turn.generate exposes prompt-critical diagnostics frame", () => {
+  const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
+    id: "generate_prompt_critical_test",
+    chat: sampleChat,
+    prompt_blocks: promptBlocks,
+    world_book: loreBook,
+    prompt_context: { persona: "Frame persona." },
+    model: "phase3-model",
+  });
+
+  const frame = output.frames.find((item) => item.type === "prompt_critical");
+  assert.ok(frame);
+  assert.equal(frame.activated_world_info, 1);
+  assert.ok(frame.diagnostics.includedBlocks.includes("personaDescription"));
+  assert.equal(output.world_info.activated[0].id, "engine-lore");
+  assert.ok(output.prompt_critical.includedBlocks.includes("worldInfoBefore"));
 });
 
 test("turn operations produce deterministic non-echo results", () => {
