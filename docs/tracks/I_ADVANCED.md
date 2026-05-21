@@ -46,6 +46,21 @@ output: 下一个 speaker 选择跟 ST 同种子下完全一致
 - C 轨道（prompt 拼装时把 WI 注入按 position 路由）
 - E 轨道（`/world` `/createentry` 等 slash commands）
 
+## 当前状态
+
+`packages/ydltavern-engine-core` 已有 prompt-critical I 轨最小核心：
+
+- World Info keyword / regex / constant 触发；
+- secondary logic：`AND_ANY` / `NOT_ALL` / `NOT_ANY` / `AND_ALL`；
+- case-sensitive、whole-word、scan depth、order、position buckets；
+- recursive scan 与基础 budget diagnostics；
+- persona、character description / personality / scenario、author note、post-history、instruct blocks；
+- macro expansion trace。
+
+`packages/ydltavern-engine` 的 `world_info.evaluate`、`preset.compile`、`turn.generate` 会消费这些结果。`@ydltavern/surface` 会展示 activated/skipped、buckets、blocks 和 macro trace。
+
+这仍是 `partial`。sticky/cooldown/delay、inclusion group、probability roll、vector WI、完整 persona lock、群聊轮换和 instruct template 字节级对齐还未实现。
+
 ## 不在范围内
 
 - 给 WI 加 ST 不存在的触发类型——保持兼容优先

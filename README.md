@@ -32,13 +32,13 @@ Contract slice 已落地。YdlTavern 现在已有可运行的最小纵切片：S
 - **8 条并行实现轨道**：B 资产 / C 引擎核心 / D ST API / E STScript / F 内置扩展 / G UI / H 扩展加载 / I 高级特性。位于 [`docs/tracks/`](docs/tracks/)。
 - **共享类型包**：[`packages/ydltavern-types/`](packages/ydltavern-types/) —— Turn 模型与 ST event/slash/macro/connector/sampler/world-info 常量。
 - **资产导入器**：[`packages/ydltavern-importers/`](packages/ydltavern-importers/) —— 角色卡 JSON/PNG、世界书、JSONL chat importer v0，并有 ST-like fixture 对齐测试。
-- **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`addOneMessage`、`Generate`、`substituteParams` MVP。
-- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络），带结构级 fixture 对齐测试。
+- **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`addOneMessage`、`Generate`、扩展宏替换与 slash command core。
+- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络），并包含 World Info / persona / author note / instruct / macro 的 prompt-critical spine。
 - **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/G 进入 `partial` / contract-slice，未宣称字节级对齐。
-- **YdlTavern 前端 surface**：[`packages/ydltavern-surface/`](packages/ydltavern-surface/) —— React surface bundle，`TavernPlaySurface` 可通过同一份 ST contract 发送、编辑、fake generate 并显示事件日志；不包含独立桌面/Web/App 壳。
-- **引擎包**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，`preset.compile`、`turn.generate`、asset import 能调用当前本地 contract；仍无真实模型调用、无网络。
+- **YdlTavern 前端 surface**：[`packages/ydltavern-surface/`](packages/ydltavern-surface/) —— React surface bundle，`TavernPlaySurface` 可通过同一份 ST contract 发送、编辑、fake generate，并显示事件、prompt-critical、slash/macro 诊断；不包含独立桌面/Web/App 壳。
+- **引擎包**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，`world_info.evaluate`、`preset.compile`、`turn.generate`、asset import 能调用当前本地 contract；仍无真实模型调用、无网络。
 
-下一步：推进 prompt-critical 的 World Info / persona / instruct 子集和 E 轨 slash/macro 核心，让 fake generation 前的上下文构造更接近 ST。详细文档导航见 [`docs/`](docs/README.md)。
+下一步：在现有 prompt-critical 与 slash/macro 核心上，继续补完整 ST PromptManager 对齐、World Info 高级行为、STScript 控制流和第三方扩展加载。详细文档导航见 [`docs/`](docs/README.md)。
 
 ## 致谢
 

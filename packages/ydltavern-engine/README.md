@@ -2,7 +2,7 @@
 
 这是 YdlTavern 引擎的 Yggdrasil 子进程能力包。
 
-当前阶段：contract slice。`preset.compile`、`turn.generate`、`turn.swipe/regenerate/continue`、角色卡/世界书导入会调用本仓库的 types、engine-core、importers、st-compat。仍无真实模型调用、无网络、无 secret。
+当前阶段：prompt-critical contract slice。`world_info.evaluate`、`preset.compile`、`turn.generate`、`turn.swipe/regenerate/continue`、角色卡/世界书导入会调用本仓库的 types、engine-core、importers、st-compat。仍无真实模型调用、无网络、无 secret。
 
 ## 使用
 
@@ -13,6 +13,6 @@
 
 ## 后续
 
-下一步是让 world info / persona / instruct 进入 prompt-critical 路径；当前 fake generation 只验证 contract 生命周期。
+下一步是继续补 ST PromptManager 细节、World Info 高级行为和真实模型调用边界；当前 fake generation 只验证 contract 生命周期。
 
 - [C 轨道：引擎核心](../../docs/tracks/C_ENGINE_CORE.md)

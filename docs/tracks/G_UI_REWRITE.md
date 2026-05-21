@@ -54,6 +54,18 @@ YdlTavern surface 目标（由 Yggdrasil 壳承载 + 普通 i5）：
 - B 轨道（资产显示）
 - I 轨道（WI 触发引擎）
 
+## 当前状态
+
+`@ydltavern/surface` 仍是 Yggdrasil-hosted surface bundle，不是独立 app。`TavernPlaySurface` 当前提供薄纵切片：
+
+- live ST contract 的发送、编辑、fake generate、event log；
+- engine request preview；
+- importer preview；
+- prompt-critical diagnostics：WI activated/skipped、buckets、blocks、macro trace；
+- slash diagnostics：输入命令、执行结果、变量、registered commands、diagnostics。
+
+这仍是诊断 UI，不是最终 Tavern 产品界面。后续要做真实 ST-like layout、虚拟列表、主题、设置抽屉、扩展抽屉和性能目标。
+
 ## 不在范围内
 
 - 完全重新设计的"创新 UI"——保持熟悉度优先

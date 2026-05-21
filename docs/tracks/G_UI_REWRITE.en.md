@@ -54,6 +54,18 @@ YdlTavern surface goals (hosted by a Yggdrasil shell + ordinary i5):
 - Track B (asset display)
 - Track I (WI trigger engine)
 
+## Current status
+
+`@ydltavern/surface` remains a Yggdrasil-hosted surface bundle, not an independent app. `TavernPlaySurface` currently provides a thin slice:
+
+- sending, editing, fake generation, and event log through the live ST contract;
+- engine request preview;
+- importer preview;
+- prompt-critical diagnostics: WI activated/skipped entries, buckets, blocks, and macro trace;
+- slash diagnostics: command input, execution result, variables, registered commands, and diagnostics.
+
+This is still diagnostic UI, not the final Tavern product interface. Later work must build the real ST-like layout, virtual list, themes, settings drawer, extensions drawer, and performance targets.
+
 ## Out of scope
 
 - A fully redesigned "innovative UI" — familiarity comes first

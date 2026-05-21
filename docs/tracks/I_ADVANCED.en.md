@@ -46,6 +46,21 @@ output: next speaker selection exactly matches ST with the same seed
 - Track C (routes WI injection by position during prompt assembly)
 - Track E (`/world` `/createentry`, etc. slash commands)
 
+## Current status
+
+`packages/ydltavern-engine-core` now has the minimum prompt-critical I-track core:
+
+- World Info keyword / regex / constant activation;
+- secondary logic: `AND_ANY` / `NOT_ALL` / `NOT_ANY` / `AND_ALL`;
+- case-sensitive, whole-word, scan depth, order, and position buckets;
+- recursive scan and basic budget diagnostics;
+- persona, character description / personality / scenario, author note, post-history, and instruct blocks;
+- macro expansion trace.
+
+`packages/ydltavern-engine` consumes these results through `world_info.evaluate`, `preset.compile`, and `turn.generate`. `@ydltavern/surface` displays activated/skipped entries, buckets, blocks, and macro trace.
+
+This is still `partial`. Sticky/cooldown/delay, inclusion groups, probability rolls, vector WI, full persona lock, group rotation, and byte-level instruct template alignment are not implemented yet.
+
 ## Out of scope
 
 - Adding WI trigger types that ST does not have — compatibility comes first

@@ -40,6 +40,17 @@ Side effects of ST commands such as `/echo`, `/inject`, and `/listinjects` must 
 - Track C (`/gen` `/genraw` `/continue` `/regenerate` `/swipe` directly call generate)
 - Track B (`/world` `/getchatbook`, etc. read assets)
 
+## Current status
+
+`packages/ydltavern-st-compat` now has the minimum E-track core:
+
+- expanded `substituteParams` for user/char, character fields, persona, time/date, dynamic overrides, and trace;
+- slash registry / parser / executor;
+- built-in `/gen`, `/continue`, `/swipe`, `/setvar`, `/getvar`, `/if`, and `/run` minimum behavior;
+- `createSTContext()` exposes `registerSlashCommand`, `executeSlashCommands`, `slashCommands`, `slashDiagnostics`, and variables.
+
+This is still `partial`. Full STScript closures, pipes, scopes, `/while`, `/let`, Quick Reply runtime, autocomplete/debugger, and all 153+ commands are not implemented yet.
+
 ## Out of scope
 
 - Replacing STScript with another language — keep STScript compatibility

@@ -20,28 +20,28 @@ Implementation status:
 - `deferred` — intentionally not implemented by internal decision
 - `blocked` — waiting on another track
 
-Current stage: contract slice complete. ST source remains the ground truth; B/C/D/G now have a runnable thin vertical path, but nothing is claimed as byte-level aligned unless explicitly stated.
+Current stage: prompt-critical + slash core complete. ST source remains the ground truth; B/C/D/E/G/I now have runnable thin vertical paths, but nothing is claimed as byte-level aligned unless explicitly stated.
 
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
 |---|---:|---:|---|---|---|
 | event_types | 104 | constants + core event dispatch | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| built-in slash commands | 153 | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| macros / macros | 80+ | 0 | inventoried | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| built-in slash commands | 153 | 7 core commands | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| macros / macros | 80+ | core/env/time subset + trace | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers (including aliases) | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| world info trigger types | 32 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info entry schema fields | 50+ | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info evaluation pipeline steps | 39 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
+| world info trigger types | 32 | keyword/regex/constant subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info entry schema fields | 50+ | core fields preserved/evaluated | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info evaluation pipeline steps | 39 | scan/order/position/recursive/budget subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
 | character card V1 fields | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V2 fields | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V3 fields | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | OpenAI preset schema fields | 75 | fixture request shape | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
-| prompt manager identifiers | 13 typed | v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
+| prompt manager identifiers | 13 typed | prompt-critical blocks + v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | built-in extensions | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
-| Persona schema fields | 20 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | group chat rotation strategies | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Quick reply schema fields | recorded | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
@@ -49,15 +49,15 @@ Current stage: contract slice complete. ST source remains the ground truth; B/C/
 
 The numbers are approximate. The inventory files and `@ydltavern/types` constants are the source of truth. `stubbed` means the API surface exists but behavior is not fully aligned; `partial` means tested code paths exist but no byte-level compatibility is claimed yet.
 
-## M2 code paths now present
+## Code paths now present
 
 | Package | Track | Coverage | Status |
 |---|---|---|---|
 | `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
 | `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers + ST-like fixtures | partial |
-| `@ydltavern/st-compat` | D | live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `addOneMessage`, `Generate`, `substituteParams` | partial |
-| `@ydltavern/engine-core` | C | sampler normalization, prompt builder, OpenAI request builder (no network) + fixture request shape | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface contract slice: send/edit/fake generate/event log; Settings/Extensions slots | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `Generate`, expanded macros, slash command core | partial |
+| `@ydltavern/engine-core` | C + I | sampler/request builder, World Info evaluator, prompt-critical blocks, macro trace | partial |
+| `@ydltavern/surface` | G | TavernPlaySurface contract slice: send/edit/fake generate/event log/prompt-critical/slash diagnostics; Settings/Extensions slots | partial |
 
 ## Built-in extension coverage (track F)
 

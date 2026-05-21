@@ -32,13 +32,13 @@ The contract slice is in place. YdlTavern now has a runnable thin vertical path:
 - **Eight parallel implementation tracks**: B assets / C engine core / D ST API / E STScript / F built-in extensions / G UI / H extension loader / I advanced. Under [`docs/tracks/`](docs/tracks/).
 - **Shared types package**: [`packages/ydltavern-types/`](packages/ydltavern-types/) — Turn model plus ST event/slash/macro/connector/sampler/world-info constants.
 - **Asset importers**: [`packages/ydltavern-importers/`](packages/ydltavern-importers/) — character JSON/PNG, world book, and JSONL chat importer v0, backed by ST-like fixture tests.
-- **ST compatibility runtime**: [`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) — live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `addOneMessage`, `Generate`, and `substituteParams` MVP.
-- **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, prompt builder, and OpenAI request builder (no network), with structure-level fixture tests.
+- **ST compatibility runtime**: [`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) — live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `addOneMessage`, `Generate`, expanded macros, and slash command core.
+- **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, prompt builder, and OpenAI request builder (no network), plus a World Info / persona / author note / instruct / macro prompt-critical spine.
 - **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — B/C/D/G are now `partial` / contract-slice; byte-level alignment is not claimed yet.
-- **YdlTavern frontend surface**: [`packages/ydltavern-surface/`](packages/ydltavern-surface/) — React surface bundle; `TavernPlaySurface` can send, edit, fake-generate, and show event logs through the same ST contract. It does not include an independent desktop/web/app shell.
-- **Engine package**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package; `preset.compile`, `turn.generate`, and asset import call the current local contracts. Still no real model calls and no network.
+- **YdlTavern frontend surface**: [`packages/ydltavern-surface/`](packages/ydltavern-surface/) — React surface bundle; `TavernPlaySurface` can send, edit, fake-generate, and show event, prompt-critical, and slash/macro diagnostics through the same ST contract. It does not include an independent desktop/web/app shell.
+- **Engine package**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package; `world_info.evaluate`, `preset.compile`, `turn.generate`, and asset import call the current local contracts. Still no real model calls and no network.
 
-Next: build the prompt-critical World Info / persona / instruct subset and the E-track slash/macro core so fake generation receives a more ST-shaped context. Full documentation index in [`docs/`](docs/README.en.md).
+Next: build from the current prompt-critical and slash/macro core toward full ST PromptManager alignment, advanced World Info behavior, STScript control flow, and third-party extension loading. Full documentation index in [`docs/`](docs/README.en.md).
 
 ## Acknowledgements
 
