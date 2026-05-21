@@ -19,24 +19,26 @@ YdlTavern is an integration project on top of Yggdrasil. It consumes the platfor
 
 - It does not live in the Yggdrasil repo. Platform and product stay separate.
 - It gets the same treatment as any third-party project: same manifest, same permissions, same audit boundary.
-- It uses what Yggdrasil already provides: model integration, `secret_ref`, streaming and cancel lifecycle, proposals and approval, memory, sharing, outbound audit.
-- It will use what Yggdrasil is about to add: installing capability packages from a GitHub address — the prerequisite for YdlTavern's extension ecosystem.
+- It uses what Yggdrasil already provides: model integration, `secret_ref`, streaming and cancel lifecycle, proposals and approval, memory, sharing, outbound audit, git package install.
 
 For Yggdrasil's side of the boundary, see [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.en.md).
+
+## Status
+
+M1 launch conditions are in place. Code skeletons exist; behavior is not yet implemented.
+
+- **Mechanical inventory of ST source**: 99 event_types, 153 slash commands, 80+ macros, 26 chat completion sources, 17 text completion sources, 80+ sampler parameters, 32 world info triggers, 14 built-in extensions. Under [`docs/inventory/`](docs/inventory/).
+- **Internal data model and compatibility projection**: the Turn model plus the projection rules for ST `chat[]` / `eventSource` / `getContext()`. Under [`docs/architecture/`](docs/architecture/).
+- **Eight parallel implementation tracks**: B assets / C engine core / D ST API / E STScript / F built-in extensions / G UI / H extension loader / I advanced. Under [`docs/tracks/`](docs/tracks/).
+- **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — currently every row is `inventoried`, coverage 0.
+- **Desktop client skeleton**: [`clients/desktop/`](clients/desktop/) — React + TypeScript + Vite + Tauri; the dev server runs and can talk to a Yggdrasil host.
+- **Engine package skeleton**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package; stub responses only, no real model calls and no network.
+
+Next: parallel work on the four main tracks B / C / D / G. Full documentation index in [`docs/`](docs/README.en.md).
 
 ## Acknowledgements
 
 The character cards, world books, presets, chat history, and extension APIs are the work of the SillyTavern team and community over many years. YdlTavern does compatibility work on top of that — credit goes to them.
-
-## Status
-
-Skeleton stage. The repo currently holds the stance documents and direction notes only. No code yet.
-
-For details, see [`docs/`](docs/README.en.md):
-
-- [`docs/CHARTER.md`](docs/CHARTER.en.md) — principles that don't change
-- [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.en.md) — SillyTavern resource and extension compatibility scope
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.en.md) — how YdlTavern relates to Yggdrasil
 
 ## License
 

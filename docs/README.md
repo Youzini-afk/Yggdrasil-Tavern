@@ -2,10 +2,50 @@
 
 > [English](./README.en.md) · [中文](./README.md)
 
-YdlTavern 处于骨架阶段，文档目前只固定立场与方向，不含具体设计或 API 规格。
+按主题分组的文档导航。每篇都同时提供中文与英文版本，文件顶部的双语 blockquote 可在两种语言间切换。
+
+## 立场与现状
 
 - [`CHARTER.md`](CHARTER.md) —— 不变的根本原则
-- [`COMPATIBILITY.md`](COMPATIBILITY.md) —— SillyTavern 资源与扩展的兼容范围
+- [`COMPATIBILITY.md`](COMPATIBILITY.md) —— SillyTavern 资源与扩展的兼容范围（总图）
+- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.md) —— 兼容覆盖率雷达，按域分项
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) —— 与 Yggdrasil 的关系
 
-随着实现展开，会陆续加入：UI 设计语言、扩展 API 兼容矩阵、迁移指南、贡献者指南。
+## 内部架构
+
+- [`architecture/TURN_MODEL.md`](architecture/TURN_MODEL.md) —— 内部 Turn 模型规范
+- [`architecture/COMPAT_PROJECTION.md`](architecture/COMPAT_PROJECTION.md) —— 把 Turn 投影成 ST `chat[]` / `eventSource` / `getContext()` 的规则
+
+## ST 源码 inventory（机械扫描，ground truth）
+
+按域机械扫 SillyTavern 源码产出，作为后续实现的对齐基准。这些是英文文件（以 ST 源码字面量为主），不做中文镜像。
+
+- [`inventory/CORE_EVENTS_AND_COMMANDS.raw.md`](inventory/CORE_EVENTS_AND_COMMANDS.raw.md) —— event_types、slash commands、宏、Generate 流水线、chat 消息形状
+- [`inventory/CONNECTORS_AND_SAMPLERS.raw.md`](inventory/CONNECTORS_AND_SAMPLERS.raw.md) —— chat / text completion sources、采样参数、preset schema、流式处理器
+- [`inventory/WORLD_INFO_AND_ASSETS.raw.md`](inventory/WORLD_INFO_AND_ASSETS.raw.md) —— world info 触发与流水线、角色卡 V1/V2/V3、preset、persona、群组、quick reply、theme、instruct 模板
+- [`inventory/BUILTIN_EXTENSIONS.raw.md`](inventory/BUILTIN_EXTENSIONS.raw.md) —— 14 个内置扩展逐个的 manifest、监听事件、slash 注册、API 调用、`chat[]` 改写、`getContext()` 字段读取
+
+## 实现轨道
+
+按域并行推进，不按线性 milestone。详见 [`tracks/README.md`](tracks/README.md)。
+
+| 轨道 | 范围 |
+|---|---|
+| [B 资产层](tracks/B_ASSET_LAYER.md) | 角色卡 / 世界书 / 预设 / 聊天 / persona / theme 导入导出 |
+| [C 引擎核心](tracks/C_ENGINE_CORE.md) | 模型连接 / 采样器 / Generate 流水线 / 上下文构造 |
+| [D ST API 表面](tracks/D_ST_API_SURFACE.md) | `getContext()` / `eventSource` / `event_types` / 全局函数 |
+| [E STScript & slash](tracks/E_STSCRIPT_AND_SLASH.md) | 内置 slash commands / 宏 / STScript 解析器 / 变量域 |
+| [F 内置扩展](tracks/F_BUILTIN_EXTENSIONS.md) | 14 个内置扩展，每个一个 YdlTavern 包 |
+| [G UI 重写](tracks/G_UI_REWRITE.md) | 前端布局 / 操作流 / 主题系统 / 渲染管线 |
+| [H 扩展加载](tracks/H_EXTENSION_LOADER.md) | ST 风格扩展加载器 + Yggdrasil 包通道双轨 |
+| [I 高级特性](tracks/I_ADVANCED.md) | World info 触发引擎 / 群聊轮换 / persona 锁 / instruct mode |
+
+## 最短读路径
+
+| 你想 | 先读 |
+|---|---|
+| 理解项目立场 | [`CHARTER.md`](CHARTER.md) → [`ARCHITECTURE.md`](ARCHITECTURE.md) |
+| 理解兼容范围 | [`COMPATIBILITY.md`](COMPATIBILITY.md) → [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.md) |
+| 理解内部数据模型 | [`architecture/TURN_MODEL.md`](architecture/TURN_MODEL.md) → [`architecture/COMPAT_PROJECTION.md`](architecture/COMPAT_PROJECTION.md) |
+| 找 ST 源码里某个 API/事件/命令 | 对应的 `inventory/*.raw.md` |
+| 看某条轨道做什么 | [`tracks/README.md`](tracks/README.md) → 具体轨道文档 |

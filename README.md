@@ -19,24 +19,26 @@ YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + 
 
 - 它不在 Yggdrasil 仓库里。平台与产品分开。
 - 它跟其他第三方项目享有同样的待遇：同一份清单、同一套权限、同一道审计闸门。
-- 它会用上 Yggdrasil 已经做好的：模型接入、`secret_ref`、流式与取消生命周期、提案与审批、记忆、分享、外发审计。
-- 它会用上 Yggdrasil 即将做的：从 GitHub 地址安装能力包——这是 YdlTavern 扩展生态的关键前提。
+- 它会用上 Yggdrasil 已经做好的：模型接入、`secret_ref`、流式与取消生命周期、提案与审批、记忆、分享、外发审计、git 安装能力包。
 
 Yggdrasil 那边的相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.md)。
+
+## 项目状态
+
+M1 启动条件已落地。代码骨架在位，行为尚未实现。
+
+- **机械扫描的 ST 源码 inventory**：99 个 event_types、153 个 slash commands、80+ 个宏、26 个 chat completion source、17 个 text completion source、80+ 个采样参数、32 个 world info trigger、14 个内置扩展。位于 [`docs/inventory/`](docs/inventory/)。
+- **内部数据模型与兼容投影**：Turn 模型 + ST `chat[]` / `eventSource` / `getContext()` 投影规范。位于 [`docs/architecture/`](docs/architecture/)。
+- **8 条并行实现轨道**：B 资产 / C 引擎核心 / D ST API / E STScript / F 内置扩展 / G UI / H 扩展加载 / I 高级特性。位于 [`docs/tracks/`](docs/tracks/)。
+- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— 当前全部为 `inventoried`，覆盖率 0。
+- **桌面客户端骨架**：[`clients/desktop/`](clients/desktop/) —— React + TypeScript + Vite + Tauri，能起 dev server，能调 Yggdrasil host。
+- **引擎包骨架**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，全部 stub 响应，无真实模型调用、无网络。
+
+下一步：B/C/D/G 四条主轨道并行推进。详细文档导航见 [`docs/`](docs/README.md)。
 
 ## 致谢
 
 SillyTavern 的角色卡、世界书、预设、聊天历史和扩展 API，都是 SillyTavern 团队和社区多年的工作。YdlTavern 在此之上做兼容工作，归功于他们。
-
-## 项目状态
-
-骨架阶段。仓库目前只有立场文档和方向说明，代码尚未开始。
-
-详细规划见 [`docs/`](docs/README.md)：
-
-- [`docs/CHARTER.md`](docs/CHARTER.md) —— 不变的根本原则
-- [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) —— SillyTavern 资源与扩展的兼容范围
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— YdlTavern 与 Yggdrasil 的关系
 
 ## 协议
 
