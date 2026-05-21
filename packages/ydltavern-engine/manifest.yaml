@@ -1,0 +1,93 @@
+schema_version: 1
+id: ydltavern/engine
+version: 0.0.1
+display_name: "YdlTavern Engine"
+description: "SillyTavern-compatible generation engine for YdlTavern. Skeleton phase: stub responses only, no real model calls."
+entry:
+  kind: subprocess
+  command:
+    - node
+    - --experimental-vm-modules
+    - dist/index.js
+  transport: json_rpc_stdio
+provides:
+  - id: ydltavern/engine/describe
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns engine version, supported connectors, and supported features as deterministic stubs.
+  - id: ydltavern/engine/preset.compile
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a compiled prompt manager plan stub for a preset id.
+  - id: ydltavern/engine/world_info.evaluate
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a world info evaluation plan stub with no activated entries.
+  - id: ydltavern/engine/turn.generate
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: true
+    description: Returns a stubbed assistant turn variant snapshot for a Turn-shaped input.
+  - id: ydltavern/engine/turn.swipe
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a deterministic new variant index stub for a turn id.
+  - id: ydltavern/engine/turn.regenerate
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a deterministic replacement variant index stub for a turn id.
+  - id: ydltavern/engine/turn.continue
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a deterministic appended text stub for the last variant.
+  - id: ydltavern/engine/asset.import_character_v2
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a stub character record for a base64 PNG card without parsing it.
+  - id: ydltavern/engine/asset.import_world_book
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a stub world book record for JSON input without persisting it.
+  - id: ydltavern/engine/script.eval
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns an echo stub for an STScript string without executing it.
+  - id: ydltavern/engine/diagnostics
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns deterministic engine diagnostics and in-memory invocation counters.
+consumes: []
+contributes:
+  schemas: []
+  hooks: []
+  extension_points: []
+  surfaces: []
+permissions:
+  network:
+    declarations: []
+    hosts: []
+sandbox_policy:
+  cpu_quota_ms_per_invoke: 10000
+  memory_mb: 256
+  wall_clock_ms: 60000

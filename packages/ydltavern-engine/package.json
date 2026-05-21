@@ -1,0 +1,17 @@
+{
+  "name": "ydltavern-engine",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsc -w -p tsconfig.json"
+  },
+  "dependencies": {
+    "@yggdrasil/subprocess": "file:../../../Yggdrasil/sdk/typescript/subprocess"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

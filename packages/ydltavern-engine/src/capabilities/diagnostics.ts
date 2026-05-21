@@ -1,0 +1,19 @@
+import { PACKAGE_ID, createStubMeta, type HandlerRecord, type InvocationCounters } from "../types.js";
+
+const CAPABILITY_ID = `${PACKAGE_ID}/diagnostics`;
+
+export const createDiagnosticsHandlers = (counters: InvocationCounters): HandlerRecord => ({
+  [CAPABILITY_ID]: () => ({
+    meta: createStubMeta(CAPABILITY_ID),
+    diagnostics: {
+      status: "ok",
+      mode: "skeleton",
+      counters: {
+        total_invocations: counters.total,
+        by_capability: { ...counters.byCapability },
+      },
+      network_enabled: false,
+      filesystem_writes_enabled: false,
+    },
+  }),
+});
