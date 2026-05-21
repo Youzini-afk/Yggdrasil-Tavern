@@ -1,0 +1,19 @@
+{
+  "activatedIds": [
+    "constant-note",
+    "ancient-map",
+    "regex-ridge",
+    "case-sensitive",
+    "whole-word",
+    "recursive-seed",
+    "recursive-child"
+  ],
+  "buckets": {
+    "before": ["Constant note for Archivist.", "Seraphina knows the map points to the observatory."],
+    "after": ["Regex lore: the old observatory was sealed."],
+    "atDepth": ["Recursive seed mentions moon-gate."],
+    "ANTop": ["Case lore: Seraphina signs every catalog."],
+    "ANBottom": ["Whole word lore: art is cataloged separately."],
+    "outlet": ["Recursive child unlocks the basement outlet."]
+  }
+}

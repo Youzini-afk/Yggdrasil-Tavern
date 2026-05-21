@@ -1,0 +1,76 @@
+{
+  "name": "prompt-critical-fixture-book",
+  "entries": [
+    {
+      "uid": "ancient-map",
+      "comment": "primary + secondary before",
+      "key": ["map"],
+      "keysecondary": ["observatory"],
+      "selectiveLogic": "AND_ANY",
+      "content": "{{char}} knows the map points to the observatory.",
+      "position": "before",
+      "order": 10
+    },
+    {
+      "uid": "regex-ridge",
+      "comment": "regex after",
+      "key": ["/old\\s+observatory/i"],
+      "content": "Regex lore: the old observatory was sealed.",
+      "position": "after",
+      "order": 20
+    },
+    {
+      "uid": "case-sensitive",
+      "comment": "case sensitive match",
+      "key": ["Seraphina"],
+      "caseSensitive": true,
+      "content": "Case lore: Seraphina signs every catalog.",
+      "position": "ANTop",
+      "order": 30
+    },
+    {
+      "uid": "whole-word",
+      "comment": "whole word match",
+      "key": ["art"],
+      "matchWholeWords": true,
+      "content": "Whole word lore: art is cataloged separately.",
+      "position": "ANBottom",
+      "order": 40
+    },
+    {
+      "uid": "recursive-seed",
+      "comment": "recursive seed",
+      "key": ["lantern"],
+      "content": "Recursive seed mentions moon-gate.",
+      "position": "atDepth",
+      "order": 50
+    },
+    {
+      "uid": "recursive-child",
+      "comment": "recursive child",
+      "key": ["moon-gate"],
+      "content": "Recursive child unlocks the basement outlet.",
+      "position": "outlet",
+      "order": 60,
+      "delayUntilRecursion": true
+    },
+    {
+      "uid": "constant-note",
+      "comment": "constant world info",
+      "constant": true,
+      "content": "Constant note for {{user}}.",
+      "position": "before",
+      "order": 5
+    },
+    {
+      "uid": "not-any-skip",
+      "comment": "secondary not any skip",
+      "key": ["map"],
+      "keysecondary": ["observatory"],
+      "selectiveLogic": "NOT_ANY",
+      "content": "This should be skipped.",
+      "position": "before",
+      "order": 70
+    }
+  ]
+}
