@@ -1,0 +1,21 @@
+{
+  "name": "@ydltavern/engine-core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@ydltavern/types": "file:../ydltavern-types"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
