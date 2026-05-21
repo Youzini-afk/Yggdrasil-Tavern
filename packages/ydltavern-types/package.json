@@ -4,12 +4,19 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./st": "./dist/st/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./st": {
+      "types": "./dist/st/index.d.ts",
+      "default": "./dist/st/index.js"
+    }
   },
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
