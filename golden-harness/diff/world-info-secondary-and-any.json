@@ -2,13 +2,17 @@
   "harness_version": "1.0",
   "scenario": "world-info/secondary-and-any",
   "description": "World info with secondary keywords and AND/ANY logic",
-  "classification": "unverifiable",
+  "classification": "structural",
   "matches": false,
-  "reason": "st_shim_returned_empty",
   "expected": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "A massive dragon with shimmering scales breathes fire across the valley.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "A massive dragon with shimmering scales breathes fire across the valley."
+      }
+    ],
     "scenario": "World info with secondary keywords and AND/ANY logic"
   },
   "actual": {
@@ -17,7 +21,20 @@
     "activatedEntries": [],
     "scenario": "World info with secondary keywords and AND/ANY logic"
   },
-  "delta": [],
+  "delta": [
+    {
+      "path": "$.activatedEntries[0]",
+      "expected": {
+        "uid": 0,
+        "content": "A massive dragon with shimmering scales breathes fire across the valley."
+      }
+    },
+    {
+      "path": "$.worldInfoBefore",
+      "expected": "A massive dragon with shimmering scales breathes fire across the valley.",
+      "actual": ""
+    }
+  ],
   "diagnostics": {
     "scanDepth": 2,
     "scanTextChars": 71,

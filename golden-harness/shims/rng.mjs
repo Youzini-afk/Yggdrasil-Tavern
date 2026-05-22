@@ -3,10 +3,22 @@
  * Seed: 'ydltavern-fixture-v1'
  */
 
-import seedrandom from 'seedrandom';
+import originalSeedrandom from 'seedrandom';
 
 const SEED = 'ydltavern-fixture-v1';
-const rng = seedrandom(SEED);
+const rng = originalSeedrandom(SEED);
+
+function seedrandom(seed, options, callback) {
+  // ST's {{random}} macro creates seedrandom('added entropy.', { entropy: true })
+  // (SillyTavern public/scripts/macros.js:491-505). In Node, entropy:true mixes
+  // process/global entropy and makes fixtures drift between harness runs. Keep
+  // the requested seed but suppress entropy mixing for deterministic ST output.
+  if (options && typeof options === 'object' && options.entropy === true) {
+    return originalSeedrandom(seed, { ...options, entropy: false }, callback);
+  }
+
+  return originalSeedrandom(seed, options, callback);
+}
 
 // Save original
 const _realRandom = Math.random;
@@ -27,4 +39,4 @@ const deterministicDroll = {
 
 globalThis.droll = deterministicDroll;
 
-export { rng, SEED, deterministicDroll };
+export { rng, SEED, deterministicDroll, seedrandom };

@@ -19,11 +19,8 @@
     "settings": {}
   },
   "output": {
-    "output": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+    "output": "Current time: 12:00 PM. Today is May 29, 2025. ISO date: 2025-05-29. Weekday: Thursday.",
     "scenario": "Time and date macros with frozen clock",
-    "input": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
-    "partial": true,
-    "error": "Cannot read properties of undefined (reading 'content')",
-    "note": "Full evaluateMacros failed; used fallback env substitution only"
+    "input": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}."
   }
 }

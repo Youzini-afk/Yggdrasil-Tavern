@@ -62,9 +62,44 @@
     "generation_type": "normal"
   },
   "output": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "A rare potion bubbles in the cauldron, its color shifting unpredictably."
+      }
+    ],
+    "scenario": "World info entry with probability < 100, using seeded RNG for determinism",
+    "activated_entries": [
+      {
+        "uid": 0,
+        "key": [
+          "potion"
+        ],
+        "content": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
+        "position": 0,
+        "depth": 4,
+        "scan_depth": null,
+        "order": 100,
+        "activation_reason": "probability_passed",
+        "comment": "Rare Potion",
+        "world": "golden-harness"
+      }
+    ],
+    "world_info_before": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
+    "world_info_after": "",
+    "world_info_string": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
+    "EMEntries": [],
+    "WIDepthEntries": [],
+    "ANBeforeEntries": [],
+    "ANAfterEntries": [],
+    "outletEntries": {},
+    "diagnostics": {
+      "budget_used": 22,
+      "budget_max": 2048,
+      "scan_iterations": 1,
+      "activated_count": 1
+    }
   }
 }

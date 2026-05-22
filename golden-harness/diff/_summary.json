@@ -1,16 +1,16 @@
 {
   "total": 20,
-  "perfect": 6,
-  "cosmetic": 0,
-  "structural": 6,
-  "unverifiable": 8,
+  "perfect": 9,
+  "cosmetic": 3,
+  "structural": 8,
+  "unverifiable": 0,
   "error": 0,
   "by_category": {
     "chat": {
       "total": 4,
       "perfect": 0,
-      "cosmetic": 0,
-      "structural": 4,
+      "cosmetic": 3,
+      "structural": 1,
       "unverifiable": 0,
       "error": 0
     },
@@ -18,23 +18,23 @@
       "total": 4,
       "perfect": 0,
       "cosmetic": 0,
-      "structural": 0,
-      "unverifiable": 4,
+      "structural": 4,
+      "unverifiable": 0,
       "error": 0
     },
     "macro": {
       "total": 4,
-      "perfect": 0,
+      "perfect": 1,
       "cosmetic": 0,
-      "structural": 0,
-      "unverifiable": 4,
+      "structural": 3,
+      "unverifiable": 0,
       "error": 0
     },
     "instruct": {
       "total": 2,
-      "perfect": 0,
+      "perfect": 2,
       "cosmetic": 0,
-      "structural": 2,
+      "structural": 0,
       "unverifiable": 0,
       "error": 0
     },

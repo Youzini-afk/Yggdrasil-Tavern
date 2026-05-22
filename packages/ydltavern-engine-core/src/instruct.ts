@@ -93,12 +93,20 @@ export function formatInstructModeChat(
     namesBehavior === INSTRUCT_NAMES_BEHAVIOR.ALWAYS ||
     namesBehavior === INSTRUCT_NAMES_BEHAVIOR.FORCE;
 
-  const body = includeName && nameForSubst ? `${nameForSubst}: ${content}` : content;
+  // ST inserts persona prefixes only in the message body assembly step
+  // (SillyTavern/public/scripts/instruct-mode.js:450-453). Header-role
+  // templates such as ChatML and Llama 3 keep identity in the control tokens,
+  // so their bodies must remain plain content even if an imported preset has
+  // names_behavior='force'.
+  const body = includeName && nameForSubst && !suppressesBodyNamePrefix(template)
+    ? `${nameForSubst}: ${content}`
+    : content;
 
   // Wrap with newline if wrap=true and no suffix
   if (wrap && !suffix) suffix = '\n';
 
-  return `${prefix}${body}${suffix}`;
+  const separator = wrap && suppressesBodyNamePrefix(template) ? '\n' : '';
+  return [prefix, `${body}${suffix}`].filter((x) => x).join(separator);
 }
 
 function pickInputSeq(template: InstructTemplate, isFirst?: boolean, isLast?: boolean): string {
@@ -111,6 +119,22 @@ function pickOutputSeq(template: InstructTemplate, isFirst?: boolean, isLast?: b
   if (isFirst && template.first_output_sequence) return template.first_output_sequence;
   if (isLast && template.last_output_sequence) return template.last_output_sequence;
   return template.output_sequence ?? '';
+}
+
+function suppressesBodyNamePrefix(template: InstructTemplate): boolean {
+  return isChatMLTemplate(template) || isLlama3Template(template);
+}
+
+function isChatMLTemplate(template: InstructTemplate): boolean {
+  return (template.input_sequence ?? '').includes('<|im_start|>user')
+    && (template.output_sequence ?? '').includes('<|im_start|>assistant')
+    && (template.input_suffix ?? '').includes('<|im_end|>');
+}
+
+function isLlama3Template(template: InstructTemplate): boolean {
+  return (template.input_sequence ?? '').includes('<|start_header_id|>user<|end_header_id|>')
+    && (template.output_sequence ?? '').includes('<|start_header_id|>assistant<|end_header_id|>')
+    && (template.input_suffix ?? '').includes('<|eot_id|>');
 }
 
 // formatInstructModeStoryString (instruct-mode.js)

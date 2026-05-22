@@ -171,7 +171,14 @@ async function compareWorldInfo(scenario, fixture, category, name) {
     activatedEntries: result.activated.map((entry) => ({ uid: numericIfPossible(entry.id), content: entry.content })),
     scenario: scenario._description,
   };
-  const expected = fixture.output;
+  const expected = fixture.output?.activatedEntries
+    ? {
+        worldInfoBefore: fixture.output.worldInfoBefore ?? '',
+        worldInfoAfter: fixture.output.worldInfoAfter ?? '',
+        activatedEntries: fixture.output.activatedEntries,
+        scenario: fixture.output.scenario,
+      }
+    : fixture.output;
   const diff = classifyDiff(expected, actual);
 
   if (isEmptyWorldInfoShimFixture(expected, scenario)) {

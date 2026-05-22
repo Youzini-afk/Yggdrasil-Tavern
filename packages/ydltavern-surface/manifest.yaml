@@ -1,0 +1,64 @@
+# Yggdrasil PackageManifest shape verified against ygg-core/src/manifest.rs lines 7-29 (PackageManifest), 32-53 (PackageEntry), 91-122 (surface contributions), and 162-171 (SurfaceSlot). Current PackageEntry has no web_surface_bundle variant, so this surface-only React bundle uses the accepted wasm entry kind as a non-executed bundle sentinel; React loading details remain in metadata and surface.manifest.json.
+schema_version: 1
+id: ydltavern/surface
+version: 0.1.0
+description: "YdlTavern Tavern-style surface bundle (React)"
+
+entry:
+  kind: wasm
+  module: dist/index.js
+  abi_version: 1
+  memory_limit_mb: 1
+
+permissions: {}
+
+contributes:
+  surfaces:
+    - id: ydltavern/play
+      version: 0.1.0
+      slot: experience_entry
+      title: "YdlTavern Play"
+      description: "Tavern-compatible play surface for chat-style interactions"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernPlaySurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/settings
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern Settings"
+      description: "Settings panel for connection, sampler, persona, theme"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernSettingsSurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/extensions
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern Extensions"
+      description: "Extension manager and loader status panel"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernExtensionsSurface
+        wrapper_class: ydltavern-surface

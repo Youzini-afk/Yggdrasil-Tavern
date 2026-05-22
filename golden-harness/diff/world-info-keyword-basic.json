@@ -2,13 +2,17 @@
   "harness_version": "1.0",
   "scenario": "world-info/keyword-basic",
   "description": "Basic keyword-triggered world info entry",
-  "classification": "unverifiable",
+  "classification": "structural",
   "matches": false,
-  "reason": "st_shim_returned_empty",
   "expected": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "The ancient castle stands atop a misty hill, its stone walls covered in ivy."
+      }
+    ],
     "scenario": "Basic keyword-triggered world info entry"
   },
   "actual": {
@@ -17,7 +21,20 @@
     "activatedEntries": [],
     "scenario": "Basic keyword-triggered world info entry"
   },
-  "delta": [],
+  "delta": [
+    {
+      "path": "$.activatedEntries[0]",
+      "expected": {
+        "uid": 0,
+        "content": "The ancient castle stands atop a misty hill, its stone walls covered in ivy."
+      }
+    },
+    {
+      "path": "$.worldInfoBefore",
+      "expected": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
+      "actual": ""
+    }
+  ],
   "diagnostics": {
     "scanDepth": 2,
     "scanTextChars": 77,

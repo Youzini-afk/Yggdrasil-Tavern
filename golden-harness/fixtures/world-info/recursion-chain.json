@@ -93,9 +93,62 @@
     "generation_type": "normal"
   },
   "output": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "The legendary sword Excalibur glows with magical energy. Mention of Merlin."
+      },
+      {
+        "uid": 1,
+        "content": "Merlin the wizard watches from the tower. He wields ancient runes."
+      }
+    ],
+    "scenario": "World info recursion chain: Entry A triggers Entry B via content match",
+    "activated_entries": [
+      {
+        "uid": 0,
+        "key": [
+          "sword"
+        ],
+        "content": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.",
+        "position": 0,
+        "depth": 4,
+        "scan_depth": null,
+        "order": 100,
+        "activation_reason": "primary_match",
+        "comment": "Sword Entry",
+        "world": "golden-harness"
+      },
+      {
+        "uid": 1,
+        "key": [
+          "merlin"
+        ],
+        "content": "Merlin the wizard watches from the tower. He wields ancient runes.",
+        "position": 0,
+        "depth": 4,
+        "scan_depth": null,
+        "order": 200,
+        "activation_reason": "primary_match",
+        "comment": "Merlin Entry",
+        "world": "golden-harness"
+      }
+    ],
+    "world_info_before": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
+    "world_info_after": "",
+    "world_info_string": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
+    "EMEntries": [],
+    "WIDepthEntries": [],
+    "ANBeforeEntries": [],
+    "ANAfterEntries": [],
+    "outletEntries": {},
+    "diagnostics": {
+      "budget_used": 43,
+      "budget_max": 4096,
+      "scan_iterations": 3,
+      "activated_count": 2
+    }
   }
 }

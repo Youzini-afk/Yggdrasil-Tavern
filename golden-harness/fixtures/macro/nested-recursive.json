@@ -19,11 +19,8 @@
     "settings": {}
   },
   "output": {
-    "output": "Alice says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+    "output": "Alice says: Hello! End.",
     "scenario": "Nested and recursive macro substitution",
-    "input": "{{user}} says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
-    "partial": true,
-    "error": "Cannot read properties of undefined (reading 'content')",
-    "note": "Full evaluateMacros failed; used fallback env substitution only"
+    "input": "{{user}} says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End."
   }
 }

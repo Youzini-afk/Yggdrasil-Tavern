@@ -35,7 +35,7 @@ import '../shims/popup.mjs';
 // Now install additional globals that ST modules expect
 import Handlebars from 'handlebars';
 import moment from 'moment';
-import seedrandom from 'seedrandom';
+import { seedrandom } from './rng.mjs';
 import Fuse from 'fuse.js';
 
 // Install library globals on window
@@ -63,6 +63,11 @@ globalThis.eventSource = {
 globalThis.event_types = {};
 globalThis.extension_settings = {};
 globalThis.power_user = {
+  sysprompt: {
+    content: '',
+    enabled: true,
+  },
+  prefer_character_prompt: false,
   instruct: {
     enabled: true,
     wrap: true,
@@ -92,6 +97,8 @@ globalThis.power_user = {
   },
   context: {
     preset: 'default',
+    example_separator: '',
+    chat_start: '',
   },
   experimental_macro_engine: false,
 };

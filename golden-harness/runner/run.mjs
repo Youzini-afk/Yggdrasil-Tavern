@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { mkdir, writeFile, readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
+const FIXED_GENERATED_AT = '2025-05-29T12:00:00.000Z';
+
 // Register the ST module loader and install globals BEFORE loading ST modules.
 import '../shims/register-loader.mjs';
 import '../shims/globals.mjs';
@@ -144,7 +146,7 @@ async function runScenario(path, stModules) {
   const fixture = {
     _meta: {
       harness_version: '0.1.0',
-      generated_at: new Date().toISOString(),
+      generated_at: FIXED_GENERATED_AT,
       scenario: rel,
       category,
       name,

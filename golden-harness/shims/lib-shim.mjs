@@ -5,7 +5,7 @@
 
 import Handlebars from 'handlebars';
 import moment from 'moment';
-import seedrandom from 'seedrandom';
+import { seedrandom } from './rng.mjs';
 import Fuse from 'fuse.js';
 import DOMPurify from 'dompurify';
 import DiffMatchPatch from 'diff-match-patch';

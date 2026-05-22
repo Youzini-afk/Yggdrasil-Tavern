@@ -1,6 +1,15 @@
 // power-user-shim.mjs: Replaces ST's power-user.js
 
 export const power_user = {
+  // ST getInstructMacros dereferences sysprompt.content unconditionally for
+  // {{systemPrompt}} / {{defaultSystemPrompt}} (SillyTavern
+  // public/scripts/instruct-mode.js:753-761). Provide the same object shape in
+  // the headless harness so evaluateMacros can execute without fixture fallback.
+  sysprompt: {
+    content: '',
+    enabled: true,
+  },
+  prefer_character_prompt: false,
   instruct: {
     enabled: true,
     wrap: true,
@@ -28,7 +37,9 @@ export const power_user = {
     bind_to_context: false,
     sequences_as_stop_strings: false,
   },
-  context: { preset: 'default' },
+  // ST getInstructMacros also reads context.example_separator/chat_start for
+  // {{chatSeparator}} / {{chatStart}} (instruct-mode.js:763-773).
+  context: { preset: 'default', example_separator: '', chat_start: '' },
   experimental_macro_engine: false,
   persona_description_position: 0,
   token_count: 0,

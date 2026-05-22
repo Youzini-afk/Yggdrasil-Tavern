@@ -2,11 +2,9 @@
   "harness_version": "1.0",
   "scenario": "macro/env-basic",
   "description": "Basic environment variable substitution in macros",
-  "classification": "unverifiable",
-  "matches": false,
-  "reason": "st_macro_fallback_partial",
+  "classification": "perfect",
+  "matches": true,
   "expected": "Hello Alice, I am Bob. Welcome to the tavern.",
   "actual": "Hello Alice, I am Bob. Welcome to the tavern.",
-  "delta": [],
-  "fixture_error": "Cannot read properties of undefined (reading 'content')"
+  "delta": []
 }

@@ -2,17 +2,15 @@
   "harness_version": "1.0",
   "scenario": "macro/time-frozen",
   "description": "Time and date macros with frozen clock",
-  "classification": "unverifiable",
+  "classification": "structural",
   "matches": false,
-  "reason": "st_macro_fallback_partial",
-  "expected": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+  "expected": "Current time: 12:00 PM. Today is May 29, 2025. ISO date: 2025-05-29. Weekday: Thursday.",
   "actual": "Current time: 12:00:00. Today is 2025-05-29. ISO date: {{isodate}}. Weekday: {{weekday}}.",
   "delta": [
     {
       "path": "$",
-      "expected": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+      "expected": "Current time: 12:00 PM. Today is May 29, 2025. ISO date: 2025-05-29. Weekday: Thursday.",
       "actual": "Current time: 12:00:00. Today is 2025-05-29. ISO date: {{isodate}}. Weekday: {{weekday}}."
     }
-  ],
-  "fixture_error": "Cannot read properties of undefined (reading 'content')"
+  ]
 }

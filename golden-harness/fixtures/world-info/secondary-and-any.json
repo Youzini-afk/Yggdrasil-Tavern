@@ -70,9 +70,44 @@
     "generation_type": "normal"
   },
   "output": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "A massive dragon with shimmering scales breathes fire across the valley.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "World info with secondary keywords and AND/ANY logic"
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "A massive dragon with shimmering scales breathes fire across the valley."
+      }
+    ],
+    "scenario": "World info with secondary keywords and AND/ANY logic",
+    "activated_entries": [
+      {
+        "uid": 0,
+        "key": [
+          "dragon"
+        ],
+        "content": "A massive dragon with shimmering scales breathes fire across the valley.",
+        "position": 0,
+        "depth": 4,
+        "scan_depth": null,
+        "order": 100,
+        "activation_reason": "primary_secondary_match",
+        "comment": "Dragon Entry",
+        "world": "golden-harness"
+      }
+    ],
+    "world_info_before": "A massive dragon with shimmering scales breathes fire across the valley.",
+    "world_info_after": "",
+    "world_info_string": "A massive dragon with shimmering scales breathes fire across the valley.",
+    "EMEntries": [],
+    "WIDepthEntries": [],
+    "ANBeforeEntries": [],
+    "ANAfterEntries": [],
+    "outletEntries": {},
+    "diagnostics": {
+      "budget_used": 22,
+      "budget_max": 2048,
+      "scan_iterations": 1,
+      "activated_count": 1
+    }
   }
 }

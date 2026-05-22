@@ -23,14 +23,14 @@ export async function extractMacro(scenario, stModules) {
     throw new Error('evaluateMacros not available in ST macros module');
   }
 
-  const { text, env, chat = [], settings = {} } = scenario;
+  const { text, env = {}, chat = [], settings = {} } = scenario;
 
   // Set up the global state that evaluateMacros reads
   // Import script-shim to set chat, name1, name2
   const scriptShim = await import('../shims/script-shim.mjs');
-  scriptShim.setChat(chat);
-  if (env.user) scriptShim.setName1(env.user);
-  if (env.char) scriptShim.setName2(env.char);
+  scriptShim.setChat(adaptChatForST(chat, env));
+  if (env.user) scriptShim.setName1(String(env.user));
+  if (env.char) scriptShim.setName2(String(env.char));
 
   // Ensure power_user.instruct has the required fields
   const { power_user } = await import('../shims/power-user-shim.mjs');
@@ -39,43 +39,41 @@ export async function extractMacro(scenario, stModules) {
   }
 
   try {
-    const result = macrosMod.evaluateMacros(text, env);
+    const result = macrosMod.evaluateMacros(String(text ?? ''), env);
     return {
       output: result,
       scenario: scenario._description,
       input: text,
     };
   } catch (err) {
-    // evaluateMacros may fail for some macro types due to missing globals
-    // Try a simpler extraction: just run the env substitution part
-    try {
-      // Manual env substitution as fallback
-      let output = String(text);
-      for (const [key, val] of Object.entries(env)) {
-        if (typeof val === 'string' || typeof val === 'number') {
-          output = output.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'gi'), String(val));
-        }
-      }
-      // Also handle legacy markers
-      output = output.replace(/<USER>/gi, env.user || '');
-      output = output.replace(/<BOT>/gi, env.char || '');
-      output = output.replace(/<CHAR>/gi, env.char || '');
-
-      return {
-        output: output,
-        scenario: scenario._description,
-        input: text,
-        partial: true,
-        error: err.message,
-        note: 'Full evaluateMacros failed; used fallback env substitution only',
-      };
-    } catch (fallbackErr) {
-      return {
-        output: null,
-        error: err.message,
-        scenario: scenario._description,
-        input: text,
-      };
-    }
+    return {
+      output: null,
+      error: err?.stack || err?.message || String(err),
+      scenario: scenario._description,
+      input: text,
+    };
   }
+}
+
+function adaptChatForST(chat, env) {
+  if (!Array.isArray(chat)) return [];
+
+  return chat.map((message) => {
+    const role = message.role;
+    const isUser = message.is_user ?? role === 'user';
+    const isSystem = message.is_system ?? role === 'system';
+    const text = message.mes ?? message.content ?? message.text ?? '';
+
+    return {
+      ...message,
+      name: message.name ?? (isSystem ? 'System' : isUser ? (env.user ?? 'User') : (env.char ?? 'Assistant')),
+      is_user: isUser,
+      is_system: isSystem,
+      // ST last-message macros read .mes (SillyTavern public/scripts/macros.js:388-410),
+      // while some scenarios use OpenAI-style .content. Keep both fields populated.
+      mes: text,
+      content: message.content ?? text,
+      send_date: message.send_date ?? new Date().toISOString(),
+    };
+  });
 }

@@ -30,6 +30,42 @@ test('buildChatRequest emits unified base body for openai', () => {
   assert.equal(r.body.stream, false);
 });
 
+test('buildChatRequest emits ST default fields when settings omits them', () => {
+  const r = buildChatRequest(baseInput({ settings: {} }));
+  assert.equal(r.body.temperature, 1);
+  assert.equal(r.body.frequency_penalty, 0);
+  assert.equal(r.body.presence_penalty, 0);
+  assert.equal(r.body.top_p, 1);
+  assert.equal(r.body.max_tokens, 300);
+  assert.equal(r.body.user_name, 'User');
+  assert.equal(r.body.char_name, 'Assistant');
+  assert.deepEqual(r.body.group_names, []);
+  assert.equal(r.body.include_reasoning, true);
+  assert.equal(r.body.enable_web_search, false);
+  assert.equal(r.body.request_images, false);
+  assert.equal(r.body.request_image_resolution, '');
+  assert.equal(r.body.request_image_aspect_ratio, '');
+  assert.equal(r.body.custom_prompt_post_processing, '');
+});
+
+test('buildChatRequest passes through sampler settings', () => {
+  const r = buildChatRequest(baseInput({
+    settings: {
+      temp_openai: 0.42,
+      freq_pen_openai: 0.25,
+      pres_pen_openai: -0.25,
+    },
+  }));
+  assert.equal(r.body.temperature, 0.42);
+  assert.equal(r.body.frequency_penalty, 0.25);
+  assert.equal(r.body.presence_penalty, -0.25);
+});
+
+test('buildChatRequest emits empty group_names default', () => {
+  const r = buildChatRequest(baseInput({ settings: {} }));
+  assert.deepEqual(r.body.group_names, []);
+});
+
 test('buildChatRequest renames max_tokens for o1 family and strips unsupported', () => {
   const r = buildChatRequest(baseInput({ model: 'o1-preview' }));
   assert.equal(r.body.max_completion_tokens, 256);

@@ -67,9 +67,44 @@
     "generation_type": "normal"
   },
   "output": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "Basic keyword-triggered world info entry"
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "The ancient castle stands atop a misty hill, its stone walls covered in ivy."
+      }
+    ],
+    "scenario": "Basic keyword-triggered world info entry",
+    "activated_entries": [
+      {
+        "uid": 0,
+        "key": [
+          "castle"
+        ],
+        "content": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
+        "position": 0,
+        "depth": 4,
+        "scan_depth": null,
+        "order": 100,
+        "activation_reason": "primary_match",
+        "comment": "Castle Description",
+        "world": "golden-harness"
+      }
+    ],
+    "world_info_before": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
+    "world_info_after": "",
+    "world_info_string": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
+    "EMEntries": [],
+    "WIDepthEntries": [],
+    "ANBeforeEntries": [],
+    "ANAfterEntries": [],
+    "outletEntries": {},
+    "diagnostics": {
+      "budget_used": 23,
+      "budget_max": 2048,
+      "scan_iterations": 1,
+      "activated_count": 1
+    }
   }
 }

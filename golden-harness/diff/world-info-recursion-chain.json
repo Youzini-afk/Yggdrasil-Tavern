@@ -2,13 +2,21 @@
   "harness_version": "1.0",
   "scenario": "world-info/recursion-chain",
   "description": "World info recursion chain: Entry A triggers Entry B via content match",
-  "classification": "unverifiable",
+  "classification": "structural",
   "matches": false,
-  "reason": "st_shim_returned_empty",
   "expected": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "The legendary sword Excalibur glows with magical energy. Mention of Merlin."
+      },
+      {
+        "uid": 1,
+        "content": "Merlin the wizard watches from the tower. He wields ancient runes."
+      }
+    ],
     "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
   },
   "actual": {
@@ -17,7 +25,27 @@
     "activatedEntries": [],
     "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
   },
-  "delta": [],
+  "delta": [
+    {
+      "path": "$.activatedEntries[0]",
+      "expected": {
+        "uid": 0,
+        "content": "The legendary sword Excalibur glows with magical energy. Mention of Merlin."
+      }
+    },
+    {
+      "path": "$.activatedEntries[1]",
+      "expected": {
+        "uid": 1,
+        "content": "Merlin the wizard watches from the tower. He wields ancient runes."
+      }
+    },
+    {
+      "path": "$.worldInfoBefore",
+      "expected": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
+      "actual": ""
+    }
+  ],
   "diagnostics": {
     "scanDepth": 2,
     "scanTextChars": 38,

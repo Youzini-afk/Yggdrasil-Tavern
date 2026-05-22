@@ -2,13 +2,17 @@
   "harness_version": "1.0",
   "scenario": "world-info/probability-seeded",
   "description": "World info entry with probability < 100, using seeded RNG for determinism",
-  "classification": "unverifiable",
+  "classification": "structural",
   "matches": false,
-  "reason": "st_shim_returned_empty",
   "expected": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
+    "activatedEntries": [
+      {
+        "uid": 0,
+        "content": "A rare potion bubbles in the cauldron, its color shifting unpredictably."
+      }
+    ],
     "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
   },
   "actual": {
@@ -17,7 +21,20 @@
     "activatedEntries": [],
     "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
   },
-  "delta": [],
+  "delta": [
+    {
+      "path": "$.activatedEntries[0]",
+      "expected": {
+        "uid": 0,
+        "content": "A rare potion bubbles in the cauldron, its color shifting unpredictably."
+      }
+    },
+    {
+      "path": "$.worldInfoBefore",
+      "expected": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
+      "actual": ""
+    }
+  ],
   "diagnostics": {
     "scanDepth": 2,
     "scanTextChars": 35,
@@ -37,14 +54,14 @@
         "source": "golden-harness",
         "activated": false,
         "code": "probability_failed",
-        "reason": "probability roll 98.3134 > 50",
+        "reason": "probability roll 52.3429 > 50",
         "iteration": 0,
         "matchedKeys": [],
         "matchedSecondaryKeys": [],
         "probability": 50,
-        "roll": 98.31337704228382,
+        "roll": 52.34293451080404,
         "randomIndex": 0,
-        "randomValue": 0.9831337704228382
+        "randomValue": 0.5234293451080404
       }
     ],
     "routingTrace": []

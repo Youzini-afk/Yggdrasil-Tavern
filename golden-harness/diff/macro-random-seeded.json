@@ -2,11 +2,15 @@
   "harness_version": "1.0",
   "scenario": "macro/random-seeded",
   "description": "Random macro with seeded RNG for deterministic output",
-  "classification": "unverifiable",
+  "classification": "structural",
   "matches": false,
-  "reason": "st_macro_fallback_partial",
-  "expected": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
+  "expected": "Roll: 1. Pick: apple|banana|cherry. Random: 1-100.",
   "actual": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
-  "delta": [],
-  "fixture_error": "Cannot read properties of undefined (reading 'content')"
+  "delta": [
+    {
+      "path": "$",
+      "expected": "Roll: 1. Pick: apple|banana|cherry. Random: 1-100.",
+      "actual": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}."
+    }
+  ]
 }

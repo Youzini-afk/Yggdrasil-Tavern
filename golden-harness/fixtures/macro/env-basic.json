@@ -22,9 +22,6 @@
   "output": {
     "output": "Hello Alice, I am Bob. Welcome to the tavern.",
     "scenario": "Basic environment variable substitution in macros",
-    "input": "Hello {{user}}, I am {{char}}. Welcome to {{location}}.",
-    "partial": true,
-    "error": "Cannot read properties of undefined (reading 'content')",
-    "note": "Full evaluateMacros failed; used fallback env substitution only"
+    "input": "Hello {{user}}, I am {{char}}. Welcome to {{location}}."
   }
 }

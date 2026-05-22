@@ -2,15 +2,9 @@
   "harness_version": "1.0",
   "scenario": "instruct/chatml",
   "description": "ChatML instruct mode template formatting",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": "<|im_start|>user\n\nHello, how are you today?<|im_end|>\n",
-  "actual": "<|im_start|>user\nUser: Hello, how are you today?<|im_end|>\n",
-  "delta": [
-    {
-      "path": "$",
-      "expected": "<|im_start|>user\n\nHello, how are you today?<|im_end|>\n",
-      "actual": "<|im_start|>user\nUser: Hello, how are you today?<|im_end|>\n"
-    }
-  ]
+  "actual": "<|im_start|>user\n\nHello, how are you today?<|im_end|>\n",
+  "delta": []
 }

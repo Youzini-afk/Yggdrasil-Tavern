@@ -2,7 +2,7 @@
   "harness_version": "1.0",
   "scenario": "chat/deepseek-reasoning",
   "description": "DeepSeek reasoning model with chain-of-thought",
-  "classification": "structural",
+  "classification": "cosmetic",
   "matches": false,
   "expected": {
     "type": "normal",
@@ -46,78 +46,26 @@
         "content": "If all cats are animals, and Fluffy is a cat, what is Fluffy?"
       }
     ],
-    "model": "deepseek-reasoner",
-    "chat_completion_source": "deepseek",
+    "model": "gpt-4-turbo",
+    "chat_completion_source": "openai",
     "stream": false,
-    "temperature": 0.7,
+    "temperature": 1,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
     "top_p": 1,
-    "max_tokens": 1024
+    "max_tokens": 300,
+    "user_name": "User",
+    "char_name": "Assistant",
+    "group_names": [],
+    "include_reasoning": true,
+    "enable_web_search": false,
+    "request_images": false,
+    "request_image_resolution": "",
+    "request_image_aspect_ratio": "",
+    "custom_prompt_post_processing": ""
   },
   "delta": [
-    {
-      "path": "$.char_name",
-      "expected": "Assistant"
-    },
-    {
-      "path": "$.chat_completion_source",
-      "expected": "openai",
-      "actual": "deepseek"
-    },
-    {
-      "path": "$.custom_prompt_post_processing",
-      "expected": ""
-    },
-    {
-      "path": "$.enable_web_search",
-      "expected": false
-    },
-    {
-      "path": "$.frequency_penalty",
-      "expected": 0
-    },
-    {
-      "path": "$.group_names",
-      "expected": []
-    },
-    {
-      "path": "$.include_reasoning",
-      "expected": true
-    },
-    {
-      "path": "$.max_tokens",
-      "expected": 300,
-      "actual": 1024
-    },
-    {
-      "path": "$.model",
-      "expected": "gpt-4-turbo",
-      "actual": "deepseek-reasoner"
-    },
-    {
-      "path": "$.presence_penalty",
-      "expected": 0
-    },
-    {
-      "path": "$.request_image_aspect_ratio",
-      "expected": ""
-    },
-    {
-      "path": "$.request_image_resolution",
-      "expected": ""
-    },
-    {
-      "path": "$.request_images",
-      "expected": false
-    },
-    {
-      "path": "$.temperature",
-      "expected": 1,
-      "actual": 0.7
-    },
-    {
-      "path": "$.user_name",
-      "expected": "User"
-    }
+    "key ordering or whitespace only"
   ],
   "diagnostics": {
     "stripped": [],

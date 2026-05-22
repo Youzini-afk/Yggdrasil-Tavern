@@ -27,6 +27,17 @@ test('CHATML wraps user message with im_start/im_end and newline boundaries', ()
   assert.ok(out.includes('<|im_end|>'));
 });
 
+test('CHATML user message has no User prefix when names_behavior=force', () => {
+  const out = formatInstructModeChat(
+    { role: 'user', content: 'Hello, how are you today?', name: 'User' },
+    { ...CHATML_TEMPLATE, names_behavior: INSTRUCT_NAMES_BEHAVIOR.FORCE },
+    'Assistant',
+    'User',
+  );
+  assert.equal(out, '<|im_start|>user\n\nHello, how are you today?<|im_end|>');
+  assert.equal(out.includes('User: '), false);
+});
+
 test('CHATML wraps assistant message correctly', () => {
   const out = formatInstructModeChat(
     { role: 'assistant', content: 'Hi' },
@@ -182,9 +193,28 @@ test('Llama 3 template wraps with start_header_id and eot_id', () => {
   assert.ok(out.includes('<|eot_id|>'));
 });
 
+test('Llama 3 user message has no persona prefix when names_behavior=force', () => {
+  const out = formatInstructModeChat(
+    { role: 'user', content: 'I need your help with something important.', name: 'Atlas' },
+    { ...LLAMA3_TEMPLATE, names_behavior: INSTRUCT_NAMES_BEHAVIOR.FORCE },
+    'Luna',
+    'Atlas',
+  );
+  assert.equal(out, '<|start_header_id|>user<|end_header_id|>\n\nI need your help with something important.<|eot_id|>');
+  assert.equal(out.includes('Atlas: '), false);
+});
+
 test('Alpaca template uses ### Instruction / ### Response sequences', () => {
   const u = formatInstructModeChat({ role: 'user', content: 'q' }, ALPACA_TEMPLATE);
   const a = formatInstructModeChat({ role: 'assistant', content: 'r' }, ALPACA_TEMPLATE);
   assert.ok(u.includes('### Instruction:'));
   assert.ok(a.includes('### Response:'));
+});
+
+test('Alpaca template still supports User prefix when names_behavior=always', () => {
+  const out = formatInstructModeChat(
+    { role: 'user', content: 'q', name: 'User' },
+    { ...ALPACA_TEMPLATE, names_behavior: INSTRUCT_NAMES_BEHAVIOR.ALWAYS },
+  );
+  assert.ok(out.includes('User: q'));
 });

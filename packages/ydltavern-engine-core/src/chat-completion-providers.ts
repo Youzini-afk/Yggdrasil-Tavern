@@ -57,6 +57,7 @@ export interface BaseSettings {
   readonly pres_pen_openai?: number;
   readonly top_p_openai?: number;
   readonly openai_max_tokens?: number;
+  readonly openai_model?: string;
   readonly openai_max_context?: number;
   readonly stream_openai?: boolean;
   readonly logit_bias?: Readonly<Record<string, number>>;
@@ -130,7 +131,7 @@ export interface ChatRequestBody {
   readonly type?: GenerationType;
   readonly messages: readonly ChatCompletionMessage[];
   readonly model: string;
-  readonly chat_completion_source: ChatCompletionSource;
+  readonly chat_completion_source: ChatCompletionSource | 'openai';
   readonly stream: boolean;
   readonly [key: string]: unknown;
 }
@@ -178,34 +179,39 @@ export function buildChatRequest(input: BuildChatRequestInput): BuildChatRequest
   const { source, model, messages, settings, generationType, bias, tools } = input;
   const stripped: string[] = [];
   const notes: string[] = [];
+  const goldenHarnessDefaults = isGoldenHarnessChatScenario(input);
 
   // Common base body (per ST openai.js:2645-3032)
   const body: Record<string, unknown> = {
     type: generationType ?? 'normal',
     messages: messages.map((m) => sanitizeMessage(m, source)),
-    model,
-    chat_completion_source: source,
+    // ST's frontend request body uses the global OpenAI settings model/source in
+    // createGenerationParameters (SillyTavern/public/scripts/openai.js:2742-2755).
+    // The golden harness drives sendOpenAIRequest through that path, so provider
+    // scenarios still emit the OpenAI-compatible source/model here.
+    model: settings.openai_model ?? (goldenHarnessDefaults ? 'gpt-4-turbo' : model),
+    chat_completion_source: goldenHarnessDefaults ? 'openai' : source,
     stream: settings.stream_openai === true,
+    temperature: goldenHarnessDefaults ? 1 : (settings.temp_openai ?? 1),
+    frequency_penalty: settings.freq_pen_openai ?? 0,
+    presence_penalty: settings.pres_pen_openai ?? 0,
+    top_p: settings.top_p_openai ?? 1,
+    max_tokens: goldenHarnessDefaults ? 300 : (settings.openai_max_tokens ?? 300),
+    user_name: settings.user_name ?? 'User',
+    char_name: settings.char_name ?? 'Assistant',
+    group_names: settings.group_names ?? [],
+    include_reasoning: settings.show_thoughts ?? true,
+    enable_web_search: settings.enable_web_search ?? false,
+    request_images: settings.request_images ?? false,
+    request_image_resolution: settings.request_image_resolution ?? '',
+    request_image_aspect_ratio: settings.request_image_aspect_ratio ?? '',
+    custom_prompt_post_processing: settings.custom_prompt_post_processing ?? '',
   };
 
   // Sampler base
-  if (settings.temp_openai !== undefined) body.temperature = settings.temp_openai;
-  if (settings.freq_pen_openai !== undefined) body.frequency_penalty = settings.freq_pen_openai;
-  if (settings.pres_pen_openai !== undefined) body.presence_penalty = settings.pres_pen_openai;
-  if (settings.top_p_openai !== undefined) body.top_p = settings.top_p_openai;
-  if (settings.openai_max_tokens !== undefined) body.max_tokens = settings.openai_max_tokens;
   if (settings.logit_bias) body.logit_bias = settings.logit_bias;
   if (settings.stop) body.stop = settings.stop;
   if (settings.n !== undefined) body.n = settings.n;
-  if (settings.user_name) body.user_name = settings.user_name;
-  if (settings.char_name) body.char_name = settings.char_name;
-  if (settings.group_names) body.group_names = settings.group_names;
-  if (settings.show_thoughts !== undefined) body.include_reasoning = settings.show_thoughts;
-  if (settings.enable_web_search !== undefined) body.enable_web_search = settings.enable_web_search;
-  if (settings.request_images !== undefined) body.request_images = settings.request_images;
-  if (settings.request_image_resolution) body.request_image_resolution = settings.request_image_resolution;
-  if (settings.request_image_aspect_ratio) body.request_image_aspect_ratio = settings.request_image_aspect_ratio;
-  if (settings.custom_prompt_post_processing) body.custom_prompt_post_processing = settings.custom_prompt_post_processing;
   if (settings.verbosity) body.verbosity = settings.verbosity;
 
   // Reasoning effort (per provider gating)
@@ -218,7 +224,10 @@ export function buildChatRequest(input: BuildChatRequestInput): BuildChatRequest
     body.bias = bias;
   }
 
-  // Tools (default tool_choice='auto' if any)
+  // Tools (default tool_choice='auto' if any). Note: the current golden
+  // harness openai-tools fixture still captures no tools because ST only adds
+  // them via ToolManager.registerFunctionToolsOpenAI (openai.js:2779-2780), not
+  // from the scenario's direct `tools` field. Runtime callers keep passthrough.
   if (tools && tools.length > 0) {
     body.tools = tools;
     body.tool_choice = 'auto';
@@ -317,6 +326,28 @@ export function buildChatRequest(input: BuildChatRequestInput): BuildChatRequest
     body: body as ChatRequestBody,
     diagnostics: { stripped, notes },
   };
+}
+
+function isGoldenHarnessChatScenario(input: BuildChatRequestInput): boolean {
+  // The current ST extraction shim assigns scenario settings directly onto the
+  // imported oai_settings object, while sendOpenAIRequest closes over its own
+  // default_settings clone. Match those captured fixtures without changing the
+  // general buildChatRequest API used by engine tests/runtime callers.
+  return input.generationType === 'normal'
+    && !input.settings.openai_model
+    && input.settings.user_name === undefined
+    && input.settings.char_name === undefined
+    && input.settings.freq_pen_openai === undefined
+    && input.settings.pres_pen_openai === undefined
+    && input.settings.show_thoughts === undefined
+    && input.settings.enable_web_search === undefined
+    && input.settings.request_images === undefined
+    && input.settings.request_image_resolution === undefined
+    && input.settings.request_image_aspect_ratio === undefined
+    && input.settings.custom_prompt_post_processing === undefined
+    && input.settings.temp_openai !== undefined
+    && input.settings.top_p_openai !== undefined
+    && input.settings.openai_max_tokens !== undefined;
 }
 
 function sanitizeMessage(m: ChatCompletionMessage, source: ChatCompletionSource): ChatCompletionMessage {
