@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { join } from 'node:path';
 
 import type { JsonObject } from '@ydltavern/types';
-import { extractPngTextChunks, importCharacterCard, importChatHistory, importWorldBook } from '../src/index.js';
+import { exportCharacterCard, exportChatHistory, exportPreset, exportWorldBook, extractPngTextChunks, importCharacterCard, importChatHistory, importInstructPreset, importPersona, importPreset, importQuickReplies, importRegexScripts, importTheme, importWorldBook } from '../src/index.js';
 
 const fixturesDir = join(process.cwd(), 'test', 'fixtures');
 
@@ -133,6 +133,78 @@ test('extracts PNG tEXt chara metadata without CRC validation', () => {
   assert.equal(chunks[0]?.keyword, 'chara');
   assert.equal(card.name, 'Png Aster');
   assert.equal(card.format, 'png_st');
+});
+
+test('imports preset fixture preserving prompt_order, sampler, and raw fields', async () => {
+  const fixture = await readJsonFixture('preset-openai.json');
+  const preset = importPreset(fixture);
+
+  assert.equal(preset.kind, 'preset');
+  assert.equal(preset.format, 'openai');
+  assert.equal(preset.name, 'Fixture OpenAI Preset');
+  assert.deepEqual(preset.prompt_order, fixture['prompt_order']);
+  assert.deepEqual(preset.sampler, asObject(fixture['sampler']));
+  assert.deepEqual(preset.raw, fixture);
+  assert.deepEqual(exportPreset(preset), fixture);
+  assert.deepEqual(preset.diagnostics, []);
+});
+
+test('imports persona, theme, quick replies, regex scripts, and instruct presets', async () => {
+  const personaFixture = await readJsonFixture('persona.json');
+  const themeFixture = await readJsonFixture('theme.json');
+  const quickFixture = await readJsonFixture('quick-replies.json');
+  const regexFixture = await readJsonFixture('regex-scripts.json');
+  const instructFixture = await readJsonFixture('instruct-preset.json');
+
+  const persona = importPersona(personaFixture);
+  assert.equal(persona.name, 'Fixture Persona');
+  assert.equal(persona.description, 'Persona description fixture.');
+  assert.equal(persona.avatar, 'persona.png');
+  assert.deepEqual(persona.tags, ['fixture', 'persona']);
+  assert.deepEqual(persona.extensions, { favorite_color: 'blue' });
+  assert.deepEqual(persona.raw, personaFixture);
+
+  const theme = importTheme(themeFixture);
+  assert.equal(theme.name, 'Fixture Theme');
+  assert.deepEqual(theme.vars, { '--SmartThemeBodyColor': '#101010' });
+  assert.equal(theme.css, '.fixture { color: red; }');
+  assert.equal(theme.background, 'bg/fixture.png');
+  assert.deepEqual(theme.powerUser, { blur_strength: 8, movingUI: true });
+
+  const quick = importQuickReplies(quickFixture);
+  assert.equal(quick.sets.length, 1);
+  assert.equal(quick.sets[0]?.name, 'Fixture QR');
+  assert.equal(quick.sets[0]?.autoExecute, false);
+  assert.deepEqual(quick.sets[0]?.links, ['linked-set']);
+  assert.equal(quick.sets[0]?.items[0]?.label, 'Inspect');
+  assert.equal(quick.sets[0]?.items[0]?.message, '/inspect');
+  assert.equal(quick.sets[0]?.items[0]?.autoExecute, true);
+
+  const regex = importRegexScripts(regexFixture);
+  assert.deepEqual(regex.scripts.map((script) => script.scope), ['GLOBAL', 'PRESET', 'SCOPED']);
+  assert.equal(regex.scripts[0]?.find, 'foo');
+  assert.equal(regex.scripts[0]?.replace, 'bar');
+  assert.equal(regex.scripts[0]?.flags, 'gi');
+  assert.equal(regex.scripts[0]?.placement, 'prompt');
+
+  const instruct = importInstructPreset(instructFixture);
+  assert.equal(instruct.name, 'Fixture Instruct');
+  assert.equal(instruct.system, '<|system|>');
+  assert.equal(instruct.user, '<|user|>');
+  assert.equal(instruct.assistant, '<|assistant|>');
+  assert.equal(instruct.separator, '\n');
+  assert.equal(instruct.wrap, true);
+  assert.deepEqual(instruct.templates, { system: '{{system}}', user: '{{input}}' });
+});
+
+test('exports character, world book, and chat using preserved raw JSON shapes', async () => {
+  const characterFixture = await readJsonFixture('character-v2.json');
+  const worldFixture = await readJsonFixture('world-book.json');
+  const chatFixture = await readFile(join(fixturesDir, 'chat.jsonl'), 'utf8');
+
+  assert.deepEqual(exportCharacterCard(importCharacterCard(characterFixture)), characterFixture);
+  assert.deepEqual(exportWorldBook(importWorldBook(worldFixture)), worldFixture);
+  assert.deepEqual(exportChatHistory(importChatHistory(chatFixture)), chatFixture.trim().split(/\r?\n/u).map((line) => JSON.parse(line) as JsonObject));
 });
 
 function makeTinyPngWithText(keyword: string, text: string): Uint8Array {

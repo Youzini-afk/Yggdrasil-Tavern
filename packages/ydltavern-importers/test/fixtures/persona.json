@@ -1,0 +1,10 @@
+{
+  "name": "Fixture Persona",
+  "description": "Persona description fixture.",
+  "avatar": "persona.png",
+  "tags": ["fixture", "persona"],
+  "extensions": {
+    "favorite_color": "blue"
+  },
+  "fixture_unknown_persona_field": ["preserve"]
+}

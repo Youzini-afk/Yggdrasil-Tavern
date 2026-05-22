@@ -1,0 +1,19 @@
+{
+  "sets": [
+    {
+      "name": "Fixture QR",
+      "links": ["linked-set"],
+      "autoExecute": false,
+      "items": [
+        {
+          "label": "Inspect",
+          "message": "/inspect",
+          "autoExecute": true,
+          "fixture_unknown_item_field": { "preserve": true }
+        }
+      ],
+      "fixture_unknown_set_field": "preserve"
+    }
+  ],
+  "fixture_unknown_quick_reply_field": true
+}

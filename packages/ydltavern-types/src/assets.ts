@@ -13,6 +13,10 @@ export type AssetKind =
   | 'audio'
   | 'file';
 
+export type STRegexScriptScope = 'GLOBAL' | 'PRESET' | 'SCOPED';
+
+export type STPresetStyle = 'chat' | 'text' | 'openai' | 'kobold' | 'novel' | 'context' | 'instruct' | 'sysprompt';
+
 export interface AssetRef {
   readonly id: Ulid;
   readonly kind: AssetKind;

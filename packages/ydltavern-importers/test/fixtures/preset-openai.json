@@ -1,0 +1,17 @@
+{
+  "name": "Fixture OpenAI Preset",
+  "api": "openai",
+  "prompt_order": [
+    { "identifier": "main", "enabled": true },
+    { "identifier": "jailbreak", "enabled": false }
+  ],
+  "sampler": {
+    "temperature": 0.72,
+    "top_p": 0.9,
+    "frequency_penalty": 0.1
+  },
+  "prompts": [
+    { "identifier": "main", "content": "Fixture main prompt." }
+  ],
+  "fixture_unknown_preset_field": { "preserve": true }
+}

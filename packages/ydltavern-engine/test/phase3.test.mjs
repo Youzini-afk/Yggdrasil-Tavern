@@ -342,6 +342,24 @@ test("asset import capabilities return importer outputs", () => {
   assert.equal(character.format, "st_v2");
   assert.equal(worldBook.kind, "world_book");
   assert.equal(worldBook.entries[0].content, "The moon is bright.");
+
+  const preset = assetHandlers[`${PACKAGE_ID}/asset.import_preset`]({
+    payload: { name: "Preset", prompt_order: [{ identifier: "main" }], temperature: 0.5 },
+  });
+  const persona = assetHandlers[`${PACKAGE_ID}/asset.import_persona`]({ payload: { name: "Me", description: "Persona text" } });
+  const theme = assetHandlers[`${PACKAGE_ID}/asset.import_theme`]({ payload: { name: "Dark", vars: { color: "#000" } } });
+  const quickReplies = assetHandlers[`${PACKAGE_ID}/asset.import_quick_replies`]({ payload: { name: "Set", items: [{ label: "Hi", message: "/gen" }] } });
+  const regex = assetHandlers[`${PACKAGE_ID}/asset.import_regex_scripts`]({ payload: { scripts: [{ scope: "PRESET", find: "foo", replace: "bar" }] } });
+  const instruct = assetHandlers[`${PACKAGE_ID}/asset.import_instruct_preset`]({ payload: { name: "Instruct", system: "sys", user: "usr" } });
+  const exportedPreset = assetHandlers[`${PACKAGE_ID}/asset.export_preset`]({ payload: { name: "Preset", temperature: 0.5 } });
+
+  assert.equal(preset.kind, "preset");
+  assert.equal(persona.description, "Persona text");
+  assert.equal(theme.kind, "theme");
+  assert.equal(quickReplies.sets[0].items[0].label, "Hi");
+  assert.equal(regex.scripts[0].scope, "PRESET");
+  assert.equal(instruct.system, "sys");
+  assert.equal(exportedPreset.name, "Preset");
 });
 
 test("fallback JSON-RPC capability.invoke calls a real capability", async () => {

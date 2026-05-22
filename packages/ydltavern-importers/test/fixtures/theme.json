@@ -1,0 +1,13 @@
+{
+  "name": "Fixture Theme",
+  "vars": {
+    "--SmartThemeBodyColor": "#101010"
+  },
+  "css": ".fixture { color: red; }",
+  "background": "bg/fixture.png",
+  "power_user": {
+    "blur_strength": 8,
+    "movingUI": true
+  },
+  "fixture_unknown_theme_field": true
+}

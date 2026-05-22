@@ -1,0 +1,25 @@
+{
+  "scripts": [
+    {
+      "scope": "GLOBAL",
+      "name": "Global Fixture",
+      "find": "foo",
+      "replace": "bar",
+      "flags": "gi",
+      "placement": "prompt"
+    },
+    {
+      "scope": "PRESET",
+      "name": "Preset Fixture",
+      "pattern": "baz",
+      "replacement": "qux"
+    },
+    {
+      "scope": "SCOPED",
+      "name": "Scoped Fixture",
+      "regex": "one",
+      "substitute": "two"
+    }
+  ],
+  "fixture_unknown_regex_field": "preserve"
+}

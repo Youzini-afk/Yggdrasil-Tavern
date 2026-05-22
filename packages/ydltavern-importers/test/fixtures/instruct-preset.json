@@ -1,0 +1,13 @@
+{
+  "name": "Fixture Instruct",
+  "system_sequence": "<|system|>",
+  "user_sequence": "<|user|>",
+  "assistant_sequence": "<|assistant|>",
+  "separator_sequence": "\n",
+  "wrap": true,
+  "templates": {
+    "system": "{{system}}",
+    "user": "{{input}}"
+  },
+  "fixture_unknown_instruct_field": "preserve"
+}
