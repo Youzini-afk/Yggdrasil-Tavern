@@ -1,0 +1,250 @@
+/*
+ * YdlTavern Surface — Mobile responsive overrides
+ *
+ * Matches SillyTavern's mobile-styles.css at:
+ *   1000px primary mobile breakpoint
+ *   768px secondary breakpoint (tighter portrait phones)
+ *
+ * All rules scoped under .ydltavern-surface to avoid leaking to host shell.
+ * Reference: SillyTavern/public/css/mobile-styles.css
+ */
+
+/* === Primary mobile breakpoint (1000px, matches ST) === */
+/* ST mobile-styles.css:1-2: max-width: 1000px */
+@media (max-width: 1000px) {
+  /* ST mobile-styles.css:250-254: fixed body, no touch scrolling on body */
+  .ydltavern-surface .tavern-shell {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  /* ST mobile-styles.css:288-315: full-width top bar and drawers */
+  .ydltavern-surface .top-settings-holder {
+    width: 100vw;
+    padding: 6px 8px;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+  }
+
+  .ydltavern-surface .top-settings-holder::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ST mobile-styles.css:45-84, 119-138: 30x30 minimum touch targets */
+  .ydltavern-surface .drawer-icon {
+    min-width: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
+  }
+
+  /* ST mobile-styles.css:260-269, 288-315: drawer takes full viewport */
+  .ydltavern-surface .drawer-content {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    height: 100vh !important;
+    border-radius: 0;
+    border: 0;
+    padding: 16px 14px calc(env(safe-area-inset-bottom, 0) + 16px);
+    z-index: 200;
+    transform: translateX(-110%);
+    transition:
+      transform var(--tavern-animation-duration-2x),
+      opacity var(--tavern-animation-duration-2x);
+  }
+
+  .ydltavern-surface .drawer-content.drawer-right {
+    transform: translateX(110%);
+  }
+
+  .ydltavern-surface .drawer-content.openDrawer {
+    transform: translateX(0);
+  }
+
+  /* ST mobile-styles.css:13-16, 361-365: hide drag/pin handles on mobile */
+  .ydltavern-surface .drag-grabber,
+  .ydltavern-surface .pull-tab,
+  .ydltavern-surface .pin-button,
+  .ydltavern-surface .drawer-pin {
+    display: none !important;
+  }
+
+  /* Sheld occupies the rest after the top bar */
+  /* ST mobile-styles.css:306-315: #sheld full width */
+  .ydltavern-surface .sheld {
+    width: 100vw;
+    height: calc(100dvh - 56px);
+    height: calc(100vh - 56px);
+  }
+
+  /* ST mobile-styles.css:357-359: bigger message action icons */
+  .ydltavern-surface .mes_button {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: calc(var(--tavern-main-font-size) * 1.05);
+  }
+
+  .ydltavern-surface .menu_button {
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+
+  /* Send form: bigger touch targets */
+  /* ST mobile-styles.css:340-345: #send_form border + max-width */
+  .ydltavern-surface .send_form {
+    padding: 8px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+  }
+
+  .ydltavern-surface .composer_button,
+  .ydltavern-surface .send_but {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .ydltavern-surface .send_textarea {
+    min-height: 44px;
+    font-size: 16px; /* prevent iOS zoom on focus */
+  }
+
+  /* Backgrounds drawer: full width */
+  /* ST mobile-styles.css:145-148: #Backgrounds.drawer-content full width */
+  .ydltavern-surface .bg-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Persona / character row touch sizing */
+  .ydltavern-surface .persona-avatar,
+  .ydltavern-surface .character-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ydltavern-surface .persona-row-button,
+  .ydltavern-surface .character-row-button {
+    min-height: 56px;
+    padding: 6px 8px;
+  }
+
+  /* Drawer backdrop is more opaque on mobile */
+  .ydltavern-surface .drawer-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* Background image system: full viewport on mobile */
+  /* ST mobile-styles.css:295-303: #bg1 full viewport */
+  .ydltavern-surface .background_layer,
+  #bg1 {
+    background-size: cover;
+    background-position: center center;
+  }
+
+  /* Reduce hover-only effects on touch */
+  .ydltavern-surface .mes_button:hover,
+  .ydltavern-surface .composer_button:hover,
+  .ydltavern-surface .drawer-icon:hover {
+    background: transparent;
+  }
+
+  /* Show extra mes buttons popover wider */
+  .ydltavern-surface .extraMesButtons {
+    flex-wrap: wrap;
+    max-width: 80vw;
+  }
+}
+
+/* === Secondary breakpoint (768px) — tighter portrait phones === */
+/* ST mobile-styles.css breakpoints reference (lines 537-580 for tighter sizes) */
+@media (max-width: 768px) {
+  .ydltavern-surface .drawer-icon {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: calc(var(--tavern-main-font-size) * 0.95);
+  }
+
+  .ydltavern-surface .drawer-section {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .ydltavern-surface .drawer-section-header h3 {
+    font-size: 0.95em;
+  }
+
+  /* Stack character/persona row actions below content on tiny screens */
+  .ydltavern-surface .persona-row,
+  .ydltavern-surface .character-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .ydltavern-surface .persona-row-actions,
+  .ydltavern-surface .character-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Background grid: single column */
+  .ydltavern-surface .bg-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Message bubble: tighter padding */
+  .ydltavern-surface .mes {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .ydltavern-surface .mes .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ydltavern-surface .mesAvatarWrapper {
+    min-width: 40px;
+  }
+
+  /* Top bar takes less padding */
+  .ydltavern-surface .top-settings-holder {
+    padding: 4px 6px;
+  }
+}
+
+/* === Reduced motion preference === */
+/* ST mobile-styles.css does not have this, but it's a best practice */
+@media (prefers-reduced-motion: reduce) {
+  .ydltavern-surface .drawer-content,
+  .ydltavern-surface .drawer-icon,
+  .ydltavern-surface .mes_button,
+  .ydltavern-surface .composer_button,
+  .ydltavern-surface .send_but,
+  .ydltavern-surface .streaming_dot {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* === Forced colors / high contrast === */
+@media (forced-colors: active) {
+  .ydltavern-surface .drawer-content,
+  .ydltavern-surface .top-settings-holder,
+  .ydltavern-surface .send_form {
+    border: 1px solid CanvasText;
+  }
+
+  .ydltavern-surface .drawer-icon.open {
+    outline: 2px solid Highlight;
+  }
+}

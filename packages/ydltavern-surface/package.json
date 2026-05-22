@@ -11,6 +11,7 @@
     },
     "./manifest": "./surface.manifest.json",
     "./styles/surface.css": "./dist/styles/surface.css",
+    "./styles/mobile.css": "./dist/styles/mobile.css",
     "./fixtures": {
       "types": "./dist/fixtures/sample-chat.d.ts",
       "default": "./dist/fixtures/sample-chat.js"

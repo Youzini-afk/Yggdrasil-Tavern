@@ -8,8 +8,13 @@
    surface mount with that class; the package never assigns to `:root`,
    `body`, or unscoped tag selectors so it can co-exist with host styles.
    Fonts are NOT bundled — hosts load them at the page/app level. The
-   fallback chains render acceptably on their own.
-   ========================================================================== */
+    fallback chains render acceptably on their own.
+    ========================================================================== */
+
+/* === V6: Mobile overrides (ST-aligned) === */
+/* Imported at top so mobile rules cascade under desktop rules in the same stylesheet.
+   copy-assets.mjs automatically copies mobile.css alongside surface.css to dist/styles/. */
+@import './mobile.css';
 
 .ydltavern-surface {
   --color-bg: #0b0d12;
@@ -3209,43 +3214,6 @@
   cursor: pointer;
 }
 
-/* === Mobile (1000px breakpoint, matches ST) === */
-@media (max-width: 1000px) {
-  .ydltavern-surface .tavern-shell {
-    grid-template-columns: 100vw;
-    grid-template-rows: auto 1fr;
-    grid-template-areas: 'topbar' 'sheld';
-  }
-
-  .ydltavern-surface .drawer-rail {
-    display: contents;
-  }
-
-  .ydltavern-surface .drawer-content {
-    top: 0;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw;
-    height: 100dvh;
-    border-radius: 0;
-    transform: translateX(-110%);
-    z-index: 200;
-  }
-
-  .ydltavern-surface .drawer-content.drawer-right {
-    transform: translateX(110%);
-  }
-
-  .ydltavern-surface .drawer-content.openDrawer {
-    transform: translateX(0);
-  }
-
-  .ydltavern-surface .drawer-icon {
-    min-width: 36px;
-    min-height: 36px;
-  }
-}
-
 /* === ST-aligned composer (V4) === */
 .ydltavern-surface .send_form {
   display: flex;
@@ -3852,3 +3820,5 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
 }
+
+
