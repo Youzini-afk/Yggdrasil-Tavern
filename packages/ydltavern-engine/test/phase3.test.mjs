@@ -406,6 +406,34 @@ test("extension capabilities expose first built-in extension wrappers", () => {
   assert.equal(vectors.plan.kind, "vectorQueryPlan");
 });
 
+test("extension loader capabilities produce non-executing load plans", () => {
+  const bundle = {
+    manifest: {
+      id: "third-party-demo",
+      name: "Third Party Demo",
+      version: "1.0.0",
+      js: ["index.js"],
+      css: ["style.css"],
+      loading_order: 10,
+      permissions: ["slash", "dom"],
+    },
+  };
+  const discovered = extensionHandlers[`${PACKAGE_ID}/extension.loader.discover`]({ bundles: [bundle] });
+  const plan = extensionHandlers[`${PACKAGE_ID}/extension.loader.plan_load`]({ bundle, hostPolicy: { allow: ["slash"] } });
+  const compat = extensionHandlers[`${PACKAGE_ID}/extension.loader.compat`]({ manifest: bundle.manifest });
+  const hooks = extensionHandlers[`${PACKAGE_ID}/extension.loader.hooks.preview`]({
+    registrations: [{ id: "hook-a", extensionId: "third-party-demo", kind: "prompt" }],
+    emit: "prompt",
+  });
+
+  assert.equal(discovered.bundles[0].manifest.id, "third-party-demo");
+  assert.equal(discovered.sorted_manifests[0].id, "third-party-demo");
+  assert.equal(plan.loadPlan.executeJavaScript, false);
+  assert.deepEqual(plan.loadPlan.blockedPermissions, ["dom"]);
+  assert.equal(compat.compat.available.getContext, true);
+  assert.equal(hooks.emitted.results[0].ok, true);
+});
+
 test("fallback JSON-RPC capability.invoke calls a real capability", async () => {
   const child = spawn(process.execPath, ["dist/index.js"], {
     cwd: new URL("..", import.meta.url),

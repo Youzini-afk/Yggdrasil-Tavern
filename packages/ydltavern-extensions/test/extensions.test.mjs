@@ -8,15 +8,22 @@ import {
   countMessages,
   countText,
   createExtensionRegistry,
+  createExtensionHookRegistry,
+  createSTExtensionCompatibilityAdapter,
+  discoverExtensionBundles,
+  evaluateExtensionPermissions,
   executeQuickReply,
   normalizeMemorySettings,
   normalizeQuickReplySets,
   normalizeVectorSettings,
+  parseExtensionManifest,
+  planLoadExtension,
   planMemoryUpdate,
   planQuickReplyAutoExecute,
   planVectorIndex,
   planVectorInjection,
   planVectorQuery,
+  sortExtensionsByLoadingOrder,
 } from '../dist/index.js';
 
 test('registry tracks installed, enabled, settings, and diagnostics', () => {
@@ -38,6 +45,116 @@ test('registry tracks installed, enabled, settings, and diagnostics', () => {
 
   registry.install({ id: 'regex', name: 'Regex duplicate', version: '0.0.1' });
   assert.equal(registry.diagnostics().some((item) => item.code === 'extension.duplicate'), true);
+});
+
+test('loader parses ST-like manifests and discovers bundle records', () => {
+  const parsed = parseExtensionManifest({
+    id: 'alpha',
+    name: 'Alpha',
+    display_name: 'Alpha Extension',
+    version: '1.2.3',
+    author: 'Ada',
+    js: 'index.js',
+    css: ['style.css'],
+    loading_order: '7',
+    requires: ['core'],
+    optional: ['extras'],
+    permissions: ['slash', 'network'],
+    settings: { enabled: true },
+    template: '<panel />',
+  });
+
+  assert.equal(parsed.manifest.id, 'alpha');
+  assert.equal(parsed.manifest.displayName, 'Alpha Extension');
+  assert.deepEqual(parsed.manifest.js, ['index.js']);
+  assert.deepEqual(parsed.manifest.css, ['style.css']);
+  assert.equal(parsed.manifest.loadingOrder, 7);
+  assert.deepEqual(parsed.manifest.permissions, ['slash', 'network']);
+  assert.deepEqual(parsed.diagnostics, []);
+
+  const discovered = discoverExtensionBundles([
+    { manifest: parsed.manifest.raw, enabled: false, assets: [{ type: 'template', path: 'panel.html' }] },
+    { manifest: { name: 'No Version' } },
+    { id: 'broken', manifest: null },
+  ]);
+
+  assert.equal(discovered.bundles.length, 3);
+  assert.equal(discovered.bundles[0].enabled, false);
+  assert.deepEqual(discovered.bundles[0].assets.map((asset) => `${asset.type}:${asset.path}`), [
+    'css:style.css',
+    'js:index.js',
+    'template:template',
+    'template:panel.html',
+  ]);
+  assert.equal(discovered.bundles[1].manifest.version, '0.0.0');
+  assert.equal(discovered.diagnostics.some((item) => item.code === 'loader.bundle.manifest.missing'), true);
+});
+
+test('loader sorts extensions by loading order, name, and id', () => {
+  const manifests = [
+    parseExtensionManifest({ id: 'z', name: 'Same', loading_order: 2 }).manifest,
+    parseExtensionManifest({ id: 'a', name: 'Same', loading_order: 2 }).manifest,
+    parseExtensionManifest({ id: 'b', name: 'Before', loading_order: 2 }).manifest,
+    parseExtensionManifest({ id: 'first', name: 'Last', loading_order: 1 }).manifest,
+  ];
+
+  assert.deepEqual(sortExtensionsByLoadingOrder(manifests).map((manifest) => manifest.id), ['first', 'b', 'a', 'z']);
+});
+
+test('loader exposes compatibility adapter and deterministic hook registry', () => {
+  const compat = createSTExtensionCompatibilityAdapter();
+  assert.equal(compat.available.getContext, true);
+  assert.equal(compat.available.registerSlashCommand, true);
+  assert.equal(compat.executesExtensionJavaScript, false);
+
+  const hooks = createExtensionHookRegistry();
+  assert.deepEqual(hooks.register('slash', {
+    id: 'slash:hello',
+    extensionId: 'alpha',
+    deterministic: true,
+    callback: (payload) => `hello:${payload.name}`,
+  }), []);
+  assert.equal(hooks.register('prompt', {
+    id: 'prompt:unsafe',
+    extensionId: 'alpha',
+    callback: () => 'nope',
+  })[0].code, 'loader.hook.callback.denied');
+
+  assert.deepEqual(hooks.list('slash'), [{
+    id: 'slash:hello',
+    extensionId: 'alpha',
+    kind: 'slash',
+    deterministic: true,
+  }]);
+  assert.deepEqual(hooks.emit('slash', { name: 'Ada' }).results, ['hello:Ada']);
+});
+
+test('loader evaluates permissions and builds non-executing load plans', () => {
+  const manifest = parseExtensionManifest({
+    id: 'perm',
+    name: 'Permissions',
+    version: '1.0.0',
+    js: ['main.js'],
+    css: ['style.css'],
+    permissions: ['slash', 'prompt', 'file', 'network'],
+  }).manifest;
+
+  const defaultResult = evaluateExtensionPermissions(manifest);
+  assert.deepEqual(defaultResult.granted, ['slash', 'prompt']);
+  assert.deepEqual(defaultResult.denied, ['file', 'network']);
+  assert.equal(defaultResult.allowed, false);
+
+  const allowedResult = evaluateExtensionPermissions(manifest, { allow: ['file'], permissions: { network: true } });
+  assert.deepEqual(allowedResult.denied, []);
+  assert.equal(allowedResult.allowed, true);
+
+  const plan = planLoadExtension({ manifest: manifest.raw, assets: ['panel.html'] }, { allow: ['file'], permissions: { network: true } });
+  assert.equal(plan.manifest.id, 'perm');
+  assert.deepEqual(plan.sortedAssets.map((asset) => `${asset.type}:${asset.path}`), ['css:style.css', 'js:main.js', 'template:panel.html']);
+  assert.equal(plan.compat.executesExtensionJavaScript, false);
+  assert.equal(plan.loadPlan.enabled, true);
+  assert.equal(plan.loadPlan.executeJavaScript, false);
+  assert.equal(plan.loadPlan.actions.includes('skip:execute-js'), true);
 });
 
 test('token counter delegates to engine-core tokenizer api', () => {
