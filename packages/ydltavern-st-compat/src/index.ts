@@ -7,6 +7,14 @@ export { createEventSource } from './events.js';
 export type { STEventListener, STEventName, STEventSource } from './events.js';
 export { substituteSTMacros } from './macros.js';
 export type { STMacroContext, STMacroTraceEntry, STMacroTraceSource, STMacroValue, SubstituteSTMacrosOptions, SubstituteSTMacrosResult } from './macros.js';
+export { substituteSTMacrosDeep, PickState } from './macros-st.js';
+export type {
+  STMacroEnv,
+  STMacroOptions,
+  STMacroResult,
+  STMacroTraceEntry as STMacroTraceEntryDeep,
+  STMacroTraceSource as STMacroTraceSourceDeep,
+} from './macros-st.js';
 export { createSlashHost } from './slash.js';
 export type { ExecuteSlashCommandsOptions, ExecuteSlashCommandsResult, SlashCommandArgumentMetadata, SlashCommandCallback, SlashCommandDescriptor, SlashCommandExecution, SlashCommandInvocation, SlashCommandMetadata, SlashCommandResult, SlashDiagnostic, SlashHost } from './slash.js';
 export { createSTScriptState, evaluateSTScript, parseSTScript, tokenizeSTScriptArguments } from './stscript/index.js';
