@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ST_EVENT_TYPES } from '@ydltavern/types/st';
 import type { Chat, STChatMessage, Turn } from '@ydltavern/types';
-import { createEventSource, createSTChatProxy, createSTContext, createSTChatProxyFromStore, createTurnStore } from '../src/index.js';
+import { createEventSource, createSTChatProxy, createSTContext, createSTChatProxyFromStore, createSTScriptState, createTurnStore, parseSTScript } from '../src/index.js';
 
 describe('event source', () => {
   it('handles on/once/off ordering', () => {
@@ -270,6 +270,101 @@ describe('context runtime', () => {
 
     assert.equal(runtime.context.executeSlashCommands('/yell hello tavern').output, 'HELLO TAVERN');
     assert.equal(runtime.context.slashCommands().some((command) => command.name === 'shout' && command.aliases.includes('yell')), true);
+  });
+
+  it('parses named args, quoted args, pipes, and closures', () => {
+    const ast = parseSTScript('/cmd key=value "two words" { /getvar mood } | /next {{pipe}}');
+    const statement = ast.body[0];
+
+    assert.equal(statement?.type, 'pipeline');
+    if (statement?.type !== 'pipeline') {
+      return;
+    }
+
+    assert.equal(statement.commands.length, 2);
+    assert.deepEqual(statement.commands[0]?.args[0], { type: 'named', key: 'key', value: 'value', raw: 'key=value' });
+    assert.deepEqual(statement.commands[0]?.args[1], { type: 'text', value: 'two words', raw: '"two words"' });
+    assert.equal(statement.commands[0]?.args[2]?.type, 'closure');
+    assert.equal(statement.commands[1]?.args[0]?.type, 'text');
+  });
+
+  it('passes pipe output through commands and substitutes {{pipe}}', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    runtime.context.registerSlashCommand('echo', ({ args }) => args);
+    runtime.context.registerSlashCommand('wrap', ({ args }) => `[${args}]`);
+
+    assert.equal(runtime.context.executeSlashCommands('/echo hello | /wrap {{pipe}} world').output, '[hello world]');
+  });
+
+  it('supports local scoped vars with parent fallback', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+    const parent = createSTScriptState({ globalVariables: runtime.context.variables });
+    parent.setLocalVariable('mood', 'parent');
+    const child = parent.createChild();
+
+    assert.equal(runtime.context.executeSlashCommands('/getvar mood', { state: child }).output, 'parent');
+    assert.equal(runtime.context.executeSlashCommands('/let mood child', { state: child }).output, 'child');
+    assert.equal(runtime.context.executeSlashCommands('/getvar mood', { state: child }).output, 'child');
+    assert.equal(runtime.context.executeSlashCommands('/getvar mood', { state: parent }).output, 'parent');
+  });
+
+  it('supports /let and /var scope behavior', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+    const state = createSTScriptState({ globalVariables: runtime.context.variables });
+    const child = state.createChild();
+
+    runtime.context.executeSlashCommands('/let local scoped', { state: child });
+    runtime.context.executeSlashCommands('/var global shared', { state: child });
+
+    assert.equal(runtime.context.executeSlashCommands('/getvar local', { state }).output, '');
+    assert.equal(runtime.context.executeSlashCommands('/getvar global', { state }).output, 'shared');
+    assert.equal(runtime.context.variables.get('global'), 'shared');
+  });
+
+  it('runs inline and registered closures', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+    const state = createSTScriptState({ globalVariables: runtime.context.variables });
+
+    assert.equal(runtime.context.executeSlashCommands('/run { /setvar mood=bright }', { state }).output, 'bright');
+    assert.equal(runtime.context.executeSlashCommands('/getvar mood', { state }).output, 'bright');
+
+    runtime.context.executeSlashCommands('/var greet={ /getvar mood }', { state });
+    assert.equal(runtime.context.executeSlashCommands('/run greet', { state }).output, 'bright');
+  });
+
+  it('executes /while and stops on /break', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+    const state = createSTScriptState({ globalVariables: runtime.context.variables });
+
+    runtime.context.executeSlashCommands('/setvar loop yes', { state });
+    const result = runtime.context.executeSlashCommands('/while loop == yes maxIterations=5 { /setvar loop no\n/break }', { state });
+
+    assert.equal(result.ok, true);
+    assert.equal(runtime.context.executeSlashCommands('/getvar loop', { state }).output, 'no');
+
+    const failSafe = runtime.context.executeSlashCommands('/while yes == yes maxIterations=2 { /getvar loop }', { state });
+    assert.equal(failSafe.ok, false);
+    assert.equal(failSafe.diagnostics[0]?.code, 'while-max-iterations');
+  });
+
+  it('exposes command registry metadata', () => {
+    const runtime = createSTContext({ chat: createChat([]) });
+
+    runtime.context.registerSlashCommand('meta', () => 'ok', {
+      aliases: ['m'],
+      help: 'metadata command',
+      returns: 'ok text',
+      namedArgs: [{ name: 'name', description: 'Name to use', required: true }],
+      unnamedArgs: [{ name: 'value' }],
+    });
+
+    const descriptor = runtime.context.slashCommands().find((command) => command.name === 'meta');
+    assert.equal(descriptor?.aliases[0], 'm');
+    assert.equal(descriptor?.help, 'metadata command');
+    assert.equal(descriptor?.returns, 'ok text');
+    assert.equal(descriptor?.namedArgs?.[0]?.name, 'name');
+    assert.equal(descriptor?.unnamedArgs?.[0]?.name, 'value');
   });
 
   it('/run reports an unknown target diagnostic', () => {

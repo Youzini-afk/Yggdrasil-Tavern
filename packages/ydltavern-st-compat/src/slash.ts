@@ -1,12 +1,16 @@
 import type { STContext, STGenerateResult } from './context.js';
+import type { STScriptArgument, STScriptClosure, STScriptClosureArgument, STScriptCommandNode } from './stscript/index.js';
+import { evaluateSTScript, parseSTScript, createSTScriptState, type STScriptState } from './stscript/index.js';
 
 export interface SlashCommandInvocation {
   readonly name: string;
   readonly args: string;
   readonly argv: readonly string[];
+  readonly namedArgs: Readonly<Record<string, string>>;
   readonly raw: string;
   readonly context: STContext;
   readonly variables: Map<string, string>;
+  readonly state: STScriptState;
 }
 
 export type SlashCommandCallback = (invocation: SlashCommandInvocation) => SlashCommandCallbackResult;
@@ -24,13 +28,32 @@ export interface SlashDiagnostic {
   readonly command?: string;
 }
 
+export interface SlashCommandArgumentMetadata {
+  readonly name: string;
+  readonly description?: string;
+  readonly required?: boolean;
+}
+
+export interface SlashCommandMetadata {
+  readonly aliases?: readonly string[];
+  readonly help?: string;
+  readonly returns?: string;
+  readonly namedArgs?: readonly SlashCommandArgumentMetadata[];
+  readonly unnamedArgs?: readonly SlashCommandArgumentMetadata[];
+}
+
 export interface SlashCommandDescriptor {
   readonly name: string;
   readonly aliases: readonly string[];
+  readonly help?: string;
+  readonly returns?: string;
+  readonly namedArgs?: readonly SlashCommandArgumentMetadata[];
+  readonly unnamedArgs?: readonly SlashCommandArgumentMetadata[];
 }
 
 export interface ExecuteSlashCommandsOptions {
   readonly stopOnError?: boolean;
+  readonly state?: STScriptState;
 }
 
 export interface SlashCommandExecution {
@@ -48,34 +71,46 @@ export interface ExecuteSlashCommandsResult {
   readonly executions: readonly SlashCommandExecution[];
   readonly diagnostics: readonly SlashDiagnostic[];
   readonly variables: Readonly<Record<string, string>>;
+  readonly state: STScriptState;
 }
 
 export interface SlashHost {
   readonly variables: Map<string, string>;
   readonly diagnostics: readonly SlashDiagnostic[];
   readonly slashCommands: () => readonly SlashCommandDescriptor[];
-  readonly registerSlashCommand: (name: string, callback: SlashCommandCallback, aliases?: readonly string[]) => void;
+  readonly registerSlashCommand: (
+    name: string,
+    callback: SlashCommandCallback,
+    aliasesOrMetadata?: readonly string[] | SlashCommandMetadata,
+  ) => void;
   readonly executeSlashCommands: (input: string, options?: ExecuteSlashCommandsOptions) => ExecuteSlashCommandsResult;
 }
 
 interface RegisteredSlashCommand {
   readonly name: string;
   readonly aliases: readonly string[];
+  readonly metadata: SlashCommandMetadata;
   readonly callback: SlashCommandCallback;
 }
 
 export function createSlashHost(getContext: () => STContext, variables: Map<string, string> = new Map()): SlashHost {
   const registry = new Map<string, RegisteredSlashCommand>();
   const diagnostics: SlashDiagnostic[] = [];
+  const rootState = createSTScriptState({ globalVariables: variables });
 
-  const registerSlashCommand = (name: string, callback: SlashCommandCallback, aliases: readonly string[] = []): void => {
+  const registerSlashCommand = (
+    name: string,
+    callback: SlashCommandCallback,
+    aliasesOrMetadata: readonly string[] | SlashCommandMetadata = [],
+  ): void => {
+    const metadata: SlashCommandMetadata = isAliasList(aliasesOrMetadata) ? { aliases: aliasesOrMetadata } : aliasesOrMetadata;
     const normalizedName = normalizeCommandName(name);
-    const normalizedAliases = aliases.map(normalizeCommandName).filter((alias) => alias.length > 0 && alias !== normalizedName);
+    const normalizedAliases = (metadata.aliases ?? []).map(normalizeCommandName).filter((alias) => alias.length > 0 && alias !== normalizedName);
     if (normalizedName.length === 0) {
       throw new Error('Slash command name must not be empty.');
     }
 
-    const command: RegisteredSlashCommand = { name: normalizedName, aliases: normalizedAliases, callback };
+    const command: RegisteredSlashCommand = { name: normalizedName, aliases: normalizedAliases, metadata, callback };
     registry.set(normalizedName, command);
     for (const alias of normalizedAliases) {
       registry.set(alias, command);
@@ -85,82 +120,17 @@ export function createSlashHost(getContext: () => STContext, variables: Map<stri
   const slashCommands = (): readonly SlashCommandDescriptor[] => {
     const unique = new Map<string, SlashCommandDescriptor>();
     for (const command of registry.values()) {
-      unique.set(command.name, { name: command.name, aliases: command.aliases });
+      unique.set(command.name, {
+        name: command.name,
+        aliases: command.aliases,
+        help: command.metadata.help,
+        returns: command.metadata.returns,
+        namedArgs: command.metadata.namedArgs,
+        unnamedArgs: command.metadata.unnamedArgs,
+      });
     }
 
     return [...unique.values()].sort((left, right) => left.name.localeCompare(right.name));
-  };
-
-  const executeSlashCommands = (input: string, options: ExecuteSlashCommandsOptions = {}): ExecuteSlashCommandsResult => {
-    const executions: SlashCommandExecution[] = [];
-    const output: string[] = [];
-    const executionDiagnostics: SlashDiagnostic[] = [];
-
-    for (const rawLine of splitCommandLines(input)) {
-      const line = rawLine.trim();
-      if (line.length === 0) {
-        continue;
-      }
-
-      if (!line.startsWith('/')) {
-        output.push(line);
-        continue;
-      }
-
-      const parsed = parseSlashCommand(line);
-      if (parsed === undefined) {
-        const diagnostic = makeDiagnostic('invalid-command', `Invalid slash command: ${line}`);
-        diagnostics.push(diagnostic);
-        executionDiagnostics.push(diagnostic);
-        if (options.stopOnError === true) {
-          break;
-        }
-        continue;
-      }
-
-      const command = registry.get(parsed.name);
-      if (command === undefined) {
-        const diagnostic = makeDiagnostic('unknown-command', `Unknown slash command: /${parsed.name}`, parsed.name);
-        diagnostics.push(diagnostic);
-        executionDiagnostics.push(diagnostic);
-        executions.push({ name: parsed.name, raw: line, ok: false, output: '', diagnostics: [diagnostic] });
-        if (options.stopOnError === true) {
-          break;
-        }
-        continue;
-      }
-
-      const result = normalizeCallbackResult(
-        command.callback({
-          name: command.name,
-          args: parsed.args,
-          argv: parseArguments(parsed.args),
-          raw: line,
-          context: getContext(),
-          variables,
-        }),
-      );
-      const resultDiagnostics = result.diagnostics ?? [];
-      diagnostics.push(...resultDiagnostics);
-      executionDiagnostics.push(...resultDiagnostics);
-      executions.push({ name: command.name, raw: line, ok: result.ok, output: result.output, diagnostics: resultDiagnostics });
-      if (result.output.length > 0) {
-        output.push(result.output);
-      }
-
-      if (!result.ok && options.stopOnError === true) {
-        break;
-      }
-    }
-
-    return {
-      ok: executions.every((execution) => execution.ok) && executionDiagnostics.length === 0,
-      input,
-      output: output.join('\n'),
-      executions,
-      diagnostics: executionDiagnostics,
-      variables: Object.fromEntries(variables.entries()),
-    };
   };
 
   const host: SlashHost = {
@@ -168,7 +138,38 @@ export function createSlashHost(getContext: () => STContext, variables: Map<stri
     diagnostics,
     slashCommands,
     registerSlashCommand,
-    executeSlashCommands,
+    executeSlashCommands: (input, options = {}) => {
+      const state = options.state ?? rootState;
+      const result = evaluateSTScript(input, runtimeHost, getContext(), state, options);
+      diagnostics.push(...result.diagnostics);
+      return result;
+    },
+  };
+
+  const runtimeHost = {
+    variables,
+    invokeSTScriptCommand: (command: STScriptCommandNode, context: STContext, state: STScriptState) => {
+      const registered = registry.get(command.name);
+      if (registered === undefined) {
+        const diagnostic = makeDiagnostic('unknown-command', `Unknown slash command: /${command.name}`, command.name);
+        return { name: command.name, raw: command.raw, ok: false, output: '', diagnostics: [diagnostic] };
+      }
+
+      const result = normalizeCallbackResult(
+        registered.callback({
+          name: registered.name,
+          args: command.rawArgs,
+          argv: command.args.filter(isTextArgument).map((argument) => argument.value),
+          namedArgs: Object.fromEntries(command.args.filter(isNamedArgument).map((argument) => [argument.key, argument.value])),
+          raw: command.raw,
+          context,
+          variables,
+          state,
+        }),
+      );
+      const resultDiagnostics = result.diagnostics ?? [];
+      return { name: registered.name, raw: command.raw, ok: result.ok, output: result.output, diagnostics: resultDiagnostics };
+    },
   };
 
   registerBuiltInCommands(host);
@@ -177,38 +178,60 @@ export function createSlashHost(getContext: () => STContext, variables: Map<stri
 }
 
 function registerBuiltInCommands(host: SlashHost): void {
-  host.registerSlashCommand('gen', ({ args, context }) => generatedText(context.Generate({ text: args })));
+  host.registerSlashCommand('gen', ({ args, context }) => generatedText(context.Generate({ text: args })), {
+    help: 'Generate a message from text.',
+    returns: 'generated text',
+  });
   host.registerSlashCommand('continue', ({ context }) => generatedText(context.Generate({ text: '[ydltavern fake continue]' })));
   host.registerSlashCommand('swipe', ({ context }) => generatedText(context.Generate({ text: '[ydltavern fake swipe]' })));
-  host.registerSlashCommand('setvar', ({ args, variables }) => setVariable(args, variables));
-  host.registerSlashCommand('getvar', ({ args, variables }) => variables.get(args.trim()) ?? '');
-  host.registerSlashCommand('if', ({ args, context }) => executeIfCommand(args, context));
-  host.registerSlashCommand('run', ({ args }) => ({
-    ok: false,
-    output: '',
-    diagnostics: [makeDiagnostic('unknown-run-target', `Unknown /run target: ${args.trim() || '<empty>'}`, 'run')],
-  }));
+  host.registerSlashCommand('setvar', ({ args, state }) => setVariable(args, state, 'global'));
+  host.registerSlashCommand('getvar', ({ args, state }) => state.getVariable(args.trim()) ?? '');
+  host.registerSlashCommand('if', ({ args, context, state }) => executeIfCommand(args, context, state));
+  host.registerSlashCommand('run', ({ argv, args, context, state }) => executeRunCommand(argv, args, context, state));
+  host.registerSlashCommand('let', ({ args, state }) => setVariable(args, state, 'local'));
+  host.registerSlashCommand('var', ({ args, state }) => setVariable(args, state, 'global'));
+  host.registerSlashCommand('while', ({ argv, args, namedArgs, context, state }) => executeWhileCommand(argv, args, namedArgs, context, state));
+  host.registerSlashCommand('break', ({ state }) => {
+    state.breakRequested = true;
+    return '';
+  });
 }
 
 function generatedText(result: STGenerateResult): string {
   return result.message.mes ?? '';
 }
 
-function setVariable(args: string, variables: Map<string, string>): SlashCommandResult {
+function setVariable(args: string, state: STScriptState, scope: 'local' | 'global'): SlashCommandResult {
   const parsed = parseSetVariable(args);
   if (parsed === undefined) {
     return {
       ok: false,
       output: '',
-      diagnostics: [makeDiagnostic('invalid-setvar', 'Expected /setvar name=value or /setvar name value.', 'setvar')],
+      diagnostics: [makeDiagnostic(`invalid-${scope === 'local' ? 'let' : 'setvar'}`, `Expected /${scope === 'local' ? 'let' : 'setvar'} name=value or name value.`, scope === 'local' ? 'let' : 'setvar')],
     };
   }
 
-  variables.set(parsed.name, parsed.value);
+  if (looksLikeClosure(parsed.value)) {
+    const closure = parseInlineClosure(parsed.value);
+    if (closure !== undefined) {
+      if (scope === 'local') {
+        state.setLocalClosure(parsed.name, closure);
+      } else {
+        state.setGlobalClosure(parsed.name, closure);
+      }
+      return { ok: true, output: '' };
+    }
+  }
+
+  if (scope === 'local') {
+    state.setLocalVariable(parsed.name, parsed.value);
+  } else {
+    state.setGlobalVariable(parsed.name, parsed.value);
+  }
   return { ok: true, output: parsed.value };
 }
 
-function executeIfCommand(args: string, context: STContext): SlashCommandResult {
+function executeIfCommand(args: string, context: STContext, state: STScriptState): SlashCommandResult {
   const parsed = parseIfArgs(args);
   if (parsed === undefined) {
     return {
@@ -218,8 +241,8 @@ function executeIfCommand(args: string, context: STContext): SlashCommandResult 
     };
   }
 
-  const left = resolveOperand(parsed.left, context.variables);
-  const right = resolveOperand(parsed.right, context.variables);
+  const left = resolveOperand(parsed.left, state);
+  const right = resolveOperand(parsed.right, state);
   const selected = left === right ? parsed.thenCommand : parsed.elseCommand;
   if (selected === undefined || selected.length === 0) {
     return { ok: true, output: '' };
@@ -229,8 +252,73 @@ function executeIfCommand(args: string, context: STContext): SlashCommandResult 
     return { ok: true, output: selected };
   }
 
-  const nested = context.executeSlashCommands(selected);
+  const nested = context.executeSlashCommands(selected, { state });
   return { ok: nested.ok, output: nested.output, diagnostics: nested.diagnostics };
+}
+
+function executeRunCommand(argv: readonly string[], args: string, context: STContext, state: STScriptState): SlashCommandResult {
+  const target = argv[0];
+  const inline = parseInlineClosure(args.trim());
+  const closure = inline ?? (target === undefined ? undefined : state.getClosure(target));
+  if (closure === undefined) {
+    return {
+      ok: false,
+      output: '',
+      diagnostics: [makeDiagnostic('unknown-run-target', `Unknown /run target: ${args.trim() || '<empty>'}`, 'run')],
+    };
+  }
+
+  const child = state.createChild();
+  child.pipe = state.pipe;
+  const nested = context.executeSlashCommands(closure.body, { state: child });
+  state.pipe = nested.state.pipe;
+  if (nested.state.breakRequested) {
+    state.breakRequested = true;
+  }
+  return { ok: nested.ok, output: nested.output, diagnostics: nested.diagnostics };
+}
+
+function executeWhileCommand(
+  argv: readonly string[],
+  args: string,
+  namedArgs: Readonly<Record<string, string>>,
+  context: STContext,
+  state: STScriptState,
+): SlashCommandResult {
+  const closure = firstInlineClosure(args) ?? parseInlineClosure(argv.at(-1) ?? '');
+  const maxIterations = parsePositiveInt(namedArgs.maxIterations ?? namedArgs.max ?? '', state.maxIterations);
+  if (closure === undefined) {
+    return { ok: false, output: '', diagnostics: [makeDiagnostic('invalid-while', 'Expected /while condition { ... }.', 'while')] };
+  }
+
+  const condition = argv.filter((value) => !looksLikeClosure(value) && !value.startsWith('max=') && !value.startsWith('maxIterations=')).join(' ').trim();
+  const outputs: string[] = [];
+  const diagnostics: SlashDiagnostic[] = [];
+  let ok = true;
+
+  for (let index = 0; index < maxIterations; index += 1) {
+    if (!truthy(resolveCondition(condition, state))) {
+      return { ok, output: outputs.join('\n'), diagnostics };
+    }
+
+    const child = state.createChild();
+    child.pipe = state.pipe;
+    const nested = context.executeSlashCommands(closure.body, { state: child });
+    outputs.push(nested.output);
+    diagnostics.push(...nested.diagnostics);
+    ok = ok && nested.ok;
+    state.pipe = nested.state.pipe;
+    if (nested.state.breakRequested) {
+      nested.state.breakRequested = false;
+      return { ok, output: outputs.filter((part) => part.length > 0).join('\n'), diagnostics };
+    }
+  }
+
+  return {
+    ok: false,
+    output: outputs.filter((part) => part.length > 0).join('\n'),
+    diagnostics: [...diagnostics, makeDiagnostic('while-max-iterations', `Exceeded /while maxIterations (${maxIterations}).`, 'while')],
+  };
 }
 
 function parseSetVariable(args: string): { readonly name: string; readonly value: string } | undefined {
@@ -275,15 +363,50 @@ function parseIfArgs(
   return { left, right, thenCommand, elseCommand };
 }
 
-function resolveOperand(operand: string, variables: Map<string, string>): string {
+function resolveOperand(operand: string, state: STScriptState): string {
   const trimmed = operand.trim();
   const unquoted = unquote(trimmed);
   if (unquoted !== trimmed) {
     return unquoted;
   }
 
+  if (trimmed === '{{pipe}}') {
+    return state.pipe;
+  }
+
   const variableName = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-  return variables.get(variableName) ?? trimmed;
+  return state.getVariable(variableName) ?? trimmed;
+}
+
+function resolveCondition(condition: string, state: STScriptState): string {
+  const trimmed = condition.trim();
+  if (trimmed.length === 0) {
+    return 'true';
+  }
+
+  const match = /^(.*?)\s*(==|!=|<|>|<=|>=)\s*(.*?)$/u.exec(trimmed);
+  if (match !== null) {
+    const left = resolveOperand(match[1] ?? '', state);
+    const right = resolveOperand(match[3] ?? '', state);
+    switch (match[2]) {
+      case '==':
+        return String(left === right);
+      case '!=':
+        return String(left !== right);
+      case '<':
+        return String(Number(left) < Number(right));
+      case '>':
+        return String(Number(left) > Number(right));
+      case '<=':
+        return String(Number(left) <= Number(right));
+      case '>=':
+        return String(Number(left) >= Number(right));
+      default:
+        return 'false';
+    }
+  }
+
+  return resolveOperand(trimmed, state);
 }
 
 function unquote(value: string): string {
@@ -306,45 +429,57 @@ function normalizeCallbackResult(result: SlashCommandCallbackResult): SlashComma
   return result;
 }
 
-function parseSlashCommand(line: string): { readonly name: string; readonly args: string } | undefined {
-  const trimmed = line.trim();
-  if (!trimmed.startsWith('/')) {
-    return undefined;
-  }
-
-  const withoutSlash = trimmed.slice(1).trimStart();
-  if (withoutSlash.length === 0) {
-    return undefined;
-  }
-
-  const firstWhitespace = withoutSlash.search(/\s/);
-  if (firstWhitespace === -1) {
-    return { name: normalizeCommandName(withoutSlash), args: '' };
-  }
-
-  return {
-    name: normalizeCommandName(withoutSlash.slice(0, firstWhitespace)),
-    args: withoutSlash.slice(firstWhitespace).trimStart(),
-  };
-}
-
-function parseArguments(args: string): readonly string[] {
-  const trimmed = args.trim();
-  if (trimmed.length === 0) {
-    return [];
-  }
-
-  return trimmed.split(/\s+/u);
-}
-
 function normalizeCommandName(name: string): string {
   return name.trim().replace(/^\/+/, '').toLowerCase();
 }
 
-function splitCommandLines(input: string): readonly string[] {
-  return input.split(/\r?\n/u);
-}
-
 function makeDiagnostic(code: string, message: string, command?: string): SlashDiagnostic {
   return { code, message, command };
+}
+
+function isTextArgument(argument: STScriptArgument): argument is Extract<STScriptArgument, { readonly type: 'text' }> {
+  return argument.type === 'text';
+}
+
+function isNamedArgument(argument: STScriptArgument): argument is Extract<STScriptArgument, { readonly type: 'named' }> {
+  return argument.type === 'named';
+}
+
+function isAliasList(value: readonly string[] | SlashCommandMetadata): value is readonly string[] {
+  return Array.isArray(value);
+}
+
+function parseInlineClosure(value: string): STScriptClosure | undefined {
+  const trimmed = value.trim();
+  if (!looksLikeClosure(trimmed)) {
+    return undefined;
+  }
+
+  const parsed = parseSTScript(`/run ${trimmed}`);
+  const statement = parsed.body[0];
+  if (statement?.type !== 'pipeline') {
+    return undefined;
+  }
+
+  return statement.commands[0]?.args.find((argument): argument is STScriptClosureArgument => argument.type === 'closure');
+}
+
+function firstInlineClosure(value: string): STScriptClosure | undefined {
+  const match = /(\{\{[\s\S]*\}\}|\{[\s\S]*\})/u.exec(value);
+  return match?.[1] === undefined ? undefined : parseInlineClosure(match[1]);
+}
+
+function looksLikeClosure(value: string): boolean {
+  const trimmed = value.trim();
+  return (trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('{{') && trimmed.endsWith('}}'));
+}
+
+function parsePositiveInt(value: string, fallback: number): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function truthy(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 && normalized !== '0' && normalized !== 'false' && normalized !== 'no' && normalized !== 'null' && normalized !== 'undefined';
 }

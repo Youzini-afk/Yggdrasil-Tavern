@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { assetHandlers } from "../dist/capabilities/asset.js";
 import { presetHandlers } from "../dist/capabilities/preset.js";
+import { scriptHandlers } from "../dist/capabilities/script.js";
 import { turnHandlers } from "../dist/capabilities/turn.js";
 import { worldInfoHandlers } from "../dist/capabilities/world-info.js";
 
@@ -360,6 +361,21 @@ test("asset import capabilities return importer outputs", () => {
   assert.equal(regex.scripts[0].scope, "PRESET");
   assert.equal(instruct.system, "sys");
   assert.equal(exportedPreset.name, "Preset");
+});
+
+test("script.eval executes STScript skeleton", () => {
+  const output = scriptHandlers[`${PACKAGE_ID}/script.eval`]({
+    script: "/let mood=calm | /getvar mood\n/while 1 == 1 {/break}",
+    variables: { user: "Tester" },
+    name1: "Tester",
+    name2: "Assistant",
+  });
+
+  assert.equal(output.executed, true);
+  assert.equal(output.ok, true);
+  assert.ok(output.output.includes("calm"));
+  assert.equal(output.variables.user, "Tester");
+  assert.ok(output.command_registry.some((item) => item.name === "while"));
 });
 
 test("fallback JSON-RPC capability.invoke calls a real capability", async () => {

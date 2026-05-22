@@ -4,7 +4,7 @@ import type { Chat } from '@ydltavern/types';
 import { createSTChatProxyFromStore, type STChatProxy, type STChatProxyHooks } from './chat-proxy.js';
 import { createEventSource, type STEventSource } from './events.js';
 import { substituteSTMacros, type STMacroContext, type STMacroTraceEntry, type STMacroValue } from './macros.js';
-import { createSlashHost, type ExecuteSlashCommandsOptions, type ExecuteSlashCommandsResult, type SlashCommandCallback, type SlashCommandDescriptor, type SlashDiagnostic } from './slash.js';
+import { createSlashHost, type ExecuteSlashCommandsOptions, type ExecuteSlashCommandsResult, type SlashCommandCallback, type SlashCommandDescriptor, type SlashCommandMetadata, type SlashDiagnostic } from './slash.js';
 import { createTurnStore } from './turn-store.js';
 
 export interface STContextOptions {
@@ -70,7 +70,7 @@ export interface STContext {
   readonly variables: Map<string, string>;
   readonly slashDiagnostics: readonly SlashDiagnostic[];
   readonly slashCommands: () => readonly SlashCommandDescriptor[];
-  readonly registerSlashCommand: (name: string, callback: SlashCommandCallback, aliases?: readonly string[]) => void;
+  readonly registerSlashCommand: (name: string, callback: SlashCommandCallback, aliasesOrMetadata?: readonly string[] | SlashCommandMetadata) => void;
   readonly executeSlashCommands: (input: string, options?: ExecuteSlashCommandsOptions) => ExecuteSlashCommandsResult;
   readonly saveSettingsDebounced: () => void;
   readonly addOneMessage: (message: STChatMessage) => STChatMessage;
