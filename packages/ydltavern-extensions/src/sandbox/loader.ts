@@ -98,11 +98,7 @@ export async function loadExtensionInSandbox(input: LoadExtensionInput): Promise
   };
 }
 
-const ST_HOST_IMPORTS = new Set([
-  '../../../../script.js',
-  '../../../extensions.js',
-  '../../../../openai.js',
-]);
+const ST_HOST_IMPORT_RE = /(^|\/)\.\.\/\.\.\/\.\.\/(?:\.\.\/)?(?:script|extensions|openai)\.js$/;
 const ST_HOST_VIRTUAL_MODULE = 'ygg-virtual:st-host';
 
 interface PreloadModuleGraphInput {
@@ -144,7 +140,7 @@ function parseImportSpecifiers(source: string): string[] {
 }
 
 function normalizeModuleSpecifier(baseModuleName: string, requestedName: string): string {
-  if (ST_HOST_IMPORTS.has(requestedName)) return ST_HOST_VIRTUAL_MODULE;
+  if (ST_HOST_IMPORT_RE.test(requestedName)) return ST_HOST_VIRTUAL_MODULE;
   if (requestedName === ST_HOST_VIRTUAL_MODULE) return ST_HOST_VIRTUAL_MODULE;
   if (!isRelativeImport(requestedName)) throw new Error('bare npm imports not supported in sandbox v1; vendor the dependency');
   return normalizePath(`${dirname(baseModuleName)}/${requestedName}`);

@@ -76,7 +76,7 @@ export function bindHostBridge(
         hostBridge.eventEmit(stringArg(args[0]), args[1]);
         return JSON.stringify(null);
       case 'getSettings':
-        return JSON.stringify(hostBridge.getSettings());
+        return JSON.stringify(hostBridge.getSettings() ?? null);
       case 'setSettings':
         hostBridge.setSettings(args[0]);
         return JSON.stringify(null);
@@ -165,14 +165,111 @@ function makeBootstrapSource(extensionId: string, permissions: SandboxPermission
     });
   }
   if (permissions.settings) {
-    globalThis.getExtensionSettings = function getExtensionSettings() { return host('getSettings'); };
-    globalThis.setExtensionSettings = function setExtensionSettings(value) { return host('setSettings', [value]); };
-    const extensionSettings = {};
-    Object.defineProperty(extensionSettings, extensionId, {
-      enumerable: true,
-      configurable: false,
-      get() { return globalThis.getExtensionSettings(); },
-      set(value) { globalThis.setExtensionSettings(value); },
+    let extensionSettingsLoaded = false;
+    let extensionSettingsState;
+    let extensionSettingsProxy;
+    function readExtensionSettingsState() {
+      if (!extensionSettingsLoaded) {
+        extensionSettingsState = host('getSettings');
+        extensionSettingsLoaded = true;
+      }
+      if (extensionSettingsState === null) extensionSettingsState = undefined;
+      return extensionSettingsState;
+    }
+    function ensureExtensionSettingsObject() {
+      const current = readExtensionSettingsState();
+      if (!current || typeof current !== 'object') {
+        extensionSettingsState = {};
+        extensionSettingsLoaded = true;
+      }
+      return extensionSettingsState;
+    }
+    function syncExtensionSettings() {
+      return host('setSettings', [ensureExtensionSettingsObject()]);
+    }
+    const syncedObjectProxies = new Map();
+    function syncedObject(value) {
+      if (!value || typeof value !== 'object') return value;
+      if (syncedObjectProxies.has(value)) return syncedObjectProxies.get(value);
+      const proxy = new Proxy(value, {
+        get(target, prop) { return syncedObject(target[prop]); },
+        set(target, prop, nestedValue) {
+          target[prop] = nestedValue;
+          syncExtensionSettings();
+          return true;
+        },
+        deleteProperty(target, prop) {
+          delete target[prop];
+          syncExtensionSettings();
+          return true;
+        },
+        ownKeys(target) { return Reflect.ownKeys(target); },
+        getOwnPropertyDescriptor(target, prop) {
+          const descriptor = Object.getOwnPropertyDescriptor(target, prop);
+          return descriptor ? { ...descriptor, configurable: true } : undefined;
+        },
+      });
+      syncedObjectProxies.set(value, proxy);
+      return proxy;
+    }
+    function getExtensionSettingsProxy() {
+      if (!extensionSettingsProxy) {
+        extensionSettingsProxy = new Proxy({}, {
+          get(target, prop) { return syncedObject(ensureExtensionSettingsObject()[prop]); },
+          set(target, prop, value) {
+            ensureExtensionSettingsObject()[prop] = value;
+            syncExtensionSettings();
+            return true;
+          },
+          deleteProperty(target, prop) {
+            delete ensureExtensionSettingsObject()[prop];
+            syncExtensionSettings();
+            return true;
+          },
+          has(target, prop) {
+            const current = readExtensionSettingsState();
+            return !!current && typeof current === 'object' && prop in current;
+          },
+          ownKeys() {
+            const current = readExtensionSettingsState();
+            return current && typeof current === 'object' ? Reflect.ownKeys(current) : [];
+          },
+          getOwnPropertyDescriptor(target, prop) {
+            const current = readExtensionSettingsState();
+            if (!current || typeof current !== 'object') return undefined;
+            const descriptor = Object.getOwnPropertyDescriptor(current, prop);
+            return descriptor ? { ...descriptor, configurable: true } : undefined;
+          },
+        });
+      }
+      return extensionSettingsProxy;
+    }
+    globalThis.getExtensionSettings = function getExtensionSettings() { return getExtensionSettingsProxy(); };
+    globalThis.setExtensionSettings = function setExtensionSettings(value) {
+      extensionSettingsState = value && typeof value === 'object' ? value : {};
+      extensionSettingsLoaded = true;
+      return host('setSettings', [extensionSettingsState]);
+    };
+    const extensionSettings = new Proxy({}, {
+      get(target, prop) {
+        return syncedObject(ensureExtensionSettingsObject()[prop]);
+      },
+      set(target, prop, value) {
+        ensureExtensionSettingsObject()[prop] = value;
+        syncExtensionSettings();
+        return true;
+      },
+      has(target, prop) {
+        return prop in ensureExtensionSettingsObject();
+      },
+      ownKeys() {
+        return Reflect.ownKeys(ensureExtensionSettingsObject());
+      },
+      getOwnPropertyDescriptor(target, prop) {
+        const current = ensureExtensionSettingsObject();
+        const descriptor = Object.getOwnPropertyDescriptor(current, prop);
+        return descriptor ? { ...descriptor, configurable: true } : undefined;
+      },
     });
     Object.defineProperty(globalThis, 'extension_settings', { value: extensionSettings, writable: false, configurable: false });
   }

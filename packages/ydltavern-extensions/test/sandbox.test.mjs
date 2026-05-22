@@ -100,7 +100,7 @@ test('Audit log records every host API call from sandbox', async () => {
   const host = createMockHostBridge();
   const loaded = await loadSynthetic(host);
   const apis = loaded.sandbox.getAuditLog().map((entry) => entry.api);
-  assert.deepEqual(apis, ['getContext', 'getSettings', 'registerSlashCommand', 'setExtensionPrompt', 'eventOn']);
+  assert.deepEqual(apis, ['getContext', 'registerSlashCommand', 'setExtensionPrompt', 'eventOn']);
   loaded.destroy();
 });
 
