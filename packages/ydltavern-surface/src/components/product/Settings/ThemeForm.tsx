@@ -48,7 +48,7 @@ function ThemePreviewCard({
       >
         <span className="theme-card-swatch-text">Aa</span>
       </span>
-      <span className="theme-card-name">{theme.name}</span>
+      <span className="theme-card-name">{theme.label ?? theme.name}</span>
     </button>
   );
 }

@@ -25,7 +25,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc && node scripts/copy-assets.mjs",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "tsx --test test/st-theme-importer.test.ts"
   },
   "peerDependencies": {
     "react": "^18.3.1",

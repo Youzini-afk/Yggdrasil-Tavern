@@ -21,6 +21,19 @@ function themeToCssVars(theme: TavernTheme): Record<string, string> {
     '--tavern-font-size-sm': theme.font.sizeSm,
     '--tavern-font-size-lg': theme.font.sizeLg,
     '--tavern-density': theme.density,
+    // ST-aligned tokens (maps from optional fields)
+    '--tavern-body-color': theme.tokens.bodyColor ?? theme.tokens.fgPrimary,
+    '--tavern-em-color': theme.tokens.emColor ?? theme.tokens.fgSecondary,
+    '--tavern-underline-color': theme.tokens.underlineColor ?? theme.tokens.fgSecondary,
+    '--tavern-quote-color': theme.tokens.quoteColor ?? theme.tokens.accentPrimary,
+    '--tavern-blur-tint': theme.tokens.blurTint ?? theme.tokens.bgPrimary,
+    '--tavern-chat-tint': theme.tokens.chatTint ?? theme.tokens.bgSecondary,
+    '--tavern-user-mes-tint': theme.tokens.userMesTint ?? theme.tokens.userBubble,
+    '--tavern-bot-mes-tint': theme.tokens.botMesTint ?? theme.tokens.assistantBubble,
+    '--tavern-shadow-color': theme.tokens.shadowColor ?? theme.tokens.shadow,
+    '--tavern-border-color': theme.tokens.borderColor ?? theme.tokens.border,
+    '--tavern-blur-strength': theme.tokens.blurStrength != null ? `${theme.tokens.blurStrength}px` : '10px',
+    '--tavern-font-scale': theme.tokens.fontScale != null ? String(theme.tokens.fontScale) : '1',
   };
 }
 
