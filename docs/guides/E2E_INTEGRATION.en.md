@@ -30,7 +30,7 @@ The build outputs are:
 - `dist/index.js`: tsc output for type consumers and the package entry.
 - `dist/bundle.mjs`: Vite library-mode output that browser iframes can `import()`.
 - `dist/styles/surface.css` and `dist/styles/mobile.css`: copied by `copy-assets.mjs`.
-- `dist/fonts/`: copied by `copy-assets.mjs` from `.woff2` files in `public/fonts/`. In a development environment without local Noto Sans source files, this directory may be empty, but the CSS paths and copy step are fixed.
+- `dist/fonts/`: copied by `copy-assets.mjs` from `@fontsource/noto-sans@5.2.10` and `@fontsource/noto-sans-mono@5.2.10` as 4 Latin-subset `.woff2` font files (~50KB).
 
 ## Bundle URL resolution
 
@@ -131,4 +131,4 @@ If successful, the iframe loads the YdlTavern surface bundle and renders the Tav
 - The demo bundle mapping is hardcoded rather than a full package registry resolver.
 - Production needs a Yggdrasil host package static-fileserver route.
 - Only one surface outlet is supported; multiple simultaneously mounted surfaces are not supported yet.
-- If the development environment does not have real Noto Sans `.woff2` files, CSS declares the self-hosted paths and falls back to Inter / system fonts; offline production bundles must add the font files under `public/fonts/`.
+- The current bundle includes only the Noto Sans / Noto Sans Mono Latin subset; CJK/emoji/broader Unicode coverage still needs a future font-subset strategy.

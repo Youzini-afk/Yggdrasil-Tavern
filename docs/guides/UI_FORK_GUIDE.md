@@ -10,6 +10,20 @@ YdlTavern 的 UI fork 覆盖 ST 的主要壳层、抽屉、消息、输入框、
 
 有意分叉的部分：React/TypeScript component model、Yggdrasil iframe SurfaceHost、`--tavern-*` token 命名、权限门控的真实扩展加载，以及没有 jQuery / Bootstrap 运行时依赖。
 
+## Slash command coverage
+
+Round 7 后，`@ydltavern/st-compat` 在 `createSTContextDeep` 中注册 14 个 slash command batches（A-N），约 150+ 个命令注册覆盖 199 个 ST canonical commands：真实实现、plan-only descriptor 和明确 unsupported sentinel 三类并存。新增批次如下：
+
+- Batch H — Variables/Control/Math（24 commands, all real）
+- Batch I — Chat/Messages Extras（21 commands: 8 real + 6 plan-only + 7 unsupported）
+- Batch J — Characters/Group/Persona/Tags（17 commands: 11 real + 6 plan-only）
+- Batch K — World Info/Lorebook（11 commands: 7 real + 4 plan-only）
+- Batch L — Preset/Settings（21 commands: 14 real + 1 plan-only + 6 unsupported）
+- Batch M — Extension/Tools（36 commands: 2 real + 4 plan-only + 30 unsupported）
+- Batch N — Debug/Dev/Secret（8 commands: 3 real + 5 plan-only）
+
+Plan-only 命令返回 `{ planned: true, action, fields }`，unsupported 命令抛出带原因的 `SlashCommandUnsupportedError`；`/secret-write` 只接受 `secret_ref:env:NAME`。
+
 ## Design tokens
 
 样式入口在 `packages/ydltavern-surface/src/styles/surface.css`。Round 5 增加 29 个 ST-aligned CSS variables，全部用 `--tavern-*` 命名并限制在 `.ydltavern-surface` / `.tavern-themed-root` 范围内，不写入 host `:root`。

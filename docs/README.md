@@ -8,8 +8,8 @@
 
 - [`CHARTER.md`](CHARTER.md) —— 不变的根本原则
 - [`COMPATIBILITY.md`](COMPATIBILITY.md) —— SillyTavern 资源与扩展的兼容范围（总图）
-- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.md) —— 兼容覆盖率雷达，按域分项
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) —— 与 Yggdrasil 的关系
+- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.md) —— 兼容覆盖率雷达，按域分项；Round 7 后记录 199/199 slash command canonical 覆盖与 @fontsource 字体打包
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) —— 与 Yggdrasil 的关系；包含 A-N slash command 注册、plan-only/unsupported sentinel 和字体打包策略
 
 ## 内部架构
 
@@ -18,7 +18,7 @@
 
 ## 路线图
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列；X-track 已完成，保留后续性能、重扩展、Phase B 与字体子集事项
 
 ## Guides
 

@@ -2,7 +2,7 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 4 U-track、Round 5 V-track 与 Round 6 W-track 已完成：sandbox ESM loader、browser stubs、extended ST API bridge、BME smoke、World Info 预算/概率对齐、macro engine 深实现迁移、SillyTavern UI parity shell、9 个 provider-backed drawers、ST theme JSON import/export、browser-ready surface bundle、9 个 mount adapters、clients/web E2E demo 路径、自托管字体策略与 durable docs 更新均已落地。这里不再保留 W 项，只记录后续方向。
+Round 4 U-track、Round 5 V-track、Round 6 W-track 与 Round 7 X-track 已完成：sandbox ESM loader、browser stubs、extended ST API bridge、BME smoke、World Info 预算/概率对齐、macro engine 深实现迁移、SillyTavern UI parity shell、9 个 provider-backed drawers、ST theme JSON import/export、browser-ready surface bundle、9 个 mount adapters、clients/web E2E demo 路径、@fontsource 字体打包、slash commands A-N 全量 canonical 覆盖与 durable docs 更新均已落地。这里不再保留 W/X 项，只记录后续方向。
 
 ## Performance baseline benchmark
 
@@ -21,9 +21,14 @@ Round 4 U-track、Round 5 V-track 与 Round 6 W-track 已完成：sandbox ESM lo
 ## Surface hosting and marketplace
 
 - **Production bundle hosting**：在 Yggdrasil host 上实现 package static route，把已安装 package 的 `bundle.mjs`、styles 和 fonts 作为 same-origin URLs 暴露。
-- **Real font woff2 sourcing**：如果当前构建仍只有 font-face 路径声明而没有实际文件，补齐 `NotoSans-Regular.woff2`、`NotoSans-Medium.woff2`、`NotoSans-Bold.woff2` 与 `NotoSansMono-Regular.woff2`。
+- **Real font Unicode subset extension**：当前 bundle 仅包含 @fontsource Latin subset（4 个 woff2，约 50KB）；如需 CJK/emoji/更完整 Unicode 覆盖，需要设计额外 subset 与 bundle-size 策略。
 - **Cross-origin allowlist**：为社区 marketplace 设计 surface bundle allowlist、integrity pin、version pin 与 audit metadata；默认仍要求 same-origin。
 - **Multiple mounted surfaces**：把当前单一 outlet 扩展为可管理多个 iframe surface，同时保留 sandbox 与 lifecycle isolation。
+
+## Heavy extension compatibility decision
+
+- **BME-class extensions**：继续把 BME 等重扩展作为显式决策点，而不是默认声明兼容。可选路径：A) 扩展 browser/DOM/ESM stubs 直到能功能 smoke；B) 通过 host capability bridge 为其高风险 API 提供受审计替代；C) 明确标记为 unsupported/needs patch，并维护兼容记录。
+- **Decision criteria**：以权限边界、审计可见性、维护成本和真实用户价值决定 A/B/C，不为了单个扩展破坏 sandbox 默认安全模型。
 
 ## Real extension loading follow-up
 

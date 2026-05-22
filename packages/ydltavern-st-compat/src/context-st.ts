@@ -22,6 +22,13 @@ import { registerBatchD } from './slash-commands-batch-d.js';
 import { registerBatchE } from './slash-commands-batch-e.js';
 import { registerBatchF } from './slash-commands-batch-f.js';
 import { registerBatchG } from './slash-commands-batch-g.js';
+import { registerBatchH } from './slash-commands-batch-h.js';
+import { registerBatchI } from './slash-commands-batch-i.js';
+import { registerBatchJ } from './slash-commands-batch-j.js';
+import { registerBatchK } from './slash-commands-batch-k.js';
+import { registerBatchL } from './slash-commands-batch-l.js';
+import { registerBatchM } from './slash-commands-batch-m.js';
+import { registerBatchN } from './slash-commands-batch-n.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -449,6 +456,13 @@ export function createSTContextDeep(options: CreateSTContextDeepOptions): STCont
   registerBatchE(slashCommandRegistry, { ctx });
   registerBatchF(slashCommandRegistry, { ctx });
   registerBatchG(slashCommandRegistry, { ctx });
+  registerBatchH(slashCommandRegistry, { ctx });
+  registerBatchI(slashCommandRegistry, { ctx });
+  registerBatchJ(slashCommandRegistry, { ctx });
+  registerBatchK(slashCommandRegistry, { ctx });
+  registerBatchL(slashCommandRegistry, { ctx });
+  registerBatchM(slashCommandRegistry, { ctx });
+  registerBatchN(slashCommandRegistry, { ctx });
 
   return ctx;
 }

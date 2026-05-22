@@ -8,7 +8,7 @@ Sources (SIL OFL 1.1, AGPLv3 compatible):
 - @fontsource/noto-sans@5.2.10 → NotoSans-{Regular,Medium,Bold}.woff2 (latin subset)
 - @fontsource/noto-sans-mono@5.2.10 → NotoSansMono-Regular.woff2 (latin subset)
 
-Total bundle weight: ~60-80KB across 4 weights.
+Total bundle weight: ~50KB across 4 weights.
 
 If `dist/fonts/` is empty after build, run `npm install --include=dev` to fetch
 @fontsource packages.

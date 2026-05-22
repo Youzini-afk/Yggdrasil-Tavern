@@ -2,7 +2,7 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 4 U-track, Round 5 V-track, and Round 6 W-track are complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, World Info budget/probability alignment, macro-engine deep implementation migration, SillyTavern UI parity shell, 9 provider-backed drawers, ST theme JSON import/export, browser-ready surface bundle, 9 mount adapters, the clients/web E2E demo path, the self-hosted font strategy, and durable doc updates have landed. This file no longer carries W items; it records forward-looking work only.
+Round 4 U-track, Round 5 V-track, Round 6 W-track, and Round 7 X-track are complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, World Info budget/probability alignment, macro-engine deep implementation migration, SillyTavern UI parity shell, 9 provider-backed drawers, ST theme JSON import/export, browser-ready surface bundle, 9 mount adapters, the clients/web E2E demo path, @fontsource font bundling, full slash-command A-N canonical coverage, and durable doc updates have landed. This file no longer carries W/X items; it records forward-looking work only.
 
 ## Performance baseline benchmark
 
@@ -21,9 +21,14 @@ Round 4 U-track, Round 5 V-track, and Round 6 W-track are complete: sandbox ESM 
 ## Surface hosting and marketplace
 
 - **Production bundle hosting**: implement a package static route on the Yggdrasil host so installed package `bundle.mjs`, styles, and fonts are exposed as same-origin URLs.
-- **Real font woff2 sourcing**: if the current build still has only font-face path declarations and no real files, add `NotoSans-Regular.woff2`, `NotoSans-Medium.woff2`, `NotoSans-Bold.woff2`, and `NotoSansMono-Regular.woff2`.
+- **Real font Unicode subset extension**: the current bundle includes only the @fontsource Latin subset (4 woff2 files, ~50KB); CJK/emoji/broader Unicode coverage needs a separate subset and bundle-size strategy.
 - **Cross-origin allowlist**: design surface bundle allowlists, integrity pins, version pins, and audit metadata for community marketplaces; same-origin remains the default.
 - **Multiple mounted surfaces**: expand the current single outlet to manage multiple iframe surfaces while preserving sandbox and lifecycle isolation.
+
+## Heavy extension compatibility decision
+
+- **BME-class extensions**: keep BME and similar heavy extensions as an explicit decision point rather than claiming compatibility by default. Options: A) extend browser/DOM/ESM stubs until functional smoke passes; B) provide audited host capability bridges for high-risk APIs; C) mark unsupported/needs-patch and maintain compatibility records.
+- **Decision criteria**: choose A/B/C based on permission boundaries, audit visibility, maintenance cost, and real user value; do not weaken the sandbox default security model for one extension.
 
 ## Real extension loading follow-up
 

@@ -30,7 +30,7 @@ npm run build --prefix packages/ydltavern-surface
 - `dist/index.js`：tsc 输出，供类型消费者和 package entry 使用。
 - `dist/bundle.mjs`：Vite library mode 输出，浏览器 iframe 可 `import()`。
 - `dist/styles/surface.css` 与 `dist/styles/mobile.css`：由 `copy-assets.mjs` 复制。
-- `dist/fonts/`：由 `copy-assets.mjs` 从 `public/fonts/` 复制 `.woff2` 字体文件。当前开发环境未发现本机 Noto Sans 字体文件时，该目录可能为空，但 CSS 路径与 copy step 已固定。
+- `dist/fonts/`：由 `copy-assets.mjs` 从 `@fontsource/noto-sans@5.2.10` 与 `@fontsource/noto-sans-mono@5.2.10` 复制 4 个 Latin subset `.woff2` 字体文件（约 50KB）。
 
 ## Bundle URL resolution
 
@@ -131,4 +131,4 @@ manifest 中每个 contribution 的 `metadata.export_name` 指向对应 mount ad
 - Demo bundle mapping 是硬编码，不是完整 package registry resolver。
 - Production 需要 Yggdrasil host 的 package static fileserver route。
 - 当前只支持单个 surface outlet；不支持多个 surface 同时挂载。
-- 当前开发环境若没有实际 Noto Sans `.woff2` 文件，CSS 会声明 self-hosted 路径并回落到 Inter / system fonts；离线生产 bundle 需要补齐 `public/fonts/` 中的字体文件。
+- 当前 bundle 只包含 Noto Sans / Noto Sans Mono Latin subset；CJK/emoji/更完整 Unicode 覆盖仍需后续字体 subset 策略。

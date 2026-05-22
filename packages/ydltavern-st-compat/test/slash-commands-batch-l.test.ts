@@ -314,8 +314,8 @@ test('/movingui is unsupported', async () => {
 });
 
 test('/resetpanels and /resetui are unsupported', async () => {
-  await assertUnsupported('resetpanels', /layout panel runtime/u);
-  await assertUnsupported('resetui', /layout panel runtime/u);
+  await assertUnsupported('resetpanels', /(?:UI|layout) panel runtime/u);
+  await assertUnsupported('resetui', /(?:UI|layout) panel runtime/u);
 });
 
 test('/css-var is unsupported', async () => {

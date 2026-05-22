@@ -8,7 +8,7 @@ Reimplement ST's slash command parser, built-in commands, macro engine, variable
 
 Includes:
 
-- 153+ built-in slash commands (including variables, math, world books, tags, tools, sysprompt, quick reply)
+- 199 ST canonical built-in slash commands (including variables, math, world books, tags, tools, sysprompt, quick reply)
 - 80+ macros (including legacy non-brace macros and new engine brace macros)
 - STScript parser: closures, scope, named/unnamed args, parser flags, break/breakpoint
 - Variable domains: local (chat) / global / scoped / closure-serialized
@@ -50,9 +50,9 @@ Side effects of ST commands such as `/echo`, `/inject`, and `/listinjects` must 
 - expanded `substituteParams` for user/char, character fields, persona, time/date, dynamic overrides, and trace;
 - slash registry / parser / executor;
 - built-in `/gen`, `/continue`, `/swipe`, `/setvar`, `/getvar`, `/if`, and `/run` minimum behavior.
-- R2-R5 filled in batches C/D/E/F. Together with the existing A/B/G batches, roughly 70 slash commands now have implementation and test coverage. C covers variables/control, D covers characters/groups (dangerous delete is unsupported; several writes are plan-only), E covers message visibility/editing, and F covers World Info injection plus related prompt-entry operations (some delegated to the engine).
+- R2-R5 filled in batches C/D/E/F; Round 7 X-track added H-N. Together with the existing A/B/G batches, 14 batches (A-N) now provide ~150+ slash command registrations covering 199 ST canonical commands through real implementations, plan-only descriptors, and explicit unsupported sentinels.
 
-This is still `partial`. The full STScript runtime (scope chain, closures, pipe injection, abort/break, compareValues, registry + alias resolution), full macro engine, and roughly 70 batches A-G slash commands are now in place. Still pending: the remaining roughly 80 commands, moving plan-only / unsupported commands to executable paths when safe, autocomplete/debugger, and byte-level STScript behavior alignment.
+This is still `partial`. The full STScript runtime (scope chain, closures, pipe injection, abort/break, compareValues, registry + alias resolution), full macro engine, and batches A-N canonical command coverage are now in place. Still pending: moving plan-only / unsupported commands to executable paths when safe, autocomplete/debugger, and byte-level STScript behavior alignment.
 
 ## Out of scope
 
@@ -61,6 +61,6 @@ This is still `partial`. The full STScript runtime (scope chain, closures, pipe 
 
 ## Completion criteria
 
-- All 153+ slash commands are upgraded to `implemented` in `COMPATIBILITY_MATRIX.en.md`
+- All 199 ST canonical slash commands have real / plan-only / unsupported coverage in `COMPATIBILITY_MATRIX.en.md`; safe plan-only / unsupported items are gradually upgraded to executable / implemented
 - All 80+ macros are upgraded to `implemented` in the matrix
 - Mainstream STScript libraries from the ST community (quick reply collections, etc.) can run

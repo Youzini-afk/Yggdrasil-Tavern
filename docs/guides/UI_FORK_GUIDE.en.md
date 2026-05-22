@@ -10,6 +10,20 @@ The UI fork covers ST's main shell, drawers, messages, composer, background, and
 
 Intentional divergence: React/TypeScript components, Yggdrasil iframe SurfaceHost, `--tavern-*` token names, permission-gated real extension loading, and no jQuery / Bootstrap runtime dependency.
 
+## Slash command coverage
+
+After Round 7, `@ydltavern/st-compat` registers 14 slash-command batches (A-N) in `createSTContextDeep`, with ~150+ command registrations covering 199 ST canonical commands through real implementations, plan-only descriptors, or explicit unsupported sentinels. The added batches are:
+
+- Batch H — Variables/Control/Math (24 commands, all real)
+- Batch I — Chat/Messages Extras (21 commands: 8 real + 6 plan-only + 7 unsupported)
+- Batch J — Characters/Group/Persona/Tags (17 commands: 11 real + 6 plan-only)
+- Batch K — World Info/Lorebook (11 commands: 7 real + 4 plan-only)
+- Batch L — Preset/Settings (21 commands: 14 real + 1 plan-only + 6 unsupported)
+- Batch M — Extension/Tools (36 commands: 2 real + 4 plan-only + 30 unsupported)
+- Batch N — Debug/Dev/Secret (8 commands: 3 real + 5 plan-only)
+
+Plan-only commands return `{ planned: true, action, fields }`; unsupported commands throw `SlashCommandUnsupportedError` with a reason; `/secret-write` accepts only `secret_ref:env:NAME`.
+
 ## Design tokens
 
 Styles start in `packages/ydltavern-surface/src/styles/surface.css`. Round 5 added 29 ST-aligned CSS variables, all named `--tavern-*` and scoped under `.ydltavern-surface` / `.tavern-themed-root`; the package does not write to host `:root`.

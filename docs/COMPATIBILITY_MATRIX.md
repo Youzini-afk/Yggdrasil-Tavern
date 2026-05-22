@@ -24,7 +24,7 @@
 - `partial-sandboxed` —— 能在受限 sandbox 中执行，DOM/网络等能力仍不完整
 - `partial-opt-in` —— 需要 host/profile/env 显式启用的真实路径
 
-当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity 与 Round 6 W-track 收敛已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error。
+当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity、Round 6 W-track 收敛与 Round 7 X-track slash/font 收尾已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error。
 
 ## Round 3 T-track summary (May 2026)
 
@@ -72,12 +72,33 @@ After W1-W7 fork completion work:
 - Surface assets: `copy-assets.mjs` copies CSS and fonts; `surface.css` declares self-hosted Noto Sans / Noto Sans Mono with system fallback.
 - E2E integration: Yggdrasil `clients/web` can resolve the YdlTavern demo bundle and mount it in the sandboxed SurfaceHost development path.
 
+## Round 7 X-track summary (May 2026)
+
+X-track closed the remaining slash-command and font-packaging work:
+
+- Slash command registry: 14 batches (A-N) are registered through `createSTContextDeep`; batches H-N add variables/control/math, chat/message extras, character/group/persona/tag, world-info/lorebook, preset/settings, extension/tools, and debug/dev/secret coverage.
+- Canonical command coverage: ~150 implemented/plan-only registrations plus ~40 explicit unsupported sentinels cover 199/199 ST canonical commands. Plan-only descriptors return JSON `{ planned: true, action, fields }`; unsupported sentinels throw `SlashCommandUnsupportedError` with a reason.
+- Fonts: surface builds bundle Noto Sans + Noto Sans Mono via @fontsource (Latin subset, 4 woff2 files, ~50KB) rather than relying on manually supplied production font files.
+- Golden harness remains 20/20 perfect after all 8 W-track structural diffs were closed.
+
+Batch breakdown:
+
+| Batch | Category | Coverage |
+|---|---|---|
+| H | Variables/Control/Math | 24 commands, all real |
+| I | Chat/Messages Extras | 21 commands: 8 real + 6 plan-only + 7 unsupported |
+| J | Characters/Group/Persona/Tags | 17 commands: 11 real + 6 plan-only |
+| K | World Info/Lorebook | 11 commands: 7 real + 4 plan-only |
+| L | Preset/Settings | 21 commands: 14 real + 1 plan-only + 6 unsupported |
+| M | Extension/Tools | 36 commands: 2 real + 4 plan-only + 30 unsupported |
+| N | Debug/Dev/Secret | 8 commands: 3 real + 5 plan-only |
+
 ## 总览
 
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
 |---|---:|---:|---|---|---|
 | event_types | 104 | 常量 + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| 内置 slash commands | 153 | 70 commands implemented across batches A-G; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 70/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| 内置 slash commands | 199 canonical | ~150 implemented/plan-only commands across batches A-N + ~40 unsupported sentinels; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 199/199 canonical coverage, partial behavior | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | 宏 / macros | 80+ | registry-based deep engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState；golden harness 当前 4/4 perfect（env/nested/random/time 全部字节级对齐） | implemented for current golden macro scenarios — `golden-harness/diff/macro-*.json` | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides；golden harness 当前 4/4 perfect、0 cosmetic、0 structural | implemented for current golden chat scenarios — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
@@ -113,6 +134,7 @@ After W1-W7 fork completion work:
 | Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper 复刻 `.mes` 结构 | implemented |
 | Settings forms / drawers | ST drawer forms backed by shared state | Sampler, connection, formatting, persona, characters, world books, backgrounds, user settings all read/write TavernProvider; schema-versioned localStorage persists state | implemented |
 | Surface bundle | Browser-loadable ESM surface package | tsc emits `dist/index.js`; Vite emits browser-ready `dist/bundle.mjs`; CSS and font assets copied into `dist/styles/` and `dist/fonts/` | implemented |
+| Fonts | Noto Sans + Noto Sans Mono | bundled via @fontsource (Noto Sans + Mono Latin subset, 4 woff2 files, ~50KB) | implemented |
 
 数字大致计数。准确数字以 inventory 和 `@ydltavern/types` 常量为准。`stubbed` 表示 API 表面存在但行为未完整对齐；`partial` 表示已有可测试代码路径但还没宣称字节级兼容。
 
@@ -122,7 +144,7 @@ After W1-W7 fork completion work:
 |---|---|---|---|
 | `@ydltavern/types` | 全部 | Turn 模型、ST event/slash/macro/connector/sampler/world-info/prompt-manager 常量 | stubbed 基础 |
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
-| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、完整 `getContext()` shape（`context-st.ts`）、`eventSource`、`Generate`、宏 re-export（深实现位于 engine-core）、STScript 运行时（`stscript-st.ts`：scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution）、slash registry + batches A-G 70 commands | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、完整 `getContext()` shape（`context-st.ts`）、`eventSource`、`Generate`、宏 re-export（深实现位于 engine-core）、STScript 运行时（`stscript-st.ts`：scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution）、slash registry + batches A-N（~150 implemented/plan-only + ~40 unsupported，199/199 canonical coverage） | partial |
 | `@ydltavern/engine-core` | C + I | chat/text request builders、stream chunk 状态机、token budget、PromptManager、World Info（token-approximation budget + seeded probability）、instruct mode、deep macro engine、tokenizer registry + `countTokens(text, options)` real adapters（OpenAI/GPT2/Llama/Llama3/Claude/HF-source）+ HF runtime fetcher + guesstimate、golden harness fixtures、stream frames、model boundary plan | partial |
 | `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` 虚拟聊天列表 + 9 wired drawers + TavernProvider settings/library state + browser-ready `dist/bundle.mjs` + 9 mount adapters + CSS/font asset copy + mobile responsive + diagnostic inspectors | implemented for Round 6 surface scope |
 | `@ydltavern/extensions` | F + H | regex real engine、memory/vectors/quick-reply/token-counter executable logic、provider/IO-heavy extensions as plan/approximation、extension loader（manifest parse + validation + activation plan）、QuickJS sandbox runtime/bridge/ESM loader/permissions/audit/browser stubs；`realExtensionLoad` opt-in supports synthetic micro-BME and env-gated real BME smoke | partial-sandboxed / partial-opt-in |

@@ -102,6 +102,10 @@ Browser stub 是显式审计过的最小集合：`document`、`window`、`localS
 
 宏引擎的深 ST-compatible 实现现在位于 `@ydltavern/engine-core`，覆盖递归展开、comment macro、trim/newline 后处理、random/pick/roll seeded RNG、冻结时间/date/isodate/weekday/datetimeformat 等路径。`@ydltavern/st-compat` 的 `macros-st.ts` 作为兼容入口 re-export engine-core 实现，避免底层 engine-core 反向依赖 st-compat。Golden harness 当前 macro 4/4 scenarios 为 byte-perfect。
 
+### Slash command coverage
+
+`createSTContextDeep` 注册 14 个 slash command batches（A-N），覆盖全部 199 个 ST canonical commands。命令分为三类：真实实现直接读写 st-compat context；plan-only descriptors 返回 JSON `{ planned: true, action, fields }`，供 host capability 执行；unsupported sentinels 抛出 `SlashCommandUnsupportedError` 并给出明确原因。重复注册通过 `registerIfMissing` 保留先注册版本，避免覆盖已有 built-in 或早期 batch 行为。`/secret-write` 只接受 `secret_ref:env:NAME` 形式，拒绝 raw value 写入。
+
 ### World Info alignment
 
 World Info pipeline 仍以 ST `checkWorldInfo` 行为为对齐目标。Round 4 后预算成本使用 ST fallback 风格 token approximation（UTF-8/3.35 近似，而不是字符长度），预算上限按 context budget 百分比计算；概率门与随机路径使用 seedrandom 注入，保证 golden harness 与 engine-core 在 fixture 中稳定一致。当前 world-info 4/4 scenarios 为 byte-perfect，但这只覆盖现有 fixtures，不代表所有 WI 边角行为都已全域声明 implemented。
@@ -118,9 +122,9 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 
 - `tsc` 输出 `dist/index.js` 与 `.d.ts`，供 TypeScript / package consumers 使用。
 - Vite library mode 输出 `dist/bundle.mjs`，这是 browser-ready ESM bundle，可在 Yggdrasil iframe SurfaceHost 中 dynamic import；React 与 surface runtime 依赖被打入 bundle，避免 iframe 里出现 bare imports。
-- `scripts/copy-assets.mjs` 把 `src/styles/*.css` 复制到 `dist/styles/`，并把 `public/fonts/*.woff2` 复制到 `dist/fonts/`。`surface.css` 中的 `@font-face` 使用 `../fonts/` 路径，因此 `dist/styles/surface.css` 会引用 `dist/fonts/`。
+- `scripts/copy-assets.mjs` 把 `src/styles/*.css` 复制到 `dist/styles/`，并从 `@fontsource/noto-sans@5.2.10` 与 `@fontsource/noto-sans-mono@5.2.10` 复制 4 个 Latin subset woff2 到 `dist/fonts/`。`surface.css` 中的 `@font-face` 使用 `../fonts/` 路径，因此 `dist/styles/surface.css` 会引用 `dist/fonts/`。
 
-字体策略是 self-hosted Noto Sans + Noto Sans Mono（SIL OFL 1.1，AGPL-compatible），并保留 Inter / system fallback。当前开发环境若没有实际 woff2 文件，copy step 会告警但不失败；生产离线 bundle 需要补齐 `public/fonts/` 中的四个 woff2 文件。
+字体策略是 self-hosted Noto Sans + Noto Sans Mono（SIL OFL 1.1，AGPL-compatible），并保留 Inter / system fallback。Round 7 后字体由 @fontsource 打包（Noto Sans Regular/Medium/Bold + Noto Sans Mono Regular，Latin subset，约 50KB），不再依赖手工放置 `public/fonts/` 文件。
 
 #### TavernProvider state architecture
 
@@ -185,4 +189,4 @@ Round 5 V-track 后，`packages/ydltavern-surface/src/components/shell/` 使用 
 
 ## 当前状态
 
-YdlTavern 的主要开发面已完成一轮系统推进、一轮深度移植、Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity 和 Round 6 W-track 收敛：资产导入/导出、ST 兼容运行时、STScript 运行时、70 个 slash commands、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher、深宏引擎）、内置扩展逻辑、ESM-capable sandbox extension loader、live model call / realtime boundary、产品 surface shell、9 个 provider-backed drawers、browser-ready bundle、9 个 mount adapters、clients/web E2E demo 路径和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox 受限执行且可 opt-in 加载真实 ESM 扩展，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展、BME 全功能路径和更多 fixture 场景仍需继续补齐。
+YdlTavern 的主要开发面已完成一轮系统推进、一轮深度移植、Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity、Round 6 W-track 收敛和 Round 7 X-track slash/font 完成：资产导入/导出、ST 兼容运行时、STScript 运行时、约 150+ 个 slash commands（A-N，覆盖 199 个 ST canonical commands）、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher、深宏引擎）、内置扩展逻辑、ESM-capable sandbox extension loader、live model call / realtime boundary、产品 surface shell、9 个 provider-backed drawers、browser-ready bundle、9 个 mount adapters、clients/web E2E demo 路径和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox 受限执行且可 opt-in 加载真实 ESM 扩展，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展、BME 全功能路径和更多 fixture 场景仍需继续补齐。

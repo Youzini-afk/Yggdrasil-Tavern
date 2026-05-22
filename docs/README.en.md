@@ -8,8 +8,8 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 
 - [`CHARTER.md`](CHARTER.en.md) — principles that don't change
 - [`COMPATIBILITY.md`](COMPATIBILITY.en.md) — SillyTavern resource and extension compatibility scope (overview)
-- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.en.md) — coverage radar, by domain
-- [`ARCHITECTURE.md`](ARCHITECTURE.en.md) — how YdlTavern relates to Yggdrasil
+- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.en.md) — coverage radar by domain; after Round 7 it records 199/199 slash-command canonical coverage and @fontsource font bundling
+- [`ARCHITECTURE.md`](ARCHITECTURE.en.md) — how YdlTavern relates to Yggdrasil, including A-N slash registration, plan-only/unsupported sentinels, and font bundling
 
 ## Internal architecture
 
@@ -18,7 +18,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 
 ## Roadmap
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.en.md) — current follow-up work queue
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.en.md) — current follow-up work queue; X-track is complete and only forward-looking performance, heavy-extension, Phase B, and font-subset work remains
 
 ## Guides
 
