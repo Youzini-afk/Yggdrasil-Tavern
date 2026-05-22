@@ -6,6 +6,7 @@ import { describeHandlers } from "./capabilities/describe.js";
 import { createDiagnosticsHandlers } from "./capabilities/diagnostics.js";
 import { extensionHandlers } from "./capabilities/extensions.js";
 import { modelLiveCallHandlers } from "./capabilities/model-live-call.js";
+import { modelLiveRealtimeHandlers } from "./capabilities/model-live-realtime.js";
 import { modelHandlers } from "./capabilities/model.js";
 import { presetHandlers } from "./capabilities/preset.js";
 import { scriptHandlers } from "./capabilities/script.js";
@@ -47,6 +48,7 @@ const handlers: HandlerRecord = {
   ...extensionHandlers,
   ...modelHandlers,
   ...modelLiveCallHandlers,
+  ...modelLiveRealtimeHandlers,
   ...deepPortHandlers,
   ...createDiagnosticsHandlers(counters),
 };

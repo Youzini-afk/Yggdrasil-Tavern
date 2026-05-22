@@ -9,31 +9,13 @@ import {
   type StreamMergeState,
 } from "@ydltavern/engine-core";
 
-import { PACKAGE_ID, createCapabilityMeta, type HandlerContext, type HandlerRecord } from "../types.js";
+import { PACKAGE_ID, createCapabilityMeta, type HandlerContext, type HandlerRecord, type KernelClient } from "../types.js";
 
 export const MODEL_LIVE_CALL_ID = `${PACKAGE_ID}/model.live_call`;
 export const MODEL_LIVE_CALL_STREAM_ID = `${PACKAGE_ID}/model.live_call.stream`;
 
 type LiveChatCompletionSource = ChatCompletionSource | "anthropic";
 type Tool = Record<string, unknown>;
-
-// Minimal KernelClient surface YdlTavern needs.
-// Mirrors @yggdrasil/subprocess kernelClient shape from Y4 without importing
-// the SDK types, so this package is decoupled from the SDK's ESM packaging.
-export interface KernelClient {
-  sendKernelRequest<T = unknown>(method: string, params: unknown): Promise<T>;
-  streamKernelRequest(
-    method: string,
-    params: unknown,
-    callbacks: {
-      onChunk: (chunk: unknown) => void;
-      onEnd?: (summary: unknown) => void;
-      onError?: (error: unknown) => void;
-      onCancelled?: () => void;
-      onTimeout?: () => void;
-    },
-  ): { cancel: () => void };
-}
 
 export interface ModelLiveCallInput {
   source: LiveChatCompletionSource;

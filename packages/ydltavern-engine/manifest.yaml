@@ -210,6 +210,12 @@ provides:
     output_schema: {}
     streaming: true
     description: Real provider chat completion via Yggdrasil public outbound (streaming SSE).
+  - id: ydltavern/engine/model.live_realtime
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: true
+    description: Real provider realtime via Yggdrasil public outbound websocket (OpenAI Realtime, Gemini Live).
 consumes: []
 contributes:
   schemas: []
@@ -220,19 +226,22 @@ permissions:
   network:
     declarations:
       - host: api.openai.com
-        methods: [POST]
+        methods: [POST, WEBSOCKET]
       - host: api.deepseek.com
         methods: [POST]
       - host: api.anthropic.com
         methods: [POST]
       - host: openrouter.ai
         methods: [POST]
+      - host: generativelanguage.googleapis.com
+        methods: [POST, WEBSOCKET]
     hosts: []
   secret_refs:
     - secret_ref:env:OPENAI_API_KEY
     - secret_ref:env:DEEPSEEK_API_KEY
     - secret_ref:env:ANTHROPIC_API_KEY
     - secret_ref:env:OPENROUTER_API_KEY
+    - secret_ref:env:GEMINI_API_KEY
 sandbox_policy:
   cpu_quota_ms_per_invoke: 10000
   memory_mb: 256
