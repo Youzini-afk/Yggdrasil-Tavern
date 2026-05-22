@@ -1,0 +1,31 @@
+{
+  "_description": "OpenAI chat completion with tool calling enabled",
+  "source": "openai",
+  "model": "gpt-4o-mini",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant with access to tools."},
+    {"role": "user", "content": "What is the weather in Tokyo?"}
+  ],
+  "settings": {
+    "temp_openai": 0.7,
+    "top_p_openai": 1.0,
+    "openai_max_tokens": 512,
+    "stream_openai": false
+  },
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get current weather for a location",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {"type": "string", "description": "City name"}
+          },
+          "required": ["location"]
+        }
+      }
+    }
+  ]
+}

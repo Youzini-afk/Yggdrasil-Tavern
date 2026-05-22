@@ -1,0 +1,15 @@
+{
+  "_description": "Basic OpenAI chat completion request shape",
+  "source": "openai",
+  "model": "gpt-4o-mini",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hi."}
+  ],
+  "settings": {
+    "temp_openai": 0.7,
+    "top_p_openai": 1.0,
+    "openai_max_tokens": 256,
+    "stream_openai": false
+  }
+}

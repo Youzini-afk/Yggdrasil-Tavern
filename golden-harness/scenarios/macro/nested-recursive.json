@@ -1,0 +1,10 @@
+{
+  "_description": "Nested and recursive macro substitution",
+  "text": "{{user}} says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+  "env": {
+    "user": "Alice",
+    "char": "Bob"
+  },
+  "chat": [],
+  "settings": {}
+}

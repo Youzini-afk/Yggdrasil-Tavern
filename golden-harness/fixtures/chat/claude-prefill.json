@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "chat/claude-prefill.json",
+    "category": "chat",
+    "name": "claude-prefill",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Claude API request with assistant prefill message",
+    "source": "claude",
+    "model": "claude-3-5-sonnet-20241022",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a creative writer."
+      },
+      {
+        "role": "user",
+        "content": "Write a haiku about programming."
+      },
+      {
+        "role": "assistant",
+        "content": "Here is a haiku about programming:"
+      }
+    ],
+    "settings": {
+      "temp_openai": 0.9,
+      "top_p_openai": 1,
+      "openai_max_tokens": 128,
+      "stream_openai": false
+    }
+  },
+  "output": {
+    "requestBody": {
+      "type": "normal",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a creative writer."
+        },
+        {
+          "role": "user",
+          "content": "Write a haiku about programming."
+        },
+        {
+          "role": "assistant",
+          "content": "Here is a haiku about programming:"
+        }
+      ],
+      "model": "gpt-4-turbo",
+      "temperature": 1,
+      "frequency_penalty": 0,
+      "presence_penalty": 0,
+      "top_p": 1,
+      "max_tokens": 300,
+      "stream": false,
+      "chat_completion_source": "openai",
+      "user_name": "User",
+      "char_name": "Assistant",
+      "group_names": [],
+      "include_reasoning": true,
+      "enable_web_search": false,
+      "request_images": false,
+      "request_image_resolution": "",
+      "request_image_aspect_ratio": "",
+      "custom_prompt_post_processing": ""
+    },
+    "requestUrl": "/api/backends/chat-completions/generate",
+    "requestMethod": "POST",
+    "requestHeaders": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer test-key"
+    },
+    "scenario": "Claude API request with assistant prefill message"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "_description": "Random macro with seeded RNG for deterministic output",
+  "text": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
+  "env": {
+    "user": "Alice",
+    "char": "Bob"
+  },
+  "chat": [],
+  "settings": {}
+}

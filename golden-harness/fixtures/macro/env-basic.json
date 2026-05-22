@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "macro/env-basic.json",
+    "category": "macro",
+    "name": "env-basic",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Basic environment variable substitution in macros",
+    "text": "Hello {{user}}, I am {{char}}. Welcome to {{location}}.",
+    "env": {
+      "user": "Alice",
+      "char": "Bob",
+      "location": "the tavern"
+    },
+    "chat": [],
+    "settings": {}
+  },
+  "output": {
+    "output": "Hello Alice, I am Bob. Welcome to the tavern.",
+    "scenario": "Basic environment variable substitution in macros",
+    "input": "Hello {{user}}, I am {{char}}. Welcome to {{location}}.",
+    "partial": true,
+    "error": "Cannot read properties of undefined (reading 'content')",
+    "note": "Full evaluateMacros failed; used fallback env substitution only"
+  }
+}

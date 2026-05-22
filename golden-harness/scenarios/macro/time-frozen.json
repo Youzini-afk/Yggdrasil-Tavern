@@ -1,0 +1,10 @@
+{
+  "_description": "Time and date macros with frozen clock",
+  "text": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+  "env": {
+    "user": "Alice",
+    "char": "Bob"
+  },
+  "chat": [],
+  "settings": {}
+}

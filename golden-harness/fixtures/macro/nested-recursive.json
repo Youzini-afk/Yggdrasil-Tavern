@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "macro/nested-recursive.json",
+    "category": "macro",
+    "name": "nested-recursive",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Nested and recursive macro substitution",
+    "text": "{{user}} says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+    "env": {
+      "user": "Alice",
+      "char": "Bob"
+    },
+    "chat": [],
+    "settings": {}
+  },
+  "output": {
+    "output": "Alice says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+    "scenario": "Nested and recursive macro substitution",
+    "input": "{{user}} says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+    "partial": true,
+    "error": "Cannot read properties of undefined (reading 'content')",
+    "note": "Full evaluateMacros failed; used fallback env substitution only"
+  }
+}

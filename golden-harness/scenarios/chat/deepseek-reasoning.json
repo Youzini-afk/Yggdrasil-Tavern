@@ -1,0 +1,15 @@
+{
+  "_description": "DeepSeek reasoning model with chain-of-thought",
+  "source": "deepseek",
+  "model": "deepseek-reasoner",
+  "messages": [
+    {"role": "system", "content": "You are a logical reasoning assistant."},
+    {"role": "user", "content": "If all cats are animals, and Fluffy is a cat, what is Fluffy?"}
+  ],
+  "settings": {
+    "temp_openai": 0.7,
+    "top_p_openai": 1.0,
+    "openai_max_tokens": 1024,
+    "stream_openai": false
+  }
+}

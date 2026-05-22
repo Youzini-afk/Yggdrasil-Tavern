@@ -1,0 +1,11 @@
+{
+  "_description": "Basic environment variable substitution in macros",
+  "text": "Hello {{user}}, I am {{char}}. Welcome to {{location}}.",
+  "env": {
+    "user": "Alice",
+    "char": "Bob",
+    "location": "the tavern"
+  },
+  "chat": [],
+  "settings": {}
+}

@@ -1,0 +1,101 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "world-info/recursion-chain.json",
+    "category": "world-info",
+    "name": "recursion-chain",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "World info recursion chain: Entry A triggers Entry B via content match",
+    "entries": [
+      {
+        "uid": 0,
+        "key": [
+          "sword"
+        ],
+        "keysecondary": [],
+        "comment": "Sword Entry",
+        "content": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.",
+        "constant": false,
+        "selective": false,
+        "selectiveLogic": 0,
+        "addMemo": true,
+        "order": 100,
+        "position": 0,
+        "disable": false,
+        "excludeRecursion": false,
+        "preventRecursion": false,
+        "delayUntilRecursion": false,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "group": "",
+        "groupOverride": false,
+        "groupWeight": 100,
+        "scanDepth": null,
+        "caseSensitive": null,
+        "matchWholeWords": null,
+        "automationId": "",
+        "role": null,
+        "vectorized": false
+      },
+      {
+        "uid": 1,
+        "key": [
+          "merlin"
+        ],
+        "keysecondary": [],
+        "comment": "Merlin Entry",
+        "content": "Merlin the wizard watches from the tower. He wields ancient runes.",
+        "constant": false,
+        "selective": false,
+        "selectiveLogic": 0,
+        "addMemo": true,
+        "order": 200,
+        "position": 0,
+        "disable": false,
+        "excludeRecursion": false,
+        "preventRecursion": false,
+        "delayUntilRecursion": false,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "group": "",
+        "groupOverride": false,
+        "groupWeight": 100,
+        "scanDepth": null,
+        "caseSensitive": null,
+        "matchWholeWords": null,
+        "automationId": "",
+        "role": null,
+        "vectorized": false
+      }
+    ],
+    "chat": [
+      {
+        "name": "Alice",
+        "is_user": true,
+        "mes": "I draw the sword from the stone."
+      }
+    ],
+    "settings": {
+      "world_info_depth": 2,
+      "world_info_budget": 50,
+      "world_info_recursive": true,
+      "world_info_case_sensitive": false,
+      "world_info_match_whole_words": false,
+      "world_info_use_group_scoring": false,
+      "world_info_max_recursion_steps": 3
+    },
+    "generation_type": "normal"
+  },
+  "output": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
+  }
+}

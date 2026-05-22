@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "macro/time-frozen.json",
+    "category": "macro",
+    "name": "time-frozen",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Time and date macros with frozen clock",
+    "text": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+    "env": {
+      "user": "Alice",
+      "char": "Bob"
+    },
+    "chat": [],
+    "settings": {}
+  },
+  "output": {
+    "output": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+    "scenario": "Time and date macros with frozen clock",
+    "input": "Current time: {{time}}. Today is {{date}}. ISO date: {{isodate}}. Weekday: {{weekday}}.",
+    "partial": true,
+    "error": "Cannot read properties of undefined (reading 'content')",
+    "note": "Full evaluateMacros failed; used fallback env substitution only"
+  }
+}

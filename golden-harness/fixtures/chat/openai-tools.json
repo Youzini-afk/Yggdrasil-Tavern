@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "chat/openai-tools.json",
+    "category": "chat",
+    "name": "openai-tools",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "OpenAI chat completion with tool calling enabled",
+    "source": "openai",
+    "model": "gpt-4o-mini",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant with access to tools."
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in Tokyo?"
+      }
+    ],
+    "settings": {
+      "temp_openai": 0.7,
+      "top_p_openai": 1,
+      "openai_max_tokens": 512,
+      "stream_openai": false
+    },
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Get current weather for a location",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string",
+                "description": "City name"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "output": {
+    "requestBody": {
+      "type": "normal",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful assistant with access to tools."
+        },
+        {
+          "role": "user",
+          "content": "What is the weather in Tokyo?"
+        }
+      ],
+      "model": "gpt-4-turbo",
+      "temperature": 1,
+      "frequency_penalty": 0,
+      "presence_penalty": 0,
+      "top_p": 1,
+      "max_tokens": 300,
+      "stream": false,
+      "chat_completion_source": "openai",
+      "user_name": "User",
+      "char_name": "Assistant",
+      "group_names": [],
+      "include_reasoning": true,
+      "enable_web_search": false,
+      "request_images": false,
+      "request_image_resolution": "",
+      "request_image_aspect_ratio": "",
+      "custom_prompt_post_processing": ""
+    },
+    "requestUrl": "/api/backends/chat-completions/generate",
+    "requestMethod": "POST",
+    "requestHeaders": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer test-key"
+    },
+    "scenario": "OpenAI chat completion with tool calling enabled"
+  }
+}

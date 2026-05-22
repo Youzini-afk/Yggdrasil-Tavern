@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "macro/random-seeded.json",
+    "category": "macro",
+    "name": "random-seeded",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Random macro with seeded RNG for deterministic output",
+    "text": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
+    "env": {
+      "user": "Alice",
+      "char": "Bob"
+    },
+    "chat": [],
+    "settings": {}
+  },
+  "output": {
+    "output": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
+    "scenario": "Random macro with seeded RNG for deterministic output",
+    "input": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
+    "partial": true,
+    "error": "Cannot read properties of undefined (reading 'content')",
+    "note": "Full evaluateMacros failed; used fallback env substitution only"
+  }
+}

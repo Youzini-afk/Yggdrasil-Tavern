@@ -1,0 +1,16 @@
+{
+  "_description": "Claude API request with assistant prefill message",
+  "source": "claude",
+  "model": "claude-3-5-sonnet-20241022",
+  "messages": [
+    {"role": "system", "content": "You are a creative writer."},
+    {"role": "user", "content": "Write a haiku about programming."},
+    {"role": "assistant", "content": "Here is a haiku about programming:"}
+  ],
+  "settings": {
+    "temp_openai": 0.9,
+    "top_p_openai": 1.0,
+    "openai_max_tokens": 128,
+    "stream_openai": false
+  }
+}

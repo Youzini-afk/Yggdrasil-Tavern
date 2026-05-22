@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "instruct/llama3.json",
+    "category": "instruct",
+    "name": "llama3",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Llama 3 instruct mode template formatting",
+    "message": "I need your help with something important.",
+    "isUser": true,
+    "isNarrator": false,
+    "forceAvatar": "",
+    "charName": "Luna",
+    "userName": "Atlas",
+    "forceOutputSequence": false,
+    "template": {
+      "input_sequence": "<|start_header_id|>user<|end_header_id|>\n\n",
+      "output_sequence": "<|start_header_id|>assistant<|end_header_id|>\n\n",
+      "first_output_sequence": "",
+      "last_output_sequence": "",
+      "input_suffix": "<|eot_id|>",
+      "output_suffix": "<|eot_id|>",
+      "system_sequence": "<|start_header_id|>system<|end_header_id|>\n\n",
+      "system_suffix": "<|eot_id|>",
+      "last_system_sequence": "",
+      "first_input_sequence": "",
+      "last_input_sequence": "",
+      "stop_sequence": "",
+      "separator_sequence": "",
+      "user_alignment_message": "",
+      "story_string_prefix": "",
+      "story_string_suffix": "",
+      "activation_regex": "",
+      "wrap": false,
+      "macro": true,
+      "names_behavior": "force",
+      "system_same_as_user": false,
+      "skip_examples": false,
+      "bind_to_context": false,
+      "sequences_as_stop_strings": false,
+      "enabled": true
+    }
+  },
+  "output": {
+    "output": "<|start_header_id|>user<|end_header_id|>\n\nI need your help with something important.<|eot_id|>",
+    "scenario": "Llama 3 instruct mode template formatting",
+    "template_used": "<|start_header_id|>user<|end_h..."
+  }
+}
