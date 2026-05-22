@@ -92,7 +92,19 @@ Realtime model calls use a separate WebSocket path: `ydltavern/engine/model.live
 
 ### QuickJS extension sandbox
 
-`@ydltavern/extensions` now has `src/sandbox/`: QuickJS runtime, host bridge, loader, permissions, and audit. ST extension JS runs inside a separate QuickJS context. v0 exposes constrained `getContext`, extension prompt, event, slash, and settings bridges; network/fetch/XHR are blocked by default, and host API calls record sanitized argument shapes. Activation timeouts are enforced, and memory/CPU budgets can be tightened by the host profile; DOM/style/i18n injection remains future work.
+`@ydltavern/extensions` has `src/sandbox/`: QuickJS runtime, host bridge, ESM loader, permissions, browser stubs, and audit. ST extension JS runs inside a separate QuickJS context. Default synthetic sandbox tests still use the minimal capability set; loading a real ESM extension requires explicit `realExtensionLoad: true` permission so older tests and lower-trust extensions do not accidentally gain file-level import capability.
+
+The ESM loader parses static relative imports from the entry module, recursively reads files from the same extension package, and evaluates them in QuickJS module mode. ST host imports map to virtual modules: paths such as `../../../../script.js`, `../../../extensions.js`, and `../../../../openai.js` do not read real ST files; they export the host bridge's allowed API surface. npm bare imports are still not resolved; third-party extensions must vendor dependencies into the extension package.
+
+The browser stub set is deliberately small and audited: `document`, `window`, `localStorage`, `sessionStorage`, `performance`, `crypto`, `AbortController`, `DOMException`, `matchMedia`, and `requestAnimationFrame` are available; `fetch`, `indexedDB`, `Worker`, and `WebSocket` throw blocked errors. Every host API call enters the audit log with a redacted call name and argument shape. Synthetic micro-BME runs as an always-on smoke; real BME is opt-in through `YGG_BME_TEST_PATH`, but still stops before full functional boot on unsupported import/stub paths.
+
+### Macro engine
+
+The deep ST-compatible macro implementation now lives in `@ydltavern/engine-core`, covering recursive expansion, comment macros, trim/newline post-processors, random/pick/roll with seeded RNG, frozen time/date/isodate/weekday/datetimeformat paths, and related behavior. `@ydltavern/st-compat` keeps `macros-st.ts` as a compatibility entrypoint that re-exports the engine-core implementation, avoiding a reverse dependency from engine-core to st-compat. The current golden harness macro set is 4/4 byte-perfect.
+
+### World Info alignment
+
+The World Info pipeline continues to target ST `checkWorldInfo` behavior. After Round 4, budget cost uses the ST fallback-style token approximation (UTF-8/3.35 approximation rather than character length), and budget caps follow the context budget percentage. Probability gates and random paths use injected seedrandom so golden harness and engine-core stay deterministic for fixtures. The current world-info set is 4/4 byte-perfect, but that covers the existing fixtures rather than claiming every WI edge case is fully implemented.
 
 ### Frontend surfaces
 
@@ -102,7 +114,7 @@ Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/man
 
 ### Golden harness
 
-`golden-harness/` is a Node + jsdom fixture generator. It treats SillyTavern source as a read-only sibling (via `YDLTAVERN_ST_PATH`), loads ST ESM modules, and uses shims for DOM, fetch, randomness, and time to extract chat, world-info, macro, instruct, and tokenizer fixtures. Those fixtures are the alignment baseline for YdlTavern deep-port modules. After the Round 3 T-track, the WI/macro shims drive real `checkWorldInfo` / `evaluateMacros` paths, and compare covers 20 scenarios (9 perfect, 3 cosmetic, 8 structural, 0 unverifiable, 0 errors), but structural deltas still do not imply byte-level coverage across every domain.
+`golden-harness/` is a Node + jsdom fixture generator. It treats SillyTavern source as a read-only sibling (via `YDLTAVERN_ST_PATH`), loads ST ESM modules, and uses shims for DOM, fetch, randomness, and time to extract chat, world-info, macro, instruct, and tokenizer fixtures. Those fixtures are the alignment baseline for YdlTavern deep-port modules. After the Round 4 U-track, compare covers 20 scenarios (16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors): world-info, macro, instruct, and tokenizer are byte-perfect for the current scenarios, while chat remains cosmetic-only.
 
 ### Extension distribution
 
@@ -134,4 +146,4 @@ No matter how YdlTavern evolves:
 
 ## Status
 
-YdlTavern's main development surface has completed a systematic pass, a deep-port pass, and Round 3 T-track tightening: asset import/export, ST compatibility runtime, STScript runtime, 70 slash commands, engine core (PromptManager, World Info, chat/text completion adapters, instruct mode, tokenizer registry + HF runtime fetcher), built-in extension logic, sandbox-enabled extension loader, live model call / realtime boundary, product surface shell, and diagnostic inspectors are all in tested code. Deep-port modules are ported function-by-function from ST source with file/line references baked in. Current status is still `partial`: real tokenizer coverage now exists for OpenAI/GPT-2/Llama/Llama3/Claude/HF families, extension JS can run in QuickJS sandbox v0, live model calls can opt into Yggdrasil outbound, the surface descriptor has a Yggdrasil-compliant `manifest.yaml`, and golden harness `compare.mjs` runs across 20 scenarios (9 perfect, 3 cosmetic, 8 structural, 0 unverifiable, 0 errors). None of this claims full byte-level ST alignment across all domains; provider-specific I/O, DOM-heavy extensions, and more fixture scenarios still need to be filled in.
+YdlTavern's main development surface has completed a systematic pass, a deep-port pass, Round 3 T-track tightening, and Round 4 U-track closure: asset import/export, ST compatibility runtime, STScript runtime, 70 slash commands, engine core (PromptManager, World Info, chat/text completion adapters, instruct mode, tokenizer registry + HF runtime fetcher, deep macro engine), built-in extension logic, ESM-capable sandbox extension loader, live model call / realtime boundary, product surface shell, and diagnostic inspectors are all in tested code. Deep-port modules are ported function-by-function from ST source with file/line references baked in. Current status is still `partial`: real tokenizer coverage exists for OpenAI/GPT-2/Llama/Llama3/Claude/HF families, extension JS can run in the QuickJS sandbox and can opt into real ESM extension loading, live model calls can opt into Yggdrasil outbound, the surface descriptor has a Yggdrasil-compliant `manifest.yaml`, and golden harness `compare.mjs` runs across 20 scenarios (16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors). None of this claims full byte-level ST alignment across all domains; provider-specific I/O, DOM-heavy extensions, full BME functionality, and more fixture scenarios still need to be filled in.

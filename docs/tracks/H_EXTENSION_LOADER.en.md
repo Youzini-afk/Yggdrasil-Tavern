@@ -21,9 +21,11 @@ Loading is the same as ST:
 
 Security:
 
-- Extensions run in the same JS context as the YdlTavern main process (compatibility decided by D comes first)
-- Network requests sent by extensions through the compatibility layer still go through the Yggdrasil public protocol → host outbound audit + redaction + HTTPS-only
-- Installation warns the user, and the user decides the trust level (same as ST)
+- ST-style JS runs in the QuickJS sandbox by default, not in the YdlTavern main-process JS context.
+- Real multi-file ESM extension loading requires the `realExtensionLoad: true` permission opt-in.
+- `fetch` / XHR / WebSocket / Worker / IndexedDB are currently blocked; future support must go through audited Yggdrasil capability bridges.
+- Host API calls triggered through the compatibility bridge enter the audit log with call names and redacted argument shapes.
+- Installation warns the user, and the user decides the trust level (same as ST).
 
 ## Yggdrasil package channel
 
@@ -51,7 +53,14 @@ Depends on Yggdrasil's git installation capability:
 
 ## Current status
 
-Track H now has a sandbox-enabled loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, and audit. Status is `partial-sandboxed`: extension network/fetch/XHR are not supported, DOM/style/i18n injection is incomplete, and real git/zip installation is not in place.
+Track H now has an ESM-capable sandbox loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, browser stubs, and audit. Status is `partial-sandboxed / partial-opt-in`: synthetic micro-BME smoke is always-on, real BME smoke is opt-in through `YGG_BME_TEST_PATH`; extension network/fetch/XHR are not supported, real DOM/style/i18n injection is incomplete, and real git/zip installation is not in place.
+
+Round 4 U-track added these loader capabilities:
+
+- ESM module-mode execution with static relative import parsing from the entry file and recursive preloading of same-package files.
+- ST host import paths map to a virtual host module, including `../../../../script.js`, `../../../extensions.js`, and `../../../../openai.js`.
+- The virtual host module exposes the U0 baseline (`getContext`, event on/emit, slash command, extension prompt, settings) plus extended APIs: `event_types`, `extension_prompt_types`, `extension_prompt_roles`, `getRequestHeaders`, `saveSettingsDebounced`, `saveMetadata`, `saveMetadataDebounced`, `reloadCurrentChat`, `updateChatMetadata`, `getExtensionPrompt`, `substituteParams`, and `getTokenCountAsync`.
+- Browser stubs cover `document`, `window`, `localStorage`, `sessionStorage`, `performance`, `crypto`, `AbortController`, `DOMException`, `matchMedia`, and `requestAnimationFrame`; `fetch`, `indexedDB`, `Worker`, and `WebSocket` throw blocked errors.
 
 `@ydltavern/extensions` now has a deep-ported ST-style loader (`loader-st.ts`):
 
@@ -62,9 +71,9 @@ Track H now has a sandbox-enabled loader: `loader-st.ts` still handles ST manife
 - `buildLoadPlan` emitting add_locale/add_script/add_style/register_interceptor/call_hook/mark_active steps in order;
 - `STDisabledExtensionsStore`;
 - `planActivateAll` with progressive dependency tracking.
-- Loader plans can be handed to the QuickJS sandbox for execution; real files/zip/git installation is still not in place.
+- Loader plans can be handed to the QuickJS sandbox for execution; multi-file same-package ESM reads are supported, while real zip/git installation is still not in place.
 
-`ydltavern-engine` exposes `extension.loader.parse_manifest` and `extension.loader.plan_activate_all` capabilities. This is still `partial-sandboxed`: constrained JS can execute, but real files/zip/git are not read, and DOM/network capabilities are incomplete.
+`ydltavern-engine` exposes `extension.loader.parse_manifest` and `extension.loader.plan_activate_all` capabilities. This is still `partial-sandboxed`: constrained JS can execute and can read real extension package files under permission opt-in, but zip/git installation is not implemented and DOM/network capabilities are incomplete.
 
 ## Out of scope
 

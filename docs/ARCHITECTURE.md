@@ -92,7 +92,19 @@ Realtime 模型调用使用单独的 WebSocket 路径：`ydltavern/engine/model.
 
 ### QuickJS 扩展 sandbox
 
-`@ydltavern/extensions` 新增 `src/sandbox/`：QuickJS runtime、host bridge、loader、permissions 和 audit。ST extension JS 在独立 QuickJS context 内执行，v0 暴露受限 `getContext`、extension prompt、event、slash、settings bridge；默认阻断 network/fetch/XHR，并记录 host API 调用的参数形状。sandbox 有激活超时、内存/CPU 配额由 host profile 继续收紧；DOM/style/i18n 注入仍是后续工作。
+`@ydltavern/extensions` 的 `src/sandbox/` 包含 QuickJS runtime、host bridge、ESM loader、permissions、browser stubs 和 audit。ST extension JS 在独立 QuickJS context 内执行。默认 synthetic sandbox 测试仍走最小能力；加载真实 ESM 扩展必须显式授予 `realExtensionLoad: true`，避免旧测试或低信任扩展意外获得文件级 import 能力。
+
+ESM loader 会解析入口模块的静态 relative imports，递归读取同一扩展包内的文件并用 QuickJS module mode evaluate。ST host imports 映射到虚拟模块：`../../../../script.js`、`../../../extensions.js`、`../../../../openai.js` 等路径不读取真实 ST 文件，而是导出 host bridge 允许的 API surface。npm bare imports 仍不解析；第三方扩展需要把依赖 vendor 到扩展包内。
+
+Browser stub 是显式审计过的最小集合：`document`、`window`、`localStorage`、`sessionStorage`、`performance`、`crypto`、`AbortController`、`DOMException`、`matchMedia`、`requestAnimationFrame` 可用；`fetch`、`indexedDB`、`Worker`、`WebSocket` 会抛出 blocked 错误。所有 host API 调用都会进入 audit log，记录脱敏后的调用名与参数形状。当前能跑 synthetic micro-BME always-on smoke；真实 BME 通过 `YGG_BME_TEST_PATH` opt-in，但仍会在未覆盖的 import/stub 路径前停止，不能宣称完整启动或功能可用。
+
+### Macro engine
+
+宏引擎的深 ST-compatible 实现现在位于 `@ydltavern/engine-core`，覆盖递归展开、comment macro、trim/newline 后处理、random/pick/roll seeded RNG、冻结时间/date/isodate/weekday/datetimeformat 等路径。`@ydltavern/st-compat` 的 `macros-st.ts` 作为兼容入口 re-export engine-core 实现，避免底层 engine-core 反向依赖 st-compat。Golden harness 当前 macro 4/4 scenarios 为 byte-perfect。
+
+### World Info alignment
+
+World Info pipeline 仍以 ST `checkWorldInfo` 行为为对齐目标。Round 4 后预算成本使用 ST fallback 风格 token approximation（UTF-8/3.35 近似，而不是字符长度），预算上限按 context budget 百分比计算；概率门与随机路径使用 seedrandom 注入，保证 golden harness 与 engine-core 在 fixture 中稳定一致。当前 world-info 4/4 scenarios 为 byte-perfect，但这只覆盖现有 fixtures，不代表所有 WI 边角行为都已全域声明 implemented。
 
 ### 前端 surface
 
@@ -102,7 +114,7 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 
 ### Golden harness
 
-`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；Round 3 T-track 后 WI/macro shim 已能驱动真实 `checkWorldInfo` / `evaluateMacros` 路径，当前 compare 覆盖 20 个 scenarios（9 perfect、3 cosmetic、8 structural、0 unverifiable、0 error），但 structural deltas 仍不表示全域字节级实现。
+`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；Round 4 U-track 后当前 compare 覆盖 20 个 scenarios（16 perfect、4 cosmetic、0 structural、0 unverifiable、0 error）：world-info、macro、instruct、tokenizer 已在现有 scenarios byte-perfect，chat 仍为 cosmetic-only。
 
 ### 扩展生态分发
 
@@ -134,4 +146,4 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 
 ## 当前状态
 
-YdlTavern 的主要开发面已完成一轮系统推进、一轮深度移植和 Round 3 T-track tightening：资产导入/导出、ST 兼容运行时、STScript 运行时、70 个 slash commands、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher）、内置扩展逻辑、sandbox-enabled extension loader、live model call / realtime boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox v0 受限执行，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（9 perfect、3 cosmetic、8 structural、0 unverifiable、0 error）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展和更多 fixture 场景仍需继续补齐。
+YdlTavern 的主要开发面已完成一轮系统推进、一轮深度移植、Round 3 T-track tightening 和 Round 4 U-track closure：资产导入/导出、ST 兼容运行时、STScript 运行时、70 个 slash commands、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher、深宏引擎）、内置扩展逻辑、ESM-capable sandbox extension loader、live model call / realtime boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox 受限执行且可 opt-in 加载真实 ESM 扩展，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（16 perfect、4 cosmetic、0 structural、0 unverifiable、0 error）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展、BME 全功能路径和更多 fixture 场景仍需继续补齐。

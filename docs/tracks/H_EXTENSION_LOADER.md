@@ -21,9 +21,11 @@
 
 安全：
 
-- 扩展跑在跟 YdlTavern 主进程同 JS context（D 决定的兼容性优先）
-- 扩展通过兼容层发出的网络请求仍走 Yggdrasil 公开协议 → host 出站审计 + 脱敏 + HTTPS-only
-- 扩展安装时给警告，信任级别由用户决定（跟 ST 一样）
+- ST-style JS 默认跑在 QuickJS sandbox，不与 YdlTavern 主进程共享 JS context。
+- 真实多文件 ESM 扩展加载需要 `realExtensionLoad: true` permission opt-in。
+- `fetch` / XHR / WebSocket / Worker / IndexedDB 当前阻断；未来只能通过 Yggdrasil capability bridge 开放受审计路径。
+- 扩展通过兼容层触发的 host API 调用进入 audit log，记录调用名与脱敏参数形状。
+- 扩展安装时给警告，信任级别由用户决定（跟 ST 一样）。
 
 ## Yggdrasil 包通道
 
@@ -51,7 +53,14 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 
 ## 当前状态
 
-当前 H 轨道已有 sandbox-enabled loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时和审计。状态为 `partial-sandboxed`：不支持 extension network/fetch/XHR，DOM/style/i18n 注入不完整，真实 git/zip 安装仍未落地。
+当前 H 轨道已有 ESM-capable sandbox loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时、浏览器 stub 和审计。状态为 `partial-sandboxed / partial-opt-in`：synthetic micro-BME smoke always-on，真实 BME smoke 通过 `YGG_BME_TEST_PATH` opt-in；不支持 extension network/fetch/XHR，真实 DOM/style/i18n 注入不完整，真实 git/zip 安装仍未落地。
+
+Round 4 U-track 新增的 loader 能力：
+
+- ESM module mode 执行，支持入口文件的静态 relative imports 并递归预加载同包文件。
+- ST host import 路径映射到虚拟 host module，例如 `../../../../script.js`、`../../../extensions.js`、`../../../../openai.js`。
+- 虚拟 host module 暴露 U0 baseline（`getContext`、event on/emit、slash command、extension prompt、settings）以及扩展 API：`event_types`、`extension_prompt_types`、`extension_prompt_roles`、`getRequestHeaders`、`saveSettingsDebounced`、`saveMetadata`、`saveMetadataDebounced`、`reloadCurrentChat`、`updateChatMetadata`、`getExtensionPrompt`、`substituteParams`、`getTokenCountAsync`。
+- browser stubs 覆盖 `document`、`window`、`localStorage`、`sessionStorage`、`performance`、`crypto`、`AbortController`、`DOMException`、`matchMedia`、`requestAnimationFrame`；`fetch`、`indexedDB`、`Worker`、`WebSocket` 抛 blocked error。
 
 `@ydltavern/extensions` 已有 ST-style loader 深度移植（`loader-st.ts`）：
 
@@ -62,9 +71,9 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 - `buildLoadPlan` emitting add_locale/add_script/add_style/register_interceptor/call_hook/mark_active steps in order；
 - `STDisabledExtensionsStore`；
 - `planActivateAll` with progressive dependency tracking。
-- loader plan 可交给 QuickJS sandbox 执行；真实文件/zip/git 安装仍未落地。
+- loader plan 可交给 QuickJS sandbox 执行；多文件 ESM 包内读取已支持，真实 zip/git 安装仍未落地。
 
-`ydltavern-engine` 暴露 `extension.loader.parse_manifest` 和 `extension.loader.plan_activate_all` capability。仍是 `partial-sandboxed`：可执行受限 JS，但不读真实文件/zip/git，DOM/网络能力不完整。
+`ydltavern-engine` 暴露 `extension.loader.parse_manifest` 和 `extension.loader.plan_activate_all` capability。仍是 `partial-sandboxed`：可执行受限 JS，可在 permission opt-in 下读真实 extension package 文件，但不做 zip/git 安装，DOM/网络能力不完整。
 
 ## 不在范围内
 

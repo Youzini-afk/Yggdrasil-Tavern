@@ -13,6 +13,8 @@ Pure TypeScript engine core for YdlTavern: provider request builders, PromptMana
 - The fetcher never networks directly, never writes the filesystem, and never holds raw secrets; private HF repos must be accessed through a host-resolved `secret_ref` declared in the manifest.
 - ST-style UTF-8/3.35 guesstimate fallback remains when no real tokenizer source is available.
 - Golden harness tokenizer fixtures cover basic adapter regressions.
+- The deep macro implementation now lives in this package, covering ST-style recursive expansion, comment macros, trim/newline post-processors, random/pick/roll, isodate/weekday/datetimeformat, and related paths; `@ydltavern/st-compat` re-exports this compatibility entrypoint. Current macro golden scenarios are 4/4 perfect.
+- World Info budget accounting is aligned to the ST fallback token approximation (UTF-8/3.35 approximation rather than character length), with seedrandom injected for probability paths. Current WI golden scenarios are 4/4 perfect.
 
 ## Commands
 

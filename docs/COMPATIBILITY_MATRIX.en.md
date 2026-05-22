@@ -24,7 +24,7 @@ Implementation status:
 - `partial-sandboxed` — execution works inside a constrained sandbox; DOM/network/etc. remain incomplete
 - `partial-opt-in` — a real path exists only when the host/profile/env explicitly enable it
 
-Current stage: deep-port complete and Round 3 T-track tightening complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but nothing is claimed as byte-level aligned unless explicitly stated. Round 3 golden diff now covers 20/20 scenarios: 9 perfect, 3 cosmetic, 8 structural, 0 unverifiable, 0 errors.
+Current stage: deep-port complete, with Round 3 T-track tightening and Round 4 U-track closure complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors.
 
 ## Round 3 T-track summary (May 2026)
 
@@ -38,29 +38,40 @@ After T-track tightening (T1-T4):
 
 See `golden-harness/diff/_summary.json` for the canonical breakdown.
 
+## Round 4 U-track summary (May 2026)
+
+After U1-U5 and the U6 documentation pass:
+
+- Golden harness: 20 scenarios, 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 error.
+- Chat scenarios: 4/4 cosmetic-only; the previous tools/tool_choice structural delta is closed.
+- World Info scenarios: 4/4 byte-perfect after token-approximation budget alignment and seeded probability controls.
+- Macro scenarios: 4/4 byte-perfect after moving the deep ST-compatible macro implementation into engine-core and making st-compat re-export it.
+- Instruct scenarios: 2/2 byte-perfect; tokenizer scenarios: 6/6 byte-perfect self-baseline.
+- Real extension loading: the QuickJS sandbox can load ESM-shaped extensions with relative imports, virtual ST host module mappings, audited browser stubs, and the `realExtensionLoad` permission gate. Synthetic micro-BME is always-on in tests; real BME is opt-in via `YGG_BME_TEST_PATH` and still stops before full functional boot on unsupported import/stub paths.
+
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
 |---|---:|---:|---|---|---|
 | event_types | 104 | constants + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
 | built-in slash commands | 153 | 70 commands implemented across batches A-G; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 70/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| macros / macros | 80+ | registry-based engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState; golden harness currently has 1/4 perfect and 3/4 structural (env-basic is byte-perfect; nested/random/time still have structural deltas) | partial (env macros perfect; nested/random/time macros have structural deltas documented) — `golden-harness/diff/macro-*.json` | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides; golden harness currently has 0/4 perfect, 3/4 cosmetic, and 1/4 structural (the OpenAI shape is closer to ST but not byte-perfect) | partial (golden harness shows cosmetic-only deltas for 3/4 and one remaining structural delta; still not byte-perfect) — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| macros / macros | 80+ | registry-based deep engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState; golden harness currently has 4/4 perfect (env/nested/random/time are all byte-identical) | implemented for current golden macro scenarios — `golden-harness/diff/macro-*.json` | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides; golden harness currently has 0/4 perfect, 4/4 cosmetic, and 0 structural (the OpenAI shape has no structural delta but is still not byte-perfect) | partial (cosmetic-only deltas remain; no structural diffs) — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers (including aliases) | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | world info trigger types | 32 | keyword/regex/constant + 4 selectiveLogic modes + decorators + recursion gates + sticky/cooldown/delay | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info entry schema fields | 50+ | full schema fields including character_filter, triggers, group, sticky/cooldown/delay, scanDepth, decorators, etc. | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info evaluation pipeline steps | 39 | scan source assembly + decorator → activation precedence → selectiveLogic → recursion + delay/sticky/cooldown + budget + 8-bucket routing with AN patch + atDepth (depth, role) merge; golden harness currently has 0/4 perfect and 4/4 structural (the ST shim now executes real `checkWorldInfo` and emits comparable activation results) | partial (golden harness diffs documented; ST shim now drives real WI activation) — `golden-harness/diff/world-info-*.json` | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
+| world info evaluation pipeline steps | 39 | scan source assembly + decorator → activation precedence → selectiveLogic → recursion + delay/sticky/cooldown + token-approximation budget + seeded probability + 8-bucket routing with AN patch + atDepth (depth, role) merge; golden harness currently has 4/4 perfect | implemented for current golden WI scenarios — `golden-harness/diff/world-info-*.json` | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
 | character card V1 fields | 16 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V2 fields | 33 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V3 fields | 14 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | OpenAI preset schema fields | 75 | PromptManager preparePrompts + ChatCompletion budget + populationInjection + populateChatHistory + populateDialogueExamples + squashSystemMessages | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager identifiers | 13 typed | 12 default prompts + RELATIVE/ABSOLUTE injection_position + injection_depth/order + injection_trigger + forbid_overrides + main/jailbreak override with {{original}} | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
-| instruct mode templates | ST templates | ChatML / Llama3 golden scenarios are 2/2 perfect; other templates remain partial | partial — ChatML/Llama3 implemented (golden harness verified) | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| tokenizers: OPENAI/GPT2/LLAMA/LLAMA3/CLAUDE | 5 families | real local adapters; Claude is a local text approximation; golden harness is 6/6 perfect | implemented (golden harness verified) | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| instruct mode templates | ST templates | ChatML / Llama3 golden scenarios are 2/2 perfect; other templates remain partial | implemented for current golden instruct scenarios | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| tokenizers: OPENAI/GPT2/LLAMA/LLAMA3/CLAUDE | 5 families | real local adapters; Claude is a local text approximation; golden harness is 6/6 perfect | implemented for current golden tokenizer scenarios | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | tokenizers: HF families | 9 families | `@huggingface/tokenizers` path for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A; `fetchHuggingFaceTokenizer` can runtime-fetch `tokenizer.json` through Yggdrasil `kernel.outbound.execute`, with SHA-256 pinning and an LRU cache | partial-real | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | built-in extensions | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
-| extension JS execution | ST extension JS | QuickJS sandbox v0 + host bridge + permissions/audit; no network/fetch/XHR; DOM/style/i18n incomplete | partial-sandboxed | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
+| extension JS execution | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in; synthetic micro-BME is always-on, real BME is opt-in via `YGG_BME_TEST_PATH` | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | real model calls | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`; `model.live_realtime` bridge to `kernel.outbound.websocket.*` (OpenAI Realtime real; Gemini Live best-effort stub); requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | Product UI | qualitative | product shell with virtualized chat list, themes, settings tabs, extension drawer, quick reply, mobile responsive | partial-shell-with-virtualization-and-themes | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -77,10 +88,10 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 |---|---|---|---|
 | `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
 | `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat, preset, persona, theme, quick reply, regex, instruct import/export skeleton + fixtures | partial |
-| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, full `getContext()` shape (`context-st.ts`), `eventSource`, `Generate`, macro engine (`macros-st.ts`: full ST registry + recursive expansion + PickState), STScript runtime (`stscript-st.ts`: scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution), slash registry + 70 batches A-G commands | partial |
-| `@ydltavern/engine-core` | C + I | chat/text request builders, stream chunk state machine, token budget, PromptManager, World Info, instruct mode, tokenizer registry + `countTokens(text, options)` real adapters (OpenAI/GPT2/Llama/Llama3/Claude/HF-source) + HF runtime fetcher + guesstimate, golden harness fixtures, stream frames, model-boundary plans | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, full `getContext()` shape (`context-st.ts`), `eventSource`, `Generate`, macro re-exports (the deep implementation lives in engine-core), STScript runtime (`stscript-st.ts`: scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution), slash registry + 70 batches A-G commands | partial |
+| `@ydltavern/engine-core` | C + I | chat/text request builders, stream chunk state machine, token budget, PromptManager, World Info (token-approximation budget + seeded probability), instruct mode, deep macro engine, tokenizer registry + `countTokens(text, options)` real adapters (OpenAI/GPT2/Llama/Llama3/Claude/HF-source) + HF runtime fetcher + guesstimate, golden harness fixtures, stream frames, model-boundary plans | partial |
 | `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` virtualized chat list + dark/light/parchment themes + Connection/Sampler/Persona/Theme settings tabs + loader-st ExtensionsDrawer + QuickReplyBar + mobile responsive + diagnostic inspectors | partial-shell-with-virtualization-and-themes |
-| `@ydltavern/extensions` | F + H | regex real engine, memory/vectors/quick-reply/token-counter executable logic, provider/IO-heavy extensions as plan/approximation, extension loader (manifest parse + validation + activation plan), QuickJS sandbox runtime/bridge/loader/permissions/audit | partial-sandboxed |
+| `@ydltavern/extensions` | F + H | regex real engine, memory/vectors/quick-reply/token-counter executable logic, provider/IO-heavy extensions as plan/approximation, extension loader (manifest parse + validation + activation plan), QuickJS sandbox runtime/bridge/ESM loader/permissions/audit/browser stubs; `realExtensionLoad` opt-in supports synthetic micro-BME and env-gated real BME smoke | partial-sandboxed / partial-opt-in |
 | `@ydltavern/engine` | C | deep-port capabilities plus `model.live_call` / `model.live_call.stream` through Yggdrasil outbound execute/stream and `model.live_realtime` through outbound websocket; manifest declares provider hosts, WEBSOCKET methods, and `secret_refs` | partial-opt-in |
 
 ## Built-in extension coverage (track F)
