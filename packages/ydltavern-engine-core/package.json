@@ -13,7 +13,8 @@
     "test": "npm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@ydltavern/types": "file:../ydltavern-types"
+    "@ydltavern/types": "file:../ydltavern-types",
+    "gpt-tokenizer": "^3.4.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
