@@ -43,6 +43,8 @@
     "react-virtuoso": "^4.10.0"
   },
   "devDependencies": {
+    "@fontsource/noto-sans": "5.2.10",
+    "@fontsource/noto-sans-mono": "5.2.10",
     "@vitejs/plugin-react": "^4",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",

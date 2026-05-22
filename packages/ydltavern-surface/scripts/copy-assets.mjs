@@ -11,9 +11,27 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = dirname(here);
 const srcDir = join(root, 'src', 'styles');
 const destDir = join(root, 'dist', 'styles');
-const fontsSrc = join(root, 'public', 'fonts');
 const fontsDst = join(root, 'dist', 'fonts');
 const bundlePath = join(root, 'dist', 'bundle.mjs');
+
+const FONT_SOURCES = [
+  {
+    src: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff2',
+    dst: 'dist/fonts/NotoSans-Regular.woff2',
+  },
+  {
+    src: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-500-normal.woff2',
+    dst: 'dist/fonts/NotoSans-Medium.woff2',
+  },
+  {
+    src: 'node_modules/@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff2',
+    dst: 'dist/fonts/NotoSans-Bold.woff2',
+  },
+  {
+    src: 'node_modules/@fontsource/noto-sans-mono/files/noto-sans-mono-latin-400-normal.woff2',
+    dst: 'dist/fonts/NotoSansMono-Regular.woff2',
+  },
+];
 
 await mkdir(destDir, { recursive: true });
 
@@ -30,22 +48,26 @@ for (const entry of entries) {
 
 process.stdout.write(`[surface] copied ${copied} stylesheet(s) to dist/styles/\n`);
 
-try {
-  await mkdir(fontsDst, { recursive: true });
-  const fontEntries = await readdir(fontsSrc, { withFileTypes: true }).catch(() => []);
-  const fontFiles = fontEntries
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.woff2'))
-    .map((entry) => entry.name);
-  if (fontFiles.length === 0) {
-    process.stderr.write('[surface] no woff2 fonts in public/fonts/; relying on font-face fallback chain\n');
-  } else {
-    for (const file of fontFiles) {
-      await copyFile(join(fontsSrc, file), join(fontsDst, file));
-    }
-    process.stdout.write(`[surface] copied ${fontFiles.length} font file(s) to dist/fonts/\n`);
+await mkdir(fontsDst, { recursive: true });
+
+let fontsCopied = 0;
+for (const { src, dst } of FONT_SOURCES) {
+  try {
+    await copyFile(join(root, src), join(root, dst));
+    fontsCopied += 1;
+  } catch (err) {
+    process.stderr.write(`[surface] could not copy font ${src}: ${err.message}\n`);
   }
-} catch (err) {
-  process.stderr.write(`[surface] font copy step skipped: ${err.message}\n`);
+}
+
+if (fontsCopied === FONT_SOURCES.length) {
+  process.stdout.write(`[surface] copied ${fontsCopied} font(s) to dist/fonts/\n`);
+} else if (fontsCopied > 0) {
+  process.stderr.write(
+    `[surface] copied ${fontsCopied}/${FONT_SOURCES.length} fonts; check @fontsource installation\n`,
+  );
+} else {
+  process.stderr.write('[surface] no fonts copied; run `npm install --include=dev` to install @fontsource packages\n');
 }
 
 try {

@@ -1,6 +1,6 @@
 import type { STContextDeep } from './context-st.js';
 import type { ScopeValue } from './stscript-st.js';
-import { namedString, registerIfMissing, textValue, type BatchSlashOptions, type BatchSlashRegistry } from './slash-commands-common.js';
+import { namedString, registerIfMissing, SlashCommandUnsupportedError, textValue, type BatchSlashOptions, type BatchSlashRegistry } from './slash-commands-common.js';
 
 /*
  * Batch D intentionally performs small in-memory mutations against ST-compatible
@@ -16,13 +16,6 @@ type MutableRecord = Record<string, unknown>;
 
 const CHARACTER_FIELDS = new Set(['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'creator_notes', 'tags']);
 const TARGET_ARGS = new Set(['char', 'target']);
-
-export class SlashCommandUnsupportedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SlashCommandUnsupportedError';
-  }
-}
 
 export function registerBatchD(registry: BatchSlashRegistry, options: BatchSlashOptions): void {
   const ctx = options.ctx as unknown as STContextDeep;

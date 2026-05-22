@@ -1,6 +1,13 @@
 import type { STChatMessage } from '@ydltavern/types';
 import type { ScopeValue, SlashCommandDef, SlashCommandRegistry } from './stscript-st.js';
 
+export class SlashCommandUnsupportedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SlashCommandUnsupportedError';
+  }
+}
+
 export interface BatchSlashOptions {
   readonly ctx: {
     chat: STChatMessage[];
@@ -17,6 +24,66 @@ export type BatchSlashRegistry = Pick<SlashCommandRegistry, 'register' | 'has'>;
 
 export function registerIfMissing(registry: BatchSlashRegistry, def: SlashCommandDef): void {
   if (!registry.has(def.name)) registry.register(def);
+}
+
+/**
+ * Register a slash command that returns an explicit unsupported error.
+ * Use for commands that genuinely require runtime/DOM/UI we don't have offline.
+ */
+export interface UnsupportedRegistration {
+  readonly name: string;
+  readonly aliases?: string[];
+  readonly reason: string;
+  readonly helpString?: string;
+}
+
+export function registerUnsupported(
+  registry: BatchSlashRegistry,
+  spec: UnsupportedRegistration,
+): void {
+  const message = `${spec.name} is unsupported by st-compat: ${spec.reason}`;
+  registerIfMissing(registry, {
+    name: spec.name,
+    aliases: spec.aliases,
+    helpString: spec.helpString ?? message,
+    callback: async () => {
+      throw new SlashCommandUnsupportedError(message);
+    },
+  });
+}
+
+/**
+ * Register a slash command that returns a plan-only descriptor.
+ * Use for commands whose effect needs host capability execution.
+ */
+export interface PlanOnlyRegistration {
+  readonly name: string;
+  readonly aliases?: string[];
+  readonly action: string;
+  readonly fields?: string[];
+  readonly helpString?: string;
+}
+
+export function registerPlanOnly(
+  registry: BatchSlashRegistry,
+  spec: PlanOnlyRegistration,
+): void {
+  registerIfMissing(registry, {
+    name: spec.name,
+    aliases: spec.aliases,
+    helpString: spec.helpString ?? `Plan-only: ${spec.action}`,
+    callback: async (args) => {
+      const fieldData: Record<string, unknown> = {};
+      for (const field of spec.fields ?? []) {
+        if (args[field] !== undefined) fieldData[field] = args[field];
+      }
+      return JSON.stringify({
+        planned: true,
+        action: spec.action,
+        fields: fieldData,
+      });
+    },
+  });
 }
 
 export function textValue(value: ScopeValue): string {
