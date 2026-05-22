@@ -2,6 +2,22 @@ export * from './macros.js';
 export * from './golden.js';
 export * from './model-boundary.js';
 export * from './openai.js';
+export {
+  buildChatRequest,
+  emptyStreamState,
+  applyStreamChunk,
+  isStreamDone,
+} from './chat-completion-providers.js';
+export type {
+  ChatCompletionSource,
+  ChatCompletionMessage,
+  GenerationType as ChatGenerationType,
+  BaseSettings as ChatBaseSettings,
+  BuildChatRequestInput,
+  ChatRequestBody,
+  BuildChatRequestResult,
+  StreamMergeState,
+} from './chat-completion-providers.js';
 export * from './prompt.js';
 export * from './prompt-critical.js';
 export * from './prompt-manager.js';
