@@ -3,6 +3,7 @@ import readline from "node:readline";
 import { assetHandlers } from "./capabilities/asset.js";
 import { describeHandlers } from "./capabilities/describe.js";
 import { createDiagnosticsHandlers } from "./capabilities/diagnostics.js";
+import { extensionHandlers } from "./capabilities/extensions.js";
 import { presetHandlers } from "./capabilities/preset.js";
 import { scriptHandlers } from "./capabilities/script.js";
 import { turnHandlers } from "./capabilities/turn.js";
@@ -40,6 +41,7 @@ const handlers: HandlerRecord = {
   ...turnHandlers,
   ...assetHandlers,
   ...scriptHandlers,
+  ...extensionHandlers,
   ...createDiagnosticsHandlers(counters),
 };
 

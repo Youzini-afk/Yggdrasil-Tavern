@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import test from "node:test";
 
 import { assetHandlers } from "../dist/capabilities/asset.js";
+import { extensionHandlers } from "../dist/capabilities/extensions.js";
 import { presetHandlers } from "../dist/capabilities/preset.js";
 import { scriptHandlers } from "../dist/capabilities/script.js";
 import { turnHandlers } from "../dist/capabilities/turn.js";
@@ -376,6 +377,33 @@ test("script.eval executes STScript skeleton", () => {
   assert.ok(output.output.includes("calm"));
   assert.equal(output.variables.user, "Tester");
   assert.ok(output.command_registry.some((item) => item.name === "while"));
+});
+
+test("extension capabilities expose first built-in extension wrappers", () => {
+  const registry = extensionHandlers[`${PACKAGE_ID}/extension.registry.snapshot`]({
+    manifests: [{ id: "token-counter", name: "Token Counter", version: "1.0.0", hooks: ["beforePrompt"] }],
+  });
+  const tokenCounter = extensionHandlers[`${PACKAGE_ID}/extension.token_counter.analyze`]({
+    chunks: [{ id: "main", text: "Hello tokens" }],
+  });
+  const regex = extensionHandlers[`${PACKAGE_ID}/extension.regex.apply`]({
+    text: "hello world",
+    placement: "beforePrompt",
+    scripts: [{ id: "r1", scope: "GLOBAL", find: "world", replace: "Ydl", placement: "beforePrompt" }],
+  });
+  const quickReply = extensionHandlers[`${PACKAGE_ID}/extension.quick_reply.plan`]({
+    input: "hello",
+    sets: [{ id: "set", items: [{ id: "qr", message: "Hi", autoExecute: true, triggers: ["hello"] }] }],
+  });
+  const memory = extensionHandlers[`${PACKAGE_ID}/extension.memory.plan`]({ summary: "Known facts", chat: sampleChat });
+  const vectors = extensionHandlers[`${PACKAGE_ID}/extension.vectors.plan`]({ mode: "query", query: "moon", settings: { provider: "none" } });
+
+  assert.equal(registry.extensions[0].manifest.id, "token-counter");
+  assert.ok(tokenCounter.enabledTokens > 0);
+  assert.equal(regex.text, "hello Ydl");
+  assert.deepEqual(quickReply.auto_execute.itemIds, ["qr"]);
+  assert.equal(memory.update.kind, "memoryUpdateProposal");
+  assert.equal(vectors.plan.kind, "vectorQueryPlan");
 });
 
 test("fallback JSON-RPC capability.invoke calls a real capability", async () => {
