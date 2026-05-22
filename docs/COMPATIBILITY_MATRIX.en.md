@@ -20,17 +20,17 @@ Implementation status:
 - `deferred` — intentionally not implemented by internal decision
 - `blocked` — waiting on another track
 
-Current stage: PromptManager / World Info advanced fixture-aligned subset complete. ST source remains the ground truth; B/C/D/E/G/I now have runnable thin vertical paths, but nothing is claimed as byte-level aligned unless explicitly stated.
+Current stage: first pass across the main capability surface is complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, but nothing is claimed as byte-level aligned unless explicitly stated.
 
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
 |---|---:|---:|---|---|---|
 | event_types | 104 | constants + core event dispatch | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| built-in slash commands | 153 | 7 core commands | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| built-in slash commands | 153 | core commands + STScript parser/evaluator skeleton | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | macros / macros | 80+ | core/env/time subset + trace | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| text completion sources | 17 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| text completion sources | 17 | generic/textgen/kobold/ollama request-shape subset | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers (including aliases) | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | world info trigger types | 32 | keyword/regex/constant + deterministic filters | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info entry schema fields | 50+ | core + routing/group/probability/timed fields | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -38,14 +38,14 @@ Current stage: PromptManager / World Info advanced fixture-aligned subset comple
 | character card V1 fields | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V2 fields | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V3 fields | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema fields | 75 | fixture request shape + prompt_order subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| OpenAI preset schema fields | 75 | fixture request shape + prompt_order + token budget/golden harness subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager identifiers | 13 typed | prompt_order/marker/effective collection subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
-| built-in extensions | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
+| built-in extensions | 14 | token-counter/regex/quick-reply/memory/vectors wrapper subset | partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | group chat rotation strategies | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| Quick reply schema fields | recorded | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
-| theme schema | recorded | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Quick reply schema fields | recorded | importer + extension wrapper subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
+| theme schema | recorded | importer + product surface settings slot subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 
 The numbers are approximate. The inventory files and `@ydltavern/types` constants are the source of truth. `stubbed` means the API surface exists but behavior is not fully aligned; `partial` means tested code paths exist but no byte-level compatibility is claimed yet.
 
@@ -54,10 +54,11 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 | Package | Track | Coverage | Status |
 |---|---|---|---|
 | `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
-| `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers + ST-like fixtures | partial |
-| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `Generate`, expanded macros, slash command core | partial |
-| `@ydltavern/engine-core` | C + I | sampler/request builder, PromptManager collection, World Info routing/filters/group/probability/timed state, prompt-critical marker fills | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface contract slice: send/edit/fake generate/event log/PromptManager/WI advanced/slash diagnostics; Settings/Extensions slots | partial |
+| `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat, preset, persona, theme, quick reply, regex, instruct import/export skeleton + fixtures | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `Generate`, macros, slash registry, STScript parser/evaluator skeleton | partial |
+| `@ydltavern/engine-core` | C + I | chat/text request builders, token budget, PromptManager, advanced World Info, golden harness, stream frames, model-boundary plan | partial |
+| `@ydltavern/surface` | G | Tavern-like product shell: chat main, settings/assets/extensions/dev drawers, still a surface bundle | partial |
+| `@ydltavern/extensions` | F + H | built-in extension wrappers, extension registry, ST-style manifest loader plan, permission gate, hook registry | partial |
 
 ## Built-in extension coverage (track F)
 

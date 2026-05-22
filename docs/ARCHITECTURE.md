@@ -116,4 +116,4 @@ YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预
 
 ## 当前状态
 
-PromptManager / World Info advanced fixture-aligned subset 已落地。仓库包含 shared types、资产导入器、ST 兼容运行时、引擎核心、Yggdrasil 子进程能力包和 `@ydltavern/surface`；当前可以跑通 import / live `chat[]` edit / fake Generate / PromptManager marker fills / World Info routing、deterministic filters、seeded group/probability、sticky/cooldown/delay state / slash commands / surface diagnostics 的纵切片。字节级 ST 对齐仍以兼容矩阵为准。
+YdlTavern 的主要开发面已经完成一轮系统推进：资产导入/导出、ST 兼容运行时、STScript skeleton、引擎核心、内置扩展 wrapper、扩展 loader plan、模型调用边界 plan、产品 surface shell 都已落到可测试代码。当前状态仍是 `partial`：许多能力是 fixture-aligned、plan-only 或 product-shell skeleton；字节级兼容、真实扩展 JS 执行、真实模型调用和发布壳还在后续阶段。

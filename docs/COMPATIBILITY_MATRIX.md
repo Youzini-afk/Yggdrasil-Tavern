@@ -20,17 +20,17 @@
 - `deferred` —— 内部决定不做
 - `blocked` —— 等其他轨道
 
-当前阶段：PromptManager / World Info advanced fixture-aligned subset 完成。ST 源码仍是 ground truth；B/C/D/E/G/I 已有可运行纵切片，但除明确说明外还不是字节级对齐。
+当前阶段：主要能力面第一轮开发完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，但除明确说明外还不是字节级对齐。
 
 ## 总览
 
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
 |---|---:|---:|---|---|---|
 | event_types | 104 | 常量 + 核心事件派发 | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| 内置 slash commands | 153 | 7 core commands | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| 内置 slash commands | 153 | core commands + STScript parser/evaluator skeleton | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | 宏 / macros | 80+ | core/env/time subset + trace | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| text completion sources | 17 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| text completion sources | 17 | generic/textgen/kobold/ollama request shape subset | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers（含 alias） | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | world info trigger types | 32 | keyword/regex/constant + deterministic filters | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | world info entry schema 字段 | 50+ | core + routing/group/probability/timed fields | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -38,14 +38,14 @@
 | 角色卡 V1 字段 | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | 角色卡 V2 字段 | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | 角色卡 V3 字段 | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema 字段 | 75 | fixture request shape + prompt_order subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| OpenAI preset schema 字段 | 75 | fixture request shape + prompt_order + token budget/golden harness subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager 标识符 | 13 typed | prompt_order/marker/effective collection subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
-| 内置扩展 | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
+| 内置扩展 | 14 | token-counter/regex/quick-reply/memory/vectors wrapper subset | partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | 群聊轮换策略 | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| Quick reply schema 字段 | 已记录 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
-| 主题 schema | 已记录 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Quick reply schema 字段 | 已记录 | importer + extension wrapper subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
+| 主题 schema | 已记录 | importer + product surface settings slot subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 
 数字大致计数。准确数字以 inventory 和 `@ydltavern/types` 常量为准。`stubbed` 表示 API 表面存在但行为未完整对齐；`partial` 表示已有可测试代码路径但还没宣称字节级兼容。
 
@@ -55,9 +55,10 @@
 |---|---|---|---|
 | `@ydltavern/types` | 全部 | Turn 模型、ST event/slash/macro/connector/sampler/world-info/prompt-manager 常量 | stubbed 基础 |
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
-| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`Generate`、扩展宏、slash command core | partial |
-| `@ydltavern/engine-core` | C + I | sampler/request builder、PromptManager collection、World Info routing/filters/group/probability/timed state、prompt-critical marker fills | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface contract slice：send/edit/fake generate/event log/PromptManager/WI advanced/slash diagnostics；Settings/Extensions slots | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`Generate`、宏、slash registry、STScript parser/evaluator skeleton | partial |
+| `@ydltavern/engine-core` | C + I | chat/text request builders、token budget、PromptManager、World Info advanced、golden harness、stream frames、model boundary plan | partial |
+| `@ydltavern/surface` | G | Tavern-like product shell：chat main、settings/assets/extensions/dev drawers，仍为 surface bundle | partial |
+| `@ydltavern/extensions` | F + H | 内置扩展 wrapper、extension registry、ST-style manifest loader plan、permission gate、hook registry | partial |
 
 ## 内置扩展覆盖度（F 轨道）
 

@@ -62,7 +62,7 @@ YdlTavern 自己只负责：把 ST preset + Turn 模型翻译成“哪个 provid
 
 `packages/ydltavern-engine` 的 `preset.compile` 和 `turn.generate` 会透传 PromptManager diagnostics、WI advanced diagnostics、nextState 和 frames；仍是 deterministic fake generation，不出网、不用 secret。
 
-这仍是 `partial`。tokenizer 级 budget、text completion 路由、provider-specific streaming、完整 ST PromptManager 字节级 golden harness 还未完成。
+这仍是 `partial`。当前已加入 text completion request shapes、approx tokenizer/token budget、golden harness、stream frame normalization 与 model boundary plan。provider-specific streaming、真实 tokenizer、完整 ST PromptManager 字节级 golden harness 和真实模型调用仍未完成。
 
 ## 不在范围内
 

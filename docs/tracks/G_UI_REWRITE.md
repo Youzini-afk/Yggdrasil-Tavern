@@ -64,7 +64,7 @@ YdlTavern surface 目标（由 Yggdrasil 壳承载 + 普通 i5）：
 - PromptManager / WI advanced diagnostics：effective order、marker fills、routing trace、AN patch、atDepth/outlet、group/probability/timed trace；
 - slash diagnostics：输入命令、执行结果、变量、registered commands、diagnostics。
 
-这仍是诊断 UI，不是最终 Tavern 产品界面。后续要做真实 ST-like layout、虚拟列表、主题、设置抽屉、扩展抽屉和性能目标。
+当前已从诊断 UI 升级为 Tavern-like product surface shell：顶部栏、左侧角色栏、聊天主面板、composer、generation controls，以及 settings/assets/extensions/dev 抽屉。仍是 `partial`：虚拟列表、主题文件加载、完整设置表单、移动端细节和真实性能目标还未完成。
 
 ## 不在范围内
 

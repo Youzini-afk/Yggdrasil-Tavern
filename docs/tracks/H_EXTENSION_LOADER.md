@@ -49,6 +49,10 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 - C 轨道（扩展 generate hook）
 - E 轨道（扩展注册 slash commands / 宏）
 
+## 当前状态
+
+`@ydltavern/extensions` 已有 ST-style loader skeleton：manifest parse、bundle discovery、loading_order 排序、compat adapter、permission gate、hook registry 与 non-executing load plan。`ydltavern-engine` 暴露 loader discover/plan/compat/hooks capability。仍是 `partial`：不会执行 extension JS，不读真实文件/zip/git，也没有真实 sandbox。
+
 ## 不在范围内
 
 - 中央扩展市场 / 评分 / 热度排行——不做

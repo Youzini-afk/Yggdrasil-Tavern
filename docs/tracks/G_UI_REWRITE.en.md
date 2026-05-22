@@ -64,7 +64,7 @@ YdlTavern surface goals (hosted by a Yggdrasil shell + ordinary i5):
 - PromptManager / WI advanced diagnostics: effective order, marker fills, routing trace, AN patch, atDepth/outlet, group/probability/timed trace;
 - slash diagnostics: command input, execution result, variables, registered commands, and diagnostics.
 
-This is still diagnostic UI, not the final Tavern product interface. Later work must build the real ST-like layout, virtual list, themes, settings drawer, extensions drawer, and performance targets.
+The surface has moved from diagnostics UI to a Tavern-like product surface shell: top bar, left character rail, chat main area, composer, generation controls, and settings/assets/extensions/dev drawers. This is still `partial`: virtual lists, theme-file loading, full settings forms, mobile details, and real performance targets are not complete yet.
 
 ## Out of scope
 

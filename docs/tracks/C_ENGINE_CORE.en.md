@@ -62,7 +62,7 @@ YdlTavern only handles: translate ST preset + Turn model into "which provider, w
 
 `packages/ydltavern-engine` passes PromptManager diagnostics, WI advanced diagnostics, nextState, and frames through `preset.compile` and `turn.generate`; generation is still deterministic fake behavior with no network and no secrets.
 
-This is still `partial`. Tokenizer-level budgeting, text-completion routing, provider-specific streaming, and a full byte-level ST PromptManager golden harness are not complete yet.
+This is still `partial`. Text-completion request shapes, approx tokenizer/token budgeting, golden harnesses, stream frame normalization, and model-boundary plans are now present. Provider-specific streaming, real tokenizers, a full byte-level ST PromptManager golden harness, and live model calls are not complete yet.
 
 ## Out of scope
 

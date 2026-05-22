@@ -49,7 +49,7 @@ Side effects of ST commands such as `/echo`, `/inject`, and `/listinjects` must 
 - built-in `/gen`, `/continue`, `/swipe`, `/setvar`, `/getvar`, `/if`, and `/run` minimum behavior;
 - `createSTContext()` exposes `registerSlashCommand`, `executeSlashCommands`, `slashCommands`, `slashDiagnostics`, and variables.
 
-This is still `partial`. Full STScript closures, pipes, scopes, `/while`, `/let`, Quick Reply runtime, autocomplete/debugger, and all 153+ commands are not implemented yet.
+This is still `partial`. STScript parser/evaluator skeleton, pipes, scopes, closures, `/let`, `/var`, `/while`, `/break`, and registry metadata are now present. Deep Quick Reply runtime integration, autocomplete/debugger, all 153+ commands, and byte-level STScript behavior are not complete yet.
 
 ## Out of scope
 

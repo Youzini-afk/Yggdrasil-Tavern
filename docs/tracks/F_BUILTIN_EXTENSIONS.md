@@ -47,6 +47,10 @@
 - 各扩展的 backend 走 Yggdrasil 协议（出站、文件系统、记忆、向量）
 - `stable-diffusion` 的 67 个 endpoint 走 Yggdrasil model-provider-lab 或自定义 outbound 包
 
+## 当前状态
+
+`@ydltavern/extensions` 已有第一批内置扩展 wrapper：token-counter、regex、quick-reply、memory、vectors。它们提供可测试的 schema、diagnostics 和 plan-only 行为；`ydltavern-engine` 已暴露对应 extension capability。仍是 `partial`：caption、gallery、TTS、translate、stable-diffusion 等重型扩展尚未实现，memory/vectors 也还不做真实总结、嵌入或检索。
+
 ## 不在范围内
 
 - 第三方扩展（H 轨道处理）

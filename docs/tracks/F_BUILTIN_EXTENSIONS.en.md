@@ -47,6 +47,10 @@ Each extension aligns two surfaces:
 - Each extension backend goes through the Yggdrasil protocol (outbound, filesystem, memory, vectors)
 - The 67 `stable-diffusion` endpoints go through Yggdrasil model-provider-lab or a custom outbound package
 
+## Current status
+
+`@ydltavern/extensions` now has the first batch of built-in extension wrappers: token-counter, regex, quick-reply, memory, and vectors. They provide tested schemas, diagnostics, and plan-only behavior; `ydltavern-engine` exposes matching extension capabilities. This is still `partial`: caption, gallery, TTS, translate, stable-diffusion, and other heavy extensions are not implemented, and memory/vectors still do not summarize, embed, or retrieve for real.
+
 ## Out of scope
 
 - Third-party extensions (handled by track H)

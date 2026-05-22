@@ -49,6 +49,10 @@ Depends on Yggdrasil's git installation capability:
 - Track C (extension generate hooks)
 - Track E (extensions register slash commands / macros)
 
+## Current status
+
+`@ydltavern/extensions` now has an ST-style loader skeleton: manifest parse, bundle discovery, loading_order sort, compatibility adapter, permission gate, hook registry, and non-executing load plans. `ydltavern-engine` exposes loader discover/plan/compat/hooks capabilities. This is still `partial`: extension JavaScript is not executed, real files/zip/git are not read, and there is no real sandbox yet.
+
 ## Out of scope
 
 - Central extension marketplace / ratings / popularity ranking — not doing it

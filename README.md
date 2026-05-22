@@ -25,20 +25,20 @@ Yggdrasil 那边的相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](http
 
 ## 项目状态
 
-Contract slice 已落地。YdlTavern 现在已有可运行的最小纵切片：ST `chat[]` / `eventSource` / `getContext()` 能真实改写 Turn store，资产导入器和 prompt/request builder 有 fixture 对齐测试，engine 子进程包能执行 deterministic fake generate，surface 能消费同一份 contract。
+主要开发面已完成一轮系统推进。YdlTavern 现在已有可运行的复刻+升级骨架：ST `chat[]` / `eventSource` / `getContext()` 能真实改写 Turn store；资产层覆盖角色卡、世界书、聊天、预设、persona、theme、quick reply、regex、instruct 的导入/导出骨架；引擎核心覆盖 chat/text request、token budget、PromptManager、World Info advanced、golden harness、stream frame 与模型调用边界计划；surface 已从诊断 demo 升级为可挂载的 Tavern-like 产品 UI。
 
 - **机械扫描的 ST 源码 inventory**：99 个 event_types、153 个 slash commands、80+ 个宏、26 个 chat completion source、17 个 text completion source、80+ 个采样参数、32 个 world info trigger、14 个内置扩展。位于 [`docs/inventory/`](docs/inventory/)。
 - **内部数据模型与兼容投影**：Turn 模型 + ST `chat[]` / `eventSource` / `getContext()` 投影规范。位于 [`docs/architecture/`](docs/architecture/)。
 - **8 条并行实现轨道**：B 资产 / C 引擎核心 / D ST API / E STScript / F 内置扩展 / G UI / H 扩展加载 / I 高级特性。位于 [`docs/tracks/`](docs/tracks/)。
 - **共享类型包**：[`packages/ydltavern-types/`](packages/ydltavern-types/) —— Turn 模型与 ST event/slash/macro/connector/sampler/world-info 常量。
-- **资产导入器**：[`packages/ydltavern-importers/`](packages/ydltavern-importers/) —— 角色卡 JSON/PNG、世界书、JSONL chat importer v0，并有 ST-like fixture 对齐测试。
-- **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`addOneMessage`、`Generate`、扩展宏替换与 slash command core。
-- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络），并包含 PromptManager marker fills、World Info routing、deterministic filters、seeded group/probability、sticky/cooldown/delay state。
-- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/E/G/I 进入 `partial`，PromptManager 与 World Info advanced 已有 fixture-aligned subset，未宣称字节级对齐。
-- **YdlTavern 前端 surface**：[`packages/ydltavern-surface/`](packages/ydltavern-surface/) —— React surface bundle，`TavernPlaySurface` 可通过同一份 ST contract 发送、编辑、fake generate，并显示事件、prompt-critical、slash/macro 诊断；不包含独立桌面/Web/App 壳。
-- **引擎包**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，`world_info.evaluate`、`preset.compile`、`turn.generate`、asset import 能调用当前本地 contract；仍无真实模型调用、无网络。
+- **资产导入器**：[`packages/ydltavern-importers/`](packages/ydltavern-importers/) —— 角色卡 JSON/PNG、世界书、JSONL chat、preset、persona、theme、quick reply、regex、instruct importer/exporter 骨架，并有 ST-like fixture 测试。
+- **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`Generate`、宏替换、slash command registry 与 STScript parser/evaluator skeleton。
+- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、chat/text request builder、token budget、PromptManager marker fills、World Info advanced、golden harness、stream frame normalization、model boundary plan（无网络）。
+- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/E/F/G/H/I 进入 `partial`，主要能力面已有 fixture-aligned / plan-only / product-shell 骨架，未宣称字节级对齐。
+- **YdlTavern 前端 surface**：[`packages/ydltavern-surface/`](packages/ydltavern-surface/) —— React surface bundle，`TavernPlaySurface` 现在默认展示 Tavern-like product shell（聊天主面板、设置/资产/扩展/开发抽屉），仍不包含独立桌面/Web/App 壳。
+- **引擎包**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，`world_info.evaluate`、`preset.compile`、`turn.generate`、asset import/export、script.eval、extension registry/loader plan、model.plan_call 可调用当前本地 contract；仍无真实网络调用。
 
-下一步：继续补 tokenizer 级预算、text completion 路由、完整 STScript、第三方扩展加载和真实模型边界。详细文档导航见 [`docs/`](docs/README.md)。
+下一步：进入精细对齐与真实接入阶段：PromptManager/tokenizer 字节级 golden harness、更多 slash commands、真实扩展 JS 沙箱、真实模型调用、以及回到 Yggdrasil 做 Web/Desktop/App shell。详细文档导航见 [`docs/`](docs/README.md)。
 
 ## 致谢
 
