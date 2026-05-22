@@ -72,6 +72,25 @@ export * from './prompt-routing.js';
 export * from './sampler.js';
 export * from './streaming.js';
 export * from './text-completion.js';
+export {
+  resolveTextGenServer,
+  buildTextRequest,
+  emptyTextStreamState,
+  applyTextStreamChunk,
+  HORDE_MIN_LENGTH,
+  HORDE_MAX_RETRIES,
+  planHordeJob,
+} from './text-completion-providers.js';
+export type {
+  TextCompletionSource,
+  TextCompletionSettings,
+  BuildTextRequestInput,
+  TextRequestBody,
+  BuildTextRequestResult,
+  TextStreamMergeState,
+  HordeJobInput,
+  HordeJobPlan,
+} from './text-completion-providers.js';
 export * from './token-budget.js';
 export * from './tokenizer.js';
 export * from './world-info.js';
