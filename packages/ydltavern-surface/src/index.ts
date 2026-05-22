@@ -12,7 +12,22 @@
 // ---- Leaf components ------------------------------------------------------
 
 export { TavernProvider, useTavern } from './app/TavernProvider.js';
-export type { TavernDrawer, TavernProviderProps, TavernRuntimeState } from './app/TavernProvider.js';
+export type {
+  BackgroundDisplaySettings,
+  BackgroundEntry,
+  CharacterEntry,
+  ConnectionSettings as TavernConnectionSettings,
+  FormattingSettings,
+  PersistedSelection,
+  PersonaEntry,
+  SamplerSettings as TavernSamplerSettings,
+  TavernDrawer,
+  TavernProviderProps,
+  TavernRuntimeState,
+  TavernSettings,
+  WorldBookEntry,
+  WorldEntry,
+} from './app/TavernProvider.js';
 export { TavernShell } from './app/TavernShell.js';
 export { ChatList } from './components/product/ChatList.js';
 export { MessageList } from './components/product/MessageList.js';
@@ -108,6 +123,37 @@ export type { TavernSettingsSurfaceProps } from './surfaces/TavernSettingsSurfac
 
 export { TavernExtensionsSurface } from './surfaces/TavernExtensionsSurface.js';
 export type { TavernExtensionsSurfaceProps } from './surfaces/TavernExtensionsSurface.js';
+
+export { TavernCharactersSurface } from './surfaces/TavernCharactersSurface.js';
+export type { TavernCharactersSurfaceProps } from './surfaces/TavernCharactersSurface.js';
+
+export { TavernWorldInfoSurface } from './surfaces/TavernWorldInfoSurface.js';
+export type { TavernWorldInfoSurfaceProps } from './surfaces/TavernWorldInfoSurface.js';
+
+export { TavernPersonaSurface } from './surfaces/TavernPersonaSurface.js';
+export type { TavernPersonaSurfaceProps } from './surfaces/TavernPersonaSurface.js';
+
+export { TavernAIResponseConfigSurface } from './surfaces/TavernAIResponseConfigSurface.js';
+export type { TavernAIResponseConfigSurfaceProps } from './surfaces/TavernAIResponseConfigSurface.js';
+
+export { TavernUserSettingsSurface } from './surfaces/TavernUserSettingsSurface.js';
+export type { TavernUserSettingsSurfaceProps } from './surfaces/TavernUserSettingsSurface.js';
+
+export { TavernBackgroundsSurface } from './surfaces/TavernBackgroundsSurface.js';
+export type { TavernBackgroundsSurfaceProps } from './surfaces/TavernBackgroundsSurface.js';
+
+export {
+  mountTavernPlaySurface,
+  mountTavernSettingsSurface,
+  mountTavernExtensionsSurface,
+  mountTavernCharactersSurface,
+  mountTavernWorldInfoSurface,
+  mountTavernPersonaSurface,
+  mountTavernAIResponseConfigSurface,
+  mountTavernUserSettingsSurface,
+  mountTavernBackgroundsSurface,
+  type MountFn,
+} from './surfaces/mount.js';
 
 // ---- Fixtures (also exposed via the `./fixtures` subpath) -----------------
 

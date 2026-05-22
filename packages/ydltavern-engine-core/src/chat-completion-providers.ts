@@ -183,7 +183,8 @@ export function buildChatRequest(input: BuildChatRequestInput): BuildChatRequest
   const notes: string[] = [];
   const goldenHarnessDefaults = isGoldenHarnessChatScenario(input);
 
-  // Common base body (per ST openai.js:2645-3032)
+  // Common base body (insertion order mirrors ST openai.js:2742-2767
+  // so JSON.stringify matches golden raw request bytes).
   const body: Record<string, unknown> = {
     type: generationType ?? 'normal',
     messages: messages.map((m) => sanitizeMessage(m, source)),
@@ -192,13 +193,13 @@ export function buildChatRequest(input: BuildChatRequestInput): BuildChatRequest
     // The golden harness drives sendOpenAIRequest through that path, so provider
     // scenarios still emit the OpenAI-compatible source/model here.
     model: settings.openai_model ?? (goldenHarnessDefaults ? 'gpt-4-turbo' : model),
-    chat_completion_source: goldenHarnessDefaults ? 'openai' : source,
-    stream: settings.stream_openai === true,
     temperature: goldenHarnessDefaults ? 1 : (settings.temp_openai ?? 1),
     frequency_penalty: settings.freq_pen_openai ?? 0,
     presence_penalty: settings.pres_pen_openai ?? 0,
     top_p: settings.top_p_openai ?? 1,
     max_tokens: goldenHarnessDefaults ? 300 : (settings.openai_max_tokens ?? 300),
+    stream: settings.stream_openai === true,
+    chat_completion_source: goldenHarnessDefaults ? 'openai' : source,
     user_name: settings.user_name ?? 'User',
     char_name: settings.char_name ?? 'Assistant',
     group_names: settings.group_names ?? [],

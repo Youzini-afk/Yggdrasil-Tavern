@@ -35,7 +35,7 @@
       "status": "contract-slice",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernPlaySurface"
+        "export": "mountTavernPlaySurface"
       },
       "props": [
         { "name": "chat", "type": "@ydltavern/types#Chat", "required": false, "note": "defaults to bundled sampleChat fixture" },
@@ -57,7 +57,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernSettingsSurface"
+        "export": "mountTavernSettingsSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -72,7 +72,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernExtensionsSurface"
+        "export": "mountTavernExtensionsSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -87,7 +87,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernCharactersSurface"
+        "export": "mountTavernCharactersSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -102,7 +102,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernWorldInfoSurface"
+        "export": "mountTavernWorldInfoSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -117,7 +117,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernPersonaSurface"
+        "export": "mountTavernPersonaSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -132,7 +132,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernAIResponseConfigSurface"
+        "export": "mountTavernAIResponseConfigSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -147,7 +147,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernUserSettingsSurface"
+        "export": "mountTavernUserSettingsSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }
@@ -162,7 +162,7 @@
       "status": "surface-slot",
       "entry": {
         "module": "@ydltavern/surface",
-        "export": "TavernBackgroundsSurface"
+        "export": "mountTavernBackgroundsSurface"
       },
       "props": [
         { "name": "className", "type": "string", "required": false }

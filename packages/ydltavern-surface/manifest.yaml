@@ -26,9 +26,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernPlaySurface
+        export_name: mountTavernPlaySurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/settings
       version: 0.1.0
@@ -42,9 +42,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernSettingsSurface
+        export_name: mountTavernSettingsSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/extensions
       version: 0.1.0
@@ -58,9 +58,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernExtensionsSurface
+        export_name: mountTavernExtensionsSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/character
       version: 0.1.0
@@ -74,9 +74,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernCharactersSurface
+        export_name: mountTavernCharactersSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/world-info
       version: 0.1.0
@@ -90,9 +90,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernWorldInfoSurface
+        export_name: mountTavernWorldInfoSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/persona
       version: 0.1.0
@@ -106,9 +106,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernPersonaSurface
+        export_name: mountTavernPersonaSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/ai-response-config
       version: 0.1.0
@@ -122,9 +122,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernAIResponseConfigSurface
+        export_name: mountTavernAIResponseConfigSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/user-settings
       version: 0.1.0
@@ -138,9 +138,9 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernUserSettingsSurface
+        export_name: mountTavernUserSettingsSurface
         wrapper_class: ydltavern-surface
     - id: ydltavern/backgrounds
       version: 0.1.0
@@ -154,7 +154,7 @@ contributes:
       required_permissions: []
       metadata:
         framework: react
-        bundle: dist/index.js
+        bundle: dist/bundle.mjs
         format: esm
-        export_name: TavernBackgroundsSurface
+        export_name: mountTavernBackgroundsSurface
         wrapper_class: ydltavern-surface

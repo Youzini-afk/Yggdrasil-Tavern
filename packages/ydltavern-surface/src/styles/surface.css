@@ -269,6 +269,24 @@
   gap: 64px;
 }
 
+.ydltavern-surface .tavern-standalone-surface {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ydltavern-surface .tavern-standalone-surface .drawer-content {
+  position: static;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
 .chat-hero {
   position: relative;
   padding: 8px 0 32px;
@@ -3820,5 +3838,4 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
 }
-
 

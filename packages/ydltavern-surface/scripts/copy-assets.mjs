@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Copies stylesheet assets from src/styles into dist/styles so consumers can
-// import "@ydltavern/surface/styles/surface.css" against the published layout.
-// tsc handles JS/TS emission; this script handles non-TS assets.
+// Copies package assets into dist so consumers can import them against the
+// published layout. tsc handles JS/TS emission; this script handles non-TS
+// assets and preserves a Vite bundle if one already exists.
 
-import { mkdir, copyFile, readdir } from 'node:fs/promises';
+import { access, mkdir, copyFile, readdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,6 +11,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = dirname(here);
 const srcDir = join(root, 'src', 'styles');
 const destDir = join(root, 'dist', 'styles');
+const bundlePath = join(root, 'dist', 'bundle.mjs');
 
 await mkdir(destDir, { recursive: true });
 
@@ -26,3 +27,10 @@ for (const entry of entries) {
 }
 
 process.stdout.write(`[surface] copied ${copied} stylesheet(s) to dist/styles/\n`);
+
+try {
+  await access(bundlePath);
+  process.stdout.write(`[surface] preserved ${relative(root, bundlePath)}\n`);
+} catch {
+  process.stdout.write('[surface] bundle.mjs not present yet; vite build will create it\n');
+}

@@ -25,9 +25,10 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc && node scripts/copy-assets.mjs",
+    "build": "tsc && node scripts/copy-assets.mjs && vite build",
+    "build:bundle": "vite build",
     "prepare": "npm run build",
-    "test": "tsx --test test/st-theme-importer.test.ts"
+    "test": "tsx --test test/*.test.ts test/*.test.tsx"
   },
   "peerDependencies": {
     "react": "^18.3.1",
@@ -42,10 +43,12 @@
     "react-virtuoso": "^4.10.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^5"
   }
 }
