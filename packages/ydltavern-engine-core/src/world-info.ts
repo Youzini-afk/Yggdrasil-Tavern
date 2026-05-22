@@ -79,6 +79,16 @@ export interface WorldInfoEntry {
   readonly matchScenario?: boolean;
   readonly matchCreatorNotes?: boolean;
   readonly ignoreBudget?: boolean;
+  readonly useProbability?: boolean | number | string;
+  readonly use_probability?: boolean | number | string;
+  readonly probability?: number | string;
+  readonly group?: readonly string[] | string;
+  readonly groupOverride?: boolean | number | string;
+  readonly group_override?: boolean | number | string;
+  readonly groupWeight?: number | string;
+  readonly group_weight?: number | string;
+  readonly useGroupScoring?: boolean | number | string;
+  readonly use_group_scoring?: boolean | number | string;
   readonly outletName?: string;
   readonly outlet_name?: string;
   readonly outlet?: string;
@@ -148,6 +158,9 @@ export interface EvaluateWorldInfoInput {
   readonly authorNote?: string;
   readonly originalAuthorNote?: string;
   readonly author_note?: string;
+  readonly random?: () => number;
+  readonly randomValues?: readonly number[];
+  readonly rngSequence?: readonly number[];
 }
 
 export interface WorldInfoActivatedEntry {
@@ -252,6 +265,34 @@ export interface WorldInfoActivationTraceEntry {
   readonly iteration: number;
   readonly matchedKeys: readonly string[];
   readonly matchedSecondaryKeys: readonly string[];
+  readonly group?: string;
+  readonly probability?: number;
+  readonly roll?: number;
+  readonly randomIndex?: number;
+  readonly randomValue?: number;
+  readonly score?: number;
+  readonly maxScore?: number;
+  readonly weight?: number;
+  readonly winnerEntryId?: string;
+}
+
+interface RandomState {
+  next(): RandomRoll;
+}
+
+interface RandomRoll {
+  readonly index: number;
+  readonly value: number;
+}
+
+interface PendingActivation {
+  readonly candidate: CandidateEntry;
+  readonly match: MatchResult;
+  readonly expanded: {
+    readonly text: string;
+    readonly trace: readonly MacroTraceEntry[];
+  };
+  readonly cost: number;
 }
 
 export interface WorldInfoRoutingTraceEntry {
@@ -367,22 +408,20 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
   const budgetType = input.budget?.type ?? 'characters';
   const budgetLimit = input.budget?.max;
   const warnings: string[] = [];
-  const unsupported = [
-    'ST token-level budget alignment is approximated, not tokenizer exact.',
-    'Sticky/cooldown/group scoring/vector lore are not implemented in engine-core P1.',
-  ];
+  const unsupported = ['ST token-level budget alignment is approximated, not tokenizer exact.', 'Sticky/cooldown/vector lore are not implemented in engine-core P1.'];
   const candidates = collectCandidates(input);
   const activated = new Map<string, WorldInfoActivatedEntry>();
   const skipped = new Map<string, WorldInfoSkippedEntry>();
   const activationTrace: WorldInfoActivationTraceEntry[] = [];
   const matchContext = buildMatchContext(input);
+  const randomState = buildRandomState(input);
   let scanText = buildScanText(input.chat, scanDepth, input.scanData);
   let usedBudget = 0;
   let iterations = 0;
 
   for (let iteration = 0; iteration < maxIterations; iteration += 1) {
     iterations = iteration + 1;
-    const newlyActivated: string[] = [];
+    const pending: PendingActivation[] = [];
 
     for (const candidate of candidates) {
       if (activated.has(candidate.id)) {
@@ -396,6 +435,12 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
         continue;
       }
 
+      const probability = evaluateProbability(candidate, randomState, activationTrace, iteration);
+      if (!probability.passed) {
+        rememberSkipped(skipped, candidate, 'probability roll failed', 'probability_failed');
+        continue;
+      }
+
       const expanded = substituteMacros(stripActivationDecorators(candidate.entry.content), input.macroContext ?? {});
       const cost = budgetCost(expanded.text, budgetType);
       if (budgetLimit !== undefined && candidate.entry.ignoreBudget !== true && usedBudget + cost > budgetLimit) {
@@ -405,32 +450,24 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
         continue;
       }
 
-      usedBudget += cost;
-      skipped.delete(candidate.id);
-      activationTrace.push(traceActivation(candidate, true, match, iteration));
-      const position = normalizePosition(candidate.entry.position, warnings);
-      const active: WorldInfoActivatedEntry = {
-        id: candidate.id,
-        book: candidate.bookName,
-        comment: candidate.entry.comment,
-        content: expanded.text,
-        position,
-        order: candidate.entry.order ?? 0,
-        depth: position === 'atDepth' ? normalizeDepth(candidate.entry.depth) : candidate.entry.depth,
-        role: position === 'atDepth' ? normalizeDepthRole(candidate.entry, warnings) : undefined,
-        outletName: position === 'outlet' ? normalizeOutletName(candidate.entry) : undefined,
-        matchedKeys: match.matchedKeys,
-        matchedSecondaryKeys: match.matchedSecondaryKeys,
-        reason: match.reason ?? 'activated',
-        code: match.code ?? 'key_match',
-        macroTrace: expanded.trace,
-      };
-      activated.set(candidate.id, active);
-
-      if (candidate.entry.preventRecursion !== true && candidate.entry.excludeRecursion !== true) {
-        newlyActivated.push(expanded.text);
-      }
+      pending.push({ candidate, match, expanded, cost });
     }
+
+    const groupSelected = applyGroupRules(pending, randomState, activationTrace, skipped, iteration);
+    const selected: PendingActivation[] = [];
+    let selectedBudget = usedBudget;
+    for (const item of groupSelected) {
+      if (budgetLimit !== undefined && item.candidate.entry.ignoreBudget !== true && selectedBudget + item.cost > budgetLimit) {
+        const budgetMatch = { ...item.match, activated: false, reason: 'budget exceeded', code: 'budget_exceeded' };
+        rememberSkipped(skipped, item.candidate, budgetMatch.reason, budgetMatch.code);
+        activationTrace.push(traceActivation(item.candidate, false, budgetMatch, iteration));
+        continue;
+      }
+      selectedBudget += item.cost;
+      selected.push(item);
+    }
+    const newlyActivated = activatePending(selected, activated, skipped, activationTrace, iteration, warnings);
+    usedBudget += selected.reduce((sum, item) => sum + item.cost, 0);
 
     if (newlyActivated.length === 0) {
       break;
@@ -458,6 +495,12 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
         if (!match.activated) {
           rememberSkipped(skipped, candidate, match.reason ?? 'keys did not match', match.code ?? 'key_mismatch');
           activationTrace.push(traceActivation(candidate, false, match, iterations));
+          continue;
+        }
+
+        const probability = evaluateProbability(candidate, randomState, activationTrace, iterations);
+        if (!probability.passed) {
+          rememberSkipped(skipped, candidate, 'probability roll failed', 'probability_failed');
           continue;
         }
 
@@ -690,8 +733,9 @@ function traceActivation(
   activated: boolean,
   match: MatchResult,
   iteration: number,
+  extra?: Partial<WorldInfoActivationTraceEntry>,
 ): WorldInfoActivationTraceEntry {
-  return {
+  return omitUndefined({
     entryId: candidate.id,
     source: candidate.bookName,
     activated,
@@ -700,7 +744,288 @@ function traceActivation(
     iteration,
     matchedKeys: match.matchedKeys,
     matchedSecondaryKeys: match.matchedSecondaryKeys,
+    ...extra,
+  });
+}
+
+function buildRandomState(input: EvaluateWorldInfoInput): RandomState {
+  const sequence = input.randomValues ?? input.rngSequence;
+  let index = 0;
+  return {
+    next(): RandomRoll {
+      const currentIndex = index;
+      index += 1;
+      const value = sequence?.[currentIndex] ?? input.random?.() ?? Math.random();
+      return { index: currentIndex, value: normalizeRandomValue(value) };
+    },
   };
+}
+
+function normalizeRandomValue(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  if (value < 0) {
+    return 0;
+  }
+  if (value >= 1) {
+    return value === 1 ? 1 : value % 1;
+  }
+  return value;
+}
+
+function evaluateProbability(
+  candidate: CandidateEntry,
+  randomState: RandomState,
+  activationTrace: WorldInfoActivationTraceEntry[],
+  iteration: number,
+): { readonly passed: boolean } {
+  const probability = normalizeProbability(candidate.entry.probability);
+  const useProbability = normalizeBoolean(candidate.entry.useProbability ?? candidate.entry.use_probability) === true;
+  if (!useProbability || probability >= 100) {
+    return { passed: true };
+  }
+
+  const random = randomState.next();
+  const roll = random.value * 100;
+  const passed = roll <= probability;
+  const match: MatchResult = {
+    activated: passed,
+    reason: `probability roll ${roll.toFixed(4)} ${passed ? '<=' : '>'} ${probability}`,
+    code: passed ? 'probability_roll' : 'probability_failed',
+    matchedKeys: [],
+    matchedSecondaryKeys: [],
+  };
+  activationTrace.push(traceActivation(candidate, passed, match, iteration, { probability, roll, randomIndex: random.index, randomValue: random.value }));
+  return { passed };
+}
+
+function applyGroupRules(
+  pending: readonly PendingActivation[],
+  randomState: RandomState,
+  activationTrace: WorldInfoActivationTraceEntry[],
+  skipped: Map<string, WorldInfoSkippedEntry>,
+  iteration: number,
+): readonly PendingActivation[] {
+  const byGroup = new Map<string, PendingActivation[]>();
+  const winners = new Map<string, PendingActivation | undefined>();
+  const selected = new Set<PendingActivation>();
+
+  for (const item of pending) {
+    const groups = normalizeGroups(item.candidate.entry.group);
+    if (groups.length === 0) {
+      selected.add(item);
+      continue;
+    }
+    for (const group of groups) {
+      byGroup.set(group, [...(byGroup.get(group) ?? []), item]);
+      activationTrace.push(
+        traceActivation(item.candidate, true, { ...item.match, code: 'group_candidate', reason: `group candidate for ${group}` }, iteration, {
+          group,
+          score: groupScore(item),
+          weight: groupWeight(item.candidate.entry),
+        }),
+      );
+    }
+  }
+
+  for (const item of pending) {
+    const groups = normalizeGroups(item.candidate.entry.group);
+    if (groups.length === 0) {
+      continue;
+    }
+    if (
+      groups.every((group) => {
+        if (!winners.has(group)) {
+          winners.set(group, chooseGroupWinner(group, byGroup.get(group) ?? [], randomState, activationTrace, skipped, iteration));
+        }
+        return winners.get(group) === item;
+      })
+    ) {
+      selected.add(item);
+    }
+  }
+
+  return pending.filter((item) => selected.has(item));
+}
+
+function chooseGroupWinner(
+  group: string,
+  candidates: readonly PendingActivation[],
+  randomState: RandomState,
+  activationTrace: WorldInfoActivationTraceEntry[],
+  skipped: Map<string, WorldInfoSkippedEntry>,
+  iteration: number,
+): PendingActivation | undefined {
+  const unique = uniquePending(candidates);
+  if (unique.length === 0) {
+    return undefined;
+  }
+  if (unique.length === 1) {
+    traceGroupWinner(unique[0], group, activationTrace, iteration);
+    return unique[0];
+  }
+
+  let pool = unique;
+  const scoringCandidates = pool.filter((item) => normalizeBoolean(item.candidate.entry.useGroupScoring ?? item.candidate.entry.use_group_scoring) === true);
+  if (scoringCandidates.length > 0) {
+    const maxScore = Math.max(...pool.map(groupScore));
+    pool = pool.filter((item) => {
+      const score = groupScore(item);
+      if (score === maxScore) {
+        return true;
+      }
+      rememberSkipped(skipped, item.candidate, `group scoring loser in ${group}`, 'group_scoring_loser');
+      activationTrace.push(traceActivation(item.candidate, false, { ...item.match, code: 'group_scoring_loser', reason: `group ${group} score ${score} below max ${maxScore}` }, iteration, { group, score, maxScore }));
+      return false;
+    });
+  }
+
+  const overridePool = pool.filter((item) => normalizeBoolean(item.candidate.entry.groupOverride ?? item.candidate.entry.group_override) === true);
+  if (overridePool.length > 0) {
+    const maxOrder = Math.max(...overridePool.map((item) => item.candidate.entry.order ?? 0));
+    const ordered = overridePool.filter((item) => (item.candidate.entry.order ?? 0) === maxOrder);
+    const winner = ordered.sort((left, right) => left.candidate.index - right.candidate.index)[0];
+    markGroupResult(group, pool, winner, activationTrace, skipped, iteration);
+    return winner;
+  }
+
+  const totalWeight = pool.reduce((sum, item) => sum + groupWeight(item.candidate.entry), 0);
+  let winner = pool[0];
+  let random: RandomRoll | undefined;
+  if (totalWeight > 0) {
+    random = randomState.next();
+    let threshold = random.value * totalWeight;
+    for (const item of pool) {
+      threshold -= groupWeight(item.candidate.entry);
+      if (threshold <= 0) {
+        winner = item;
+        break;
+      }
+    }
+  }
+  markGroupResult(group, pool, winner, activationTrace, skipped, iteration, random);
+  return winner;
+}
+
+function activatePending(
+  selected: readonly PendingActivation[],
+  activated: Map<string, WorldInfoActivatedEntry>,
+  skipped: Map<string, WorldInfoSkippedEntry>,
+  activationTrace: WorldInfoActivationTraceEntry[],
+  iteration: number,
+  warnings: string[],
+): string[] {
+  const newlyActivated: string[] = [];
+  for (const item of selected) {
+    const { candidate, match, expanded } = item;
+    skipped.delete(candidate.id);
+    activationTrace.push(traceActivation(candidate, true, match, iteration));
+    const position = normalizePosition(candidate.entry.position, warnings);
+    const active: WorldInfoActivatedEntry = {
+      id: candidate.id,
+      book: candidate.bookName,
+      comment: candidate.entry.comment,
+      content: expanded.text,
+      position,
+      order: candidate.entry.order ?? 0,
+      depth: position === 'atDepth' ? normalizeDepth(candidate.entry.depth) : candidate.entry.depth,
+      role: position === 'atDepth' ? normalizeDepthRole(candidate.entry, warnings) : undefined,
+      outletName: position === 'outlet' ? normalizeOutletName(candidate.entry) : undefined,
+      matchedKeys: match.matchedKeys,
+      matchedSecondaryKeys: match.matchedSecondaryKeys,
+      reason: match.reason ?? 'activated',
+      code: match.code ?? 'key_match',
+      macroTrace: expanded.trace,
+    };
+    activated.set(candidate.id, active);
+    if (candidate.entry.preventRecursion !== true && candidate.entry.excludeRecursion !== true) {
+      newlyActivated.push(expanded.text);
+    }
+  }
+  return newlyActivated;
+}
+
+function markGroupResult(
+  group: string,
+  pool: readonly PendingActivation[],
+  winner: PendingActivation | undefined,
+  activationTrace: WorldInfoActivationTraceEntry[],
+  skipped: Map<string, WorldInfoSkippedEntry>,
+  iteration: number,
+  random?: RandomRoll,
+): void {
+  if (winner === undefined) {
+    return;
+  }
+  for (const item of pool) {
+    if (item === winner) {
+      activationTrace.push(traceActivation(item.candidate, true, { ...item.match, code: 'group_winner', reason: `group ${group} winner` }, iteration, {
+        group,
+        randomIndex: random?.index,
+        randomValue: random?.value,
+        weight: groupWeight(item.candidate.entry),
+      }));
+    } else {
+      rememberSkipped(skipped, item.candidate, `group ${group} loser`, 'group_loser');
+      activationTrace.push(traceActivation(item.candidate, false, { ...item.match, code: 'group_loser', reason: `group ${group} loser` }, iteration, {
+        group,
+        winnerEntryId: winner.candidate.id,
+        weight: groupWeight(item.candidate.entry),
+      }));
+    }
+  }
+}
+
+function traceGroupWinner(item: PendingActivation | undefined, group: string, activationTrace: WorldInfoActivationTraceEntry[], iteration: number): void {
+  if (item !== undefined) {
+    activationTrace.push(traceActivation(item.candidate, true, { ...item.match, code: 'group_winner', reason: `group ${group} winner` }, iteration, { group }));
+  }
+}
+
+function uniquePending(items: readonly PendingActivation[]): readonly PendingActivation[] {
+  return [...new Set(items)];
+}
+
+function groupScore(item: PendingActivation): number {
+  return item.match.matchedKeys.length + item.match.matchedSecondaryKeys.length;
+}
+
+function normalizeGroups(value: WorldInfoEntry['group']): readonly string[] {
+  return normalizeStringArray(value).map((group) => group.trim()).filter((group, index, groups) => group.length > 0 && groups.indexOf(group) === index);
+}
+
+function groupWeight(entry: WorldInfoEntry): number {
+  const weight = Number(entry.groupWeight ?? entry.group_weight ?? 1);
+  return Number.isFinite(weight) && weight > 0 ? weight : 1;
+}
+
+function normalizeProbability(value: WorldInfoEntry['probability']): number {
+  const probability = Number(value ?? 100);
+  if (!Number.isFinite(probability)) {
+    return 100;
+  }
+  return Math.min(100, Math.max(0, probability));
+}
+
+function normalizeBoolean(value: boolean | number | string | undefined): boolean | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+  const normalized = value.trim().toLowerCase();
+  if (['true', '1', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['false', '0', 'no', 'off', ''].includes(normalized)) {
+    return false;
+  }
+  return undefined;
 }
 
 function matchEntry(entry: WorldInfoEntry, scanText: string, iteration: number, context: MatchContext): MatchResult {
