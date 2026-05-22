@@ -1,31 +1,15 @@
 import React, { useState } from 'react';
 import { DrawerShell } from '../DrawerShell';
 import type { DrawerState } from '../useDrawers';
-
-interface BackgroundEntry {
-  id: string;
-  name: string;
-  url: string;
-  folder?: string;
-  thumbnailUrl?: string;
-}
-
-// TODO V7: wire to TavernProvider
-const STUB_BGS: BackgroundEntry[] = [
-  { id: 'bg-default', name: 'Default', url: '', folder: 'Default' },
-];
-
-type FitMode = 'cover' | 'contain' | 'tile';
+import { useTavern } from '../../../app/TavernProvider';
 
 export function BackgroundsDrawer({ drawers }: { drawers: DrawerState }) {
+  const tavern = useTavern();
   const [search, setSearch] = useState('');
   const [folder, setFolder] = useState<string>('All');
-  const [fitMode, setFitMode] = useState<FitMode>('cover');
-  const [autoSelect, setAutoSelect] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const folders = ['All', ...Array.from(new Set(STUB_BGS.map((b) => b.folder ?? 'Default')))];
-  const filtered = STUB_BGS.filter((b) =>
+  const folders = ['All', ...Array.from(new Set(tavern.backgrounds.map((b) => b.folder ?? 'Default')))];
+  const filtered = tavern.backgrounds.filter((b) =>
     (folder === 'All' || b.folder === folder) &&
     (!search.trim() || b.name.toLowerCase().includes(search.toLowerCase())),
   );
@@ -36,9 +20,19 @@ export function BackgroundsDrawer({ drawers }: { drawers: DrawerState }) {
         <header className="drawer-section-header">
           <h3>Library</h3>
           <div className="preset-actions">
-            <button type="button" className="menu_button" aria-label="Upload background">
+            <label className="menu_button" aria-label="Upload background">
               <i className="fa-solid fa-upload" aria-hidden="true" /> Upload
-            </button>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file, tavern.uploadBackground);
+                  e.currentTarget.value = '';
+                }}
+              />
+            </label>
             <button type="button" className="menu_button" aria-label="Open folder on disk">
               <i className="fa-solid fa-folder-open" aria-hidden="true" /> Folder
             </button>
@@ -75,9 +69,9 @@ export function BackgroundsDrawer({ drawers }: { drawers: DrawerState }) {
             <button
               key={bg.id}
               type="button"
-              className={`bg-card ${activeId === bg.id ? 'active' : ''}`}
-              onClick={() => setActiveId(bg.id)}
-              aria-pressed={activeId === bg.id}
+              className={`bg-card ${tavern.activeBackgroundId === bg.id ? 'active' : ''}`}
+              onClick={() => tavern.setActiveBackground(bg.id)}
+              aria-pressed={tavern.activeBackgroundId === bg.id}
               aria-label={`Use ${bg.name}`}
             >
               <div className="bg-card-thumb">
@@ -105,8 +99,8 @@ export function BackgroundsDrawer({ drawers }: { drawers: DrawerState }) {
             <span>Fit mode:</span>
             <select
               className="text_pole"
-              value={fitMode}
-              onChange={(e) => setFitMode(e.target.value as FitMode)}
+              value={tavern.backgroundDisplaySettings.fitMode}
+              onChange={(e) => tavern.setBackgroundFitMode(e.target.value as typeof tavern.backgroundDisplaySettings.fitMode)}
             >
               <option value="cover">Cover (fill, may crop)</option>
               <option value="contain">Contain (fit, may letterbox)</option>
@@ -118,12 +112,25 @@ export function BackgroundsDrawer({ drawers }: { drawers: DrawerState }) {
         <label className="checkbox_label">
           <input
             type="checkbox"
-            checked={autoSelect}
-            onChange={(e) => setAutoSelect(e.target.checked)}
+            checked={tavern.backgroundDisplaySettings.autoSelectByCharacter}
+            onChange={(e) => tavern.setBackgroundAutoSelect(e.target.checked)}
           />
           <span>Auto-select background per character</span>
         </label>
       </section>
     </DrawerShell>
   );
+}
+
+function handleFile(file: File, uploadBackground: (entry: { name: string; url: string; thumbnailUrl: string }) => string): void {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = String(reader.result);
+    uploadBackground({
+      name: file.name.replace(/\.\w+$/, ''),
+      url: dataUrl,
+      thumbnailUrl: dataUrl,
+    });
+  };
+  reader.readAsDataURL(file);
 }

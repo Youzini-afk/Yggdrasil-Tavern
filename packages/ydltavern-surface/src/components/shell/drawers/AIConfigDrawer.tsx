@@ -18,11 +18,8 @@ export function AIConfigDrawer({ drawers }: { drawers: DrawerState }) {
             <span>Active preset:</span>
             <select
               className="text_pole"
-              value={tavern.settings?.activePreset ?? 'default'}
-              onChange={(e) => {
-                // TODO V7: wire to TavernProvider
-                void e;
-              }}
+              value={tavern.settings.activePreset}
+              onChange={(e) => tavern.setActivePreset(e.target.value)}
             >
               <option value="default">Default</option>
               <option value="creative">Creative</option>
@@ -52,18 +49,8 @@ export function AIConfigDrawer({ drawers }: { drawers: DrawerState }) {
           <h3>Sampler</h3>
         </header>
         <SamplerForm
-          settings={{
-            temperature: 0.8,
-            topP: 0.9,
-            topK: 40,
-            frequencyPenalty: 0.0,
-            presencePenalty: 0.0,
-            maxTokens: 2048,
-          }}
-          onChange={(next) => {
-            // TODO V7: wire sampler changes to TavernProvider
-            void next;
-          }}
+          settings={tavern.samplerSettings}
+          onChange={(next) => tavern.updateSamplerSettings(next)}
         />
       </section>
 

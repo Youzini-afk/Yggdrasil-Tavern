@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { DrawerShell } from '../DrawerShell';
 import type { DrawerState } from '../useDrawers';
-import { ConnectionForm, DEFAULT_CONNECTION_SETTINGS } from '../../product/Settings/ConnectionForm';
-import type { ConnectionSettings } from '../../product/Settings/ConnectionForm';
+import { ConnectionForm } from '../../product/Settings/ConnectionForm';
+import type { ConnectionSettings as ConnectionFormSettings } from '../../product/Settings/ConnectionForm';
 import { useTavern } from '../../../app/TavernProvider';
 
 const PROVIDER_GROUPS = [
@@ -39,11 +39,25 @@ const PROVIDER_GROUPS = [
 
 export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
   const tavern = useTavern();
-  const [provider, setProvider] = useState<string>(
-    (tavern.settings as { provider?: string } | undefined)?.provider ?? 'openai',
-  );
   const [profileName, setProfileName] = useState('');
-  const [connectionSettings, setConnectionSettings] = useState<ConnectionSettings>(DEFAULT_CONNECTION_SETTINGS);
+
+  const connectionFormSettings: ConnectionFormSettings = {
+    provider: tavern.connectionSettings.provider,
+    model: tavern.connectionSettings.model,
+    secretRef: tavern.connectionSettings.secretRef ?? '',
+    apiBaseUrl: tavern.connectionSettings.baseUrl ?? '',
+    stream: tavern.settings.streaming,
+  };
+
+  const updateConnectionFormSettings = (next: ConnectionFormSettings) => {
+    tavern.updateConnectionSettings({
+      provider: next.provider,
+      model: next.model,
+      secretRef: next.secretRef,
+      baseUrl: next.apiBaseUrl,
+    });
+    tavern.updateSettings({ streaming: next.stream });
+  };
 
   return (
     <DrawerShell id="api-connections" drawers={drawers} side="left" title="API Connections">
@@ -57,8 +71,8 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
             <span>Active provider:</span>
             <select
               className="text_pole"
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
+              value={tavern.connectionSettings.provider}
+              onChange={(e) => tavern.updateConnectionSettings({ provider: e.target.value })}
             >
               {PROVIDER_GROUPS.map((group) => (
                 <optgroup key={group.label} label={group.label}>
@@ -78,7 +92,28 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
         <header className="drawer-section-header">
           <h3>Configuration</h3>
         </header>
-        <ConnectionForm settings={connectionSettings} onChange={setConnectionSettings} />
+        <div className="range-block">
+          <label>
+            <span>Saved profile:</span>
+            <select
+              className="text_pole"
+              value={tavern.activeConnectionProfile ?? ''}
+              onChange={(e) => {
+                if (e.target.value) tavern.loadConnectionProfile(e.target.value);
+              }}
+            >
+              <option value="">— Pick a profile —</option>
+              {Object.keys(tavern.connectionProfiles).map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <ConnectionForm
+          key={`${tavern.activeConnectionProfile ?? 'current'}:${tavern.connectionSettings.provider}:${tavern.connectionSettings.model}`}
+          settings={connectionFormSettings}
+          onChange={updateConnectionFormSettings}
+        />
       </section>
 
       <section className="drawer-section">
@@ -99,13 +134,28 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
           </label>
         </div>
         <div className="preset-actions">
-          <button type="button" className="menu_button" aria-label="Save connection profile">
+          <button
+            type="button"
+            className="menu_button"
+            aria-label="Save connection profile"
+            onClick={() => {
+              tavern.saveConnectionProfile(profileName);
+              setProfileName('');
+            }}
+            disabled={profileName.trim().length === 0}
+          >
             <i className="fa-solid fa-floppy-disk" aria-hidden="true" /> Save profile
           </button>
           <button type="button" className="menu_button" aria-label="Test connection">
             <i className="fa-solid fa-plug-circle-check" aria-hidden="true" /> Test
           </button>
-          <button type="button" className="menu_button" aria-label="Delete profile">
+          <button
+            type="button"
+            className="menu_button"
+            aria-label="Delete profile"
+            onClick={() => tavern.deleteConnectionProfile(tavern.activeConnectionProfile ?? profileName)}
+            disabled={(tavern.activeConnectionProfile ?? profileName).trim().length === 0}
+          >
             <i className="fa-solid fa-trash" aria-hidden="true" /> Delete
           </button>
         </div>

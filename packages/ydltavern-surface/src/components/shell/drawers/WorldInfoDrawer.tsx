@@ -1,45 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DrawerShell } from '../DrawerShell';
 import type { DrawerState } from '../useDrawers';
-
-interface WorldBookSummary {
-  id: string;
-  name: string;
-  enabled: boolean;
-  entryCount: number;
-}
-
-interface WorldEntry {
-  uid: string;
-  key: string[];
-  secondaryKey?: string[];
-  content: string;
-  position: 'before_char' | 'after_char' | 'before_an' | 'after_an' | 'at_depth';
-  depth?: number;
-  scanDepth?: number;
-  probability: number;
-  order: number;
-  enabled: boolean;
-}
-
-// TODO V7: wire to TavernProvider
-const STUB_BOOKS: WorldBookSummary[] = [
-  { id: 'main-lore', name: 'Main lore', enabled: true, entryCount: 3 },
-  { id: 'character-knowledge', name: 'Character knowledge', enabled: false, entryCount: 7 },
-];
-
-const STUB_ENTRY: WorldEntry = {
-  uid: 'stub-entry',
-  key: ['castle'],
-  secondaryKey: [],
-  content: '',
-  position: 'before_char',
-  depth: 4,
-  scanDepth: 1,
-  probability: 100,
-  order: 100,
-  enabled: true,
-};
+import { useTavern, type WorldEntry } from '../../../app/TavernProvider';
 
 const POSITION_OPTIONS: { value: WorldEntry['position']; label: string }[] = [
   { value: 'before_char', label: 'Before character defs' },
@@ -50,8 +12,19 @@ const POSITION_OPTIONS: { value: WorldEntry['position']; label: string }[] = [
 ];
 
 export function WorldInfoDrawer({ drawers }: { drawers: DrawerState }) {
-  const [selectedBookId, setSelectedBookId] = useState<string>(STUB_BOOKS[0]!.id);
-  const [entry, setEntry] = useState<WorldEntry>(STUB_ENTRY);
+  const tavern = useTavern();
+  const selectedBook = tavern.worldBooks.find((book) => book.id === tavern.activeWorldBookId) ?? tavern.worldBooks[0];
+  const selectedEntry = selectedBook?.entries.find((entry) => entry.uid === tavern.selectedWorldEntryId) ?? selectedBook?.entries[0];
+
+  const updateEntry = (partial: Partial<WorldEntry>) => {
+    if (selectedBook === undefined || selectedEntry === undefined) return;
+    tavern.updateWorldEntry(selectedBook.id, selectedEntry.uid, partial);
+  };
+
+  const createEntry = () => {
+    if (selectedBook === undefined) return;
+    tavern.createWorldEntry(selectedBook.id, { key: [], content: '' });
+  };
 
   return (
     <DrawerShell id="world-info" drawers={drawers} side="left" title="World Info">
@@ -59,7 +32,15 @@ export function WorldInfoDrawer({ drawers }: { drawers: DrawerState }) {
         <header className="drawer-section-header">
           <h3>World books</h3>
           <div className="preset-actions">
-            <button type="button" className="menu_button" aria-label="Create world book">
+            <button
+              type="button"
+              className="menu_button"
+              aria-label="Create world book"
+              onClick={() => {
+                const id = tavern.createWorldBook({ name: 'Untitled World Book' });
+                tavern.setActiveWorldBook(id);
+              }}
+            >
               <i className="fa-solid fa-plus" aria-hidden="true" /> New
             </button>
             <button type="button" className="menu_button" aria-label="Import world book">
@@ -69,32 +50,48 @@ export function WorldInfoDrawer({ drawers }: { drawers: DrawerState }) {
         </header>
 
         <ul className="worldbook-list" role="list">
-          {STUB_BOOKS.map((book) => (
+          {tavern.worldBooks.map((book) => (
             <li
               key={book.id}
-              className={`worldbook-row ${selectedBookId === book.id ? 'active' : ''}`}
+              className={`worldbook-row ${selectedBook?.id === book.id ? 'active' : ''}`}
             >
               <button
                 type="button"
                 className="worldbook-row-button"
-                onClick={() => setSelectedBookId(book.id)}
-                aria-pressed={selectedBookId === book.id}
+                onClick={() => {
+                  tavern.setActiveWorldBook(book.id);
+                  tavern.setSelectedWorldEntry(book.entries[0]?.uid ?? null);
+                }}
+                aria-pressed={selectedBook?.id === book.id}
               >
                 <i
                   className={`fa-solid ${book.enabled ? 'fa-toggle-on' : 'fa-toggle-off'}`}
                   aria-hidden="true"
                 />
                 <span className="worldbook-name">{book.name}</span>
-                <span className="worldbook-count">{book.entryCount}</span>
+                <span className="worldbook-count">{book.entries.length}</span>
               </button>
               <div className="worldbook-row-actions">
-                <button type="button" className="mes_button" aria-label={`Edit ${book.name}`}>
+                <button
+                  type="button"
+                  className="mes_button"
+                  aria-label={`Edit ${book.name}`}
+                  onClick={() => {
+                    tavern.setActiveWorldBook(book.id);
+                    tavern.setSelectedWorldEntry(book.entries[0]?.uid ?? null);
+                  }}
+                >
                   <i className="fa-solid fa-pencil" aria-hidden="true" />
                 </button>
                 <button type="button" className="mes_button" aria-label={`Export ${book.name}`}>
                   <i className="fa-solid fa-download" aria-hidden="true" />
                 </button>
-                <button type="button" className="mes_button danger" aria-label={`Delete ${book.name}`}>
+                <button
+                  type="button"
+                  className="mes_button danger"
+                  aria-label={`Delete ${book.name}`}
+                  onClick={() => tavern.deleteWorldBook(book.id)}
+                >
                   <i className="fa-solid fa-trash" aria-hidden="true" />
                 </button>
               </div>
@@ -106,146 +103,167 @@ export function WorldInfoDrawer({ drawers }: { drawers: DrawerState }) {
       <section className="drawer-section">
         <header className="drawer-section-header">
           <h3>Entry editor</h3>
-          <small>Selected book: <code>{STUB_BOOKS.find((b) => b.id === selectedBookId)?.name}</code></small>
+          <small>Selected book: <code>{selectedBook?.name ?? 'None'}</code></small>
+          {selectedBook !== undefined && (
+            <div className="preset-actions">
+              <button type="button" className="menu_button" aria-label="Create world entry" onClick={createEntry}>
+                <i className="fa-solid fa-plus" aria-hidden="true" /> New entry
+              </button>
+            </div>
+          )}
         </header>
 
-        <div className="range-block">
-          <label>
-            <span>Primary keys (comma-separated):</span>
-            <input
-              type="text"
-              className="text_pole"
-              value={entry.key.join(', ')}
-              onChange={(e) =>
-                setEntry((prev) => ({ ...prev, key: e.target.value.split(',').map((k) => k.trim()).filter(Boolean) }))
-              }
-              placeholder="castle, fortress"
-            />
-          </label>
-        </div>
+        {selectedBook === undefined ? (
+          <p className="drawer-coming-soon">Create a world book to edit entries.</p>
+        ) : selectedEntry === undefined ? (
+          <p className="drawer-coming-soon">Create an entry to edit this world book.</p>
+        ) : (
+          <>
+            <div className="range-block">
+              <label>
+                <span>Primary keys (comma-separated):</span>
+                <input
+                  type="text"
+                  className="text_pole"
+                  value={selectedEntry.key.join(', ')}
+                  onChange={(e) => updateEntry({ key: splitCsv(e.target.value) })}
+                  placeholder="castle, fortress"
+                />
+              </label>
+            </div>
 
-        <div className="range-block">
-          <label>
-            <span>Secondary keys (optional):</span>
-            <input
-              type="text"
-              className="text_pole"
-              value={(entry.secondaryKey ?? []).join(', ')}
-              onChange={(e) =>
-                setEntry((prev) => ({ ...prev, secondaryKey: e.target.value.split(',').map((k) => k.trim()).filter(Boolean) }))
-              }
-              placeholder="ancient, ruins"
-            />
-          </label>
-        </div>
+            <div className="range-block">
+              <label>
+                <span>Secondary keys (optional):</span>
+                <input
+                  type="text"
+                  className="text_pole"
+                  value={(selectedEntry.secondaryKey ?? []).join(', ')}
+                  onChange={(e) => updateEntry({ secondaryKey: splitCsv(e.target.value) })}
+                  placeholder="ancient, ruins"
+                />
+              </label>
+            </div>
 
-        <div className="range-block">
-          <label>
-            <span>Content:</span>
-            <textarea
-              className="textarea_compact"
-              rows={5}
-              value={entry.content}
-              onChange={(e) => setEntry((prev) => ({ ...prev, content: e.target.value }))}
-              placeholder="The castle is an ancient fortress…"
-            />
-          </label>
-        </div>
+            <div className="range-block">
+              <label>
+                <span>Content:</span>
+                <textarea
+                  className="textarea_compact"
+                  rows={5}
+                  value={selectedEntry.content}
+                  onChange={(e) => updateEntry({ content: e.target.value })}
+                  placeholder="The castle is an ancient fortress…"
+                />
+              </label>
+            </div>
 
-        <div className="range-block">
-          <label>
-            <span>Position:</span>
-            <select
-              className="text_pole"
-              value={entry.position}
-              onChange={(e) => setEntry((prev) => ({ ...prev, position: e.target.value as WorldEntry['position'] }))}
-            >
-              {POSITION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </label>
-        </div>
+            <div className="range-block">
+              <label>
+                <span>Position:</span>
+                <select
+                  className="text_pole"
+                  value={selectedEntry.position}
+                  onChange={(e) => updateEntry({ position: e.target.value as WorldEntry['position'] })}
+                >
+                  {POSITION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-        {entry.position === 'at_depth' && (
-          <div className="range-block">
-            <label>
-              <span>Depth: <code>{entry.depth ?? 4}</code></span>
+            {selectedEntry.position === 'at_depth' && (
+              <div className="range-block">
+                <label>
+                  <span>Depth: <code>{selectedEntry.depth ?? 4}</code></span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value={selectedEntry.depth ?? 4}
+                    onChange={(e) => updateEntry({ depth: Number(e.target.value) })}
+                    className="neo-range-input"
+                  />
+                </label>
+              </div>
+            )}
+
+            <div className="range-block">
+              <label>
+                <span>Scan depth: <code>{selectedEntry.scanDepth ?? 1}</code></span>
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  step="1"
+                  value={selectedEntry.scanDepth ?? 1}
+                  onChange={(e) => updateEntry({ scanDepth: Number(e.target.value) })}
+                  className="neo-range-input"
+                />
+              </label>
+            </div>
+
+            <div className="range-block">
+              <label>
+                <span>Probability: <code>{selectedEntry.probability}%</code></span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={selectedEntry.probability}
+                  onChange={(e) => updateEntry({ probability: Number(e.target.value) })}
+                  className="neo-range-input"
+                />
+              </label>
+            </div>
+
+            <div className="range-block">
+              <label>
+                <span>Order: <code>{selectedEntry.order}</code></span>
+                <input
+                  type="number"
+                  className="text_pole"
+                  value={selectedEntry.order}
+                  onChange={(e) => updateEntry({ order: Number(e.target.value) || 0 })}
+                />
+              </label>
+            </div>
+
+            <label className="checkbox_label">
               <input
-                type="range"
-                min="0"
-                max="10"
-                step="1"
-                value={entry.depth ?? 4}
-                onChange={(e) => setEntry((prev) => ({ ...prev, depth: Number(e.target.value) }))}
-                className="neo-range-input"
+                type="checkbox"
+                checked={selectedEntry.enabled}
+                onChange={(e) => updateEntry({ enabled: e.target.checked })}
               />
+              <span>Entry enabled</span>
             </label>
-          </div>
+
+            <div className="preset-actions">
+              <button type="button" className="menu_button" aria-label="Save entry">
+                <i className="fa-solid fa-floppy-disk" aria-hidden="true" /> Save entry
+              </button>
+              <button
+                type="button"
+                className="menu_button"
+                aria-label="Duplicate entry"
+                onClick={() => tavern.duplicateWorldEntry(selectedBook.id, selectedEntry.uid)}
+              >
+                <i className="fa-solid fa-copy" aria-hidden="true" /> Duplicate
+              </button>
+              <button
+                type="button"
+                className="menu_button danger"
+                aria-label="Delete entry"
+                onClick={() => tavern.deleteWorldEntry(selectedBook.id, selectedEntry.uid)}
+              >
+                <i className="fa-solid fa-trash" aria-hidden="true" /> Delete
+              </button>
+            </div>
+          </>
         )}
-
-        <div className="range-block">
-          <label>
-            <span>Scan depth: <code>{entry.scanDepth ?? 1}</code></span>
-            <input
-              type="range"
-              min="1"
-              max="20"
-              step="1"
-              value={entry.scanDepth ?? 1}
-              onChange={(e) => setEntry((prev) => ({ ...prev, scanDepth: Number(e.target.value) }))}
-              className="neo-range-input"
-            />
-          </label>
-        </div>
-
-        <div className="range-block">
-          <label>
-            <span>Probability: <code>{entry.probability}%</code></span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={entry.probability}
-              onChange={(e) => setEntry((prev) => ({ ...prev, probability: Number(e.target.value) }))}
-              className="neo-range-input"
-            />
-          </label>
-        </div>
-
-        <div className="range-block">
-          <label>
-            <span>Order: <code>{entry.order}</code></span>
-            <input
-              type="number"
-              className="text_pole"
-              value={entry.order}
-              onChange={(e) => setEntry((prev) => ({ ...prev, order: Number(e.target.value) || 0 }))}
-            />
-          </label>
-        </div>
-
-        <label className="checkbox_label">
-          <input
-            type="checkbox"
-            checked={entry.enabled}
-            onChange={(e) => setEntry((prev) => ({ ...prev, enabled: e.target.checked }))}
-          />
-          <span>Entry enabled</span>
-        </label>
-
-        <div className="preset-actions">
-          <button type="button" className="menu_button" aria-label="Save entry">
-            <i className="fa-solid fa-floppy-disk" aria-hidden="true" /> Save entry
-          </button>
-          <button type="button" className="menu_button" aria-label="Duplicate entry">
-            <i className="fa-solid fa-copy" aria-hidden="true" /> Duplicate
-          </button>
-          <button type="button" className="menu_button danger" aria-label="Delete entry">
-            <i className="fa-solid fa-trash" aria-hidden="true" /> Delete
-          </button>
-        </div>
       </section>
 
       <section className="drawer-section">
@@ -270,4 +288,8 @@ export function WorldInfoDrawer({ drawers }: { drawers: DrawerState }) {
       </section>
     </DrawerShell>
   );
+}
+
+function splitCsv(value: string): string[] {
+  return value.split(',').map((part) => part.trim()).filter(Boolean);
 }

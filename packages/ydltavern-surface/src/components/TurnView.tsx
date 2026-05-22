@@ -12,6 +12,11 @@ const ROLE_LABEL: Record<Turn['role'], string> = {
   tool: 'Tool',
 };
 
+/**
+ * @deprecated W4: replaced by MessageBubble + MessageList. Will be removed in
+ * a future round. Keep for backward compat with any external consumers that
+ * still import this.
+ */
 export function TurnView({ turn }: TurnViewProps): JSX.Element {
   const variant = activeVariant(turn);
   const variantCount = turn.variants.length;

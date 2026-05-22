@@ -2433,6 +2433,20 @@
   min-height: 0;
 }
 
+.ydltavern-surface .ydltavern-message-list {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ydltavern-surface .ydltavern-message-list-virtuoso {
+  height: 100%;
+}
+
+.ydltavern-surface .ydltavern-message-list .mes {
+  margin-bottom: 0;
+}
+
 .ydltavern-surface .tavern-chat-list > .virtuoso-grid-list {
   padding: 22px;
 }
@@ -3838,4 +3852,3 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
 }
-

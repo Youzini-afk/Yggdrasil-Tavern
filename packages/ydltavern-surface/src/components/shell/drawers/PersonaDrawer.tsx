@@ -1,25 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DrawerShell } from '../DrawerShell';
 import type { DrawerState } from '../useDrawers';
-import { PersonaForm, DEFAULT_PERSONA_SETTINGS } from '../../product/Settings/PersonaForm';
-import type { PersonaSettings } from '../../product/Settings/PersonaForm';
-
-interface PersonaSummary {
-  id: string;
-  name: string;
-  description?: string;
-  avatarUrl?: string;
-  active: boolean;
-}
-
-const STUB_PERSONAS: PersonaSummary[] = [
-  { id: 'default', name: 'You', description: 'Default user persona', active: true },
-];
+import { PersonaForm } from '../../product/Settings/PersonaForm';
+import { useTavern } from '../../../app/TavernProvider';
 
 export function PersonaDrawer({ drawers }: { drawers: DrawerState }) {
-  const [activeId, setActiveId] = useState<string>(STUB_PERSONAS[0]!.id);
-  const personas = STUB_PERSONAS; // TODO V7: wire to TavernProvider
-  const [personaSettings, setPersonaSettings] = useState<PersonaSettings>(DEFAULT_PERSONA_SETTINGS);
+  const tavern = useTavern();
+  const activePersona = tavern.personas.find((persona) => persona.id === tavern.activePersonaId) ?? tavern.personas[0];
 
   return (
     <DrawerShell id="persona" drawers={drawers} side="left" title="Persona Management">
@@ -27,7 +14,15 @@ export function PersonaDrawer({ drawers }: { drawers: DrawerState }) {
         <header className="drawer-section-header">
           <h3>Personas</h3>
           <div className="preset-actions">
-            <button type="button" className="menu_button" aria-label="Create persona">
+            <button
+              type="button"
+              className="menu_button"
+              aria-label="Create persona"
+              onClick={() => {
+                const id = tavern.createPersona({ name: 'New Persona' });
+                tavern.setActivePersona(id);
+              }}
+            >
               <i className="fa-solid fa-plus" aria-hidden="true" /> New
             </button>
             <button type="button" className="menu_button" aria-label="Import persona">
@@ -37,13 +32,13 @@ export function PersonaDrawer({ drawers }: { drawers: DrawerState }) {
         </header>
 
         <ul className="persona-list" role="list">
-          {personas.map((persona) => (
-            <li key={persona.id} className={`persona-row ${activeId === persona.id ? 'active' : ''}`}>
+          {tavern.personas.map((persona) => (
+            <li key={persona.id} className={`persona-row ${activePersona?.id === persona.id ? 'active' : ''}`}>
               <button
                 type="button"
                 className="persona-row-button"
-                onClick={() => setActiveId(persona.id)}
-                aria-pressed={activeId === persona.id}
+                onClick={() => tavern.setActivePersona(persona.id)}
+                aria-pressed={activePersona?.id === persona.id}
                 aria-label={`Activate persona ${persona.name}`}
               >
                 <div className="persona-avatar">
@@ -61,7 +56,7 @@ export function PersonaDrawer({ drawers }: { drawers: DrawerState }) {
                     <div className="persona-description">{persona.description}</div>
                   )}
                 </div>
-                {persona.active && (
+                {activePersona?.id === persona.id && (
                   <span className="persona-active-badge" aria-label="Active persona">
                     <i className="fa-solid fa-check" aria-hidden="true" />
                   </span>
@@ -75,7 +70,8 @@ export function PersonaDrawer({ drawers }: { drawers: DrawerState }) {
                   type="button"
                   className="mes_button"
                   aria-label={`Delete ${persona.name}`}
-                  disabled={personas.length <= 1}
+                  onClick={() => tavern.deletePersona(persona.id)}
+                  disabled={tavern.personas.length <= 1}
                 >
                   <i className="fa-solid fa-trash" aria-hidden="true" />
                 </button>
@@ -89,7 +85,19 @@ export function PersonaDrawer({ drawers }: { drawers: DrawerState }) {
         <header className="drawer-section-header">
           <h3>Edit active persona</h3>
         </header>
-        <PersonaForm settings={personaSettings} onChange={setPersonaSettings} />
+        {activePersona ? (
+          <PersonaForm
+            key={activePersona.id}
+            settings={{
+              name: activePersona.name,
+              description: activePersona.description ?? '',
+              avatarUrl: activePersona.avatarUrl ?? '',
+            }}
+            onChange={(partial) => tavern.updatePersona(activePersona.id, partial)}
+          />
+        ) : (
+          <p className="drawer-coming-soon">Create a persona to edit.</p>
+        )}
       </section>
 
       <section className="drawer-section">

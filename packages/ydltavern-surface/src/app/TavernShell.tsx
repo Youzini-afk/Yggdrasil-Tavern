@@ -1,7 +1,9 @@
 import { normalizeQuickReplySets } from '@ydltavern/extensions';
 import type { STExtensionRecord } from '@ydltavern/extensions';
-import { ChatList } from '../components/product/ChatList.js';
-import { MessageComposer } from '../components/product/MessageComposer.js';
+import { useRef } from 'react';
+import { flushSync } from 'react-dom';
+import { SendForm } from '../components/product/Composer/SendForm.js';
+import { MessageList } from '../components/product/MessageList.js';
 import { QuickReplyBar } from '../components/product/QuickReplyBar.js';
 import { ThemedRoot } from '../components/product/themes/ThemedRoot.js';
 import { useTavern } from './TavernProvider.js';
@@ -22,6 +24,8 @@ import {
 
 export function TavernShell(): JSX.Element {
   const tavern = useTavern();
+  const tavernRef = useRef(tavern);
+  tavernRef.current = tavern;
   const drawers = useDrawers();
 
   // Build quick reply sets from demo/extension data
@@ -50,9 +54,21 @@ export function TavernShell(): JSX.Element {
         </div>
 
         <Sheld>
-          <ChatList />
+          <MessageList />
           <QuickReplyBar sets={qrSets} onTrigger={handleQuickReply} />
-          <MessageComposer />
+          <SendForm
+            onSend={async (text) => {
+              flushSync(() => tavern.setInput(text));
+              tavernRef.current.sendMessage();
+            }}
+            onContinue={() => tavern.continueLastReply()}
+            onImpersonate={() => tavern.impersonate()}
+            onStop={() => tavern.cancelGeneration()}
+            onOptions={() => {
+              // TODO Phase B: open options menu (slash commands, attach, etc.)
+            }}
+            isGenerating={tavern.isGenerating}
+          />
         </Sheld>
 
         <div className="drawer-rail drawer-rail-right">

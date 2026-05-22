@@ -117,17 +117,65 @@ export function UserSettingsDrawer({ drawers }: { drawers: DrawerState }) {
           <h3>Persistence</h3>
         </header>
         <div className="preset-actions">
-          <button type="button" className="menu_button" aria-label="Export settings">
+          <button
+            type="button"
+            className="menu_button"
+            aria-label="Export settings"
+            onClick={() => exportToFile({ settings: tavern.settings, themeSettings: tavern.themeSettings }, 'ydltavern-settings.json')}
+          >
             <i className="fa-solid fa-file-export" /> Export
           </button>
-          <button type="button" className="menu_button" aria-label="Import settings">
+          <label className="menu_button" aria-label="Import settings">
             <i className="fa-solid fa-file-import" /> Import
-          </button>
-          <button type="button" className="menu_button danger" aria-label="Reset to defaults">
+            <input
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) importSettingsFile(file, (data) => {
+                  if (data.settings) tavern.updateSettings(data.settings);
+                  if (data.themeSettings) tavern.setThemeSettings(data.themeSettings);
+                });
+                e.currentTarget.value = '';
+              }}
+            />
+          </label>
+          <button
+            type="button"
+            className="menu_button danger"
+            aria-label="Reset to defaults"
+            onClick={() => tavern.resetSettings()}
+          >
             <i className="fa-solid fa-rotate-left" /> Reset
           </button>
         </div>
       </section>
     </DrawerShell>
   );
+}
+
+function exportToFile(data: unknown, filename: string): void {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importSettingsFile(
+  file: File,
+  onImport: (data: { settings?: Parameters<ReturnType<typeof useTavern>['updateSettings']>[0]; themeSettings?: ReturnType<typeof useTavern>['themeSettings'] }) => void,
+): void {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      onImport(JSON.parse(String(reader.result)) as Parameters<typeof onImport>[0]);
+    } catch (error) {
+      console.error('[YdlTavern] Failed to import settings', error);
+    }
+  };
+  reader.readAsText(file);
 }
