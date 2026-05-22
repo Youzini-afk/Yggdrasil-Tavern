@@ -2,8 +2,8 @@
   "harness_version": "1.0",
   "scenario": "world-info/probability-seeded",
   "description": "World info entry with probability < 100, using seeded RNG for determinism",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": {
     "worldInfoBefore": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
     "worldInfoAfter": "",
@@ -16,32 +16,24 @@
     "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
   },
   "actual": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
-  },
-  "delta": [
-    {
-      "path": "$.activatedEntries[0]",
-      "expected": {
+    "activatedEntries": [
+      {
         "uid": 0,
         "content": "A rare potion bubbles in the cauldron, its color shifting unpredictably."
       }
-    },
-    {
-      "path": "$.worldInfoBefore",
-      "expected": "A rare potion bubbles in the cauldron, its color shifting unpredictably.",
-      "actual": ""
-    }
-  ],
+    ],
+    "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
+  },
+  "delta": [],
   "diagnostics": {
     "scanDepth": 2,
-    "scanTextChars": 35,
+    "scanTextChars": 108,
     "iterations": 1,
     "budgetType": "characters",
     "budgetLimit": 25,
-    "usedBudget": 0,
+    "usedBudget": 22,
     "warnings": [],
     "unsupported": [
       "ST token-level budget alignment is approximated, not tokenizer exact.",
@@ -52,18 +44,40 @@
       {
         "entryId": "0",
         "source": "golden-harness",
-        "activated": false,
-        "code": "probability_failed",
-        "reason": "probability roll 52.3429 > 50",
+        "activated": true,
+        "code": "probability_roll",
+        "reason": "probability roll 38.3359 <= 50",
         "iteration": 0,
         "matchedKeys": [],
         "matchedSecondaryKeys": [],
         "probability": 50,
-        "roll": 52.34293451080404,
+        "roll": 38.33587512676328,
         "randomIndex": 0,
-        "randomValue": 0.5234293451080404
+        "randomValue": 0.38335875126763275
+      },
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "activated": true,
+        "code": "key_match",
+        "reason": "keys matched",
+        "iteration": 0,
+        "matchedKeys": [
+          "potion"
+        ],
+        "matchedSecondaryKeys": []
       }
     ],
-    "routingTrace": []
+    "routingTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "position": "before",
+        "bucket": "before",
+        "order": 100,
+        "depth": 4,
+        "inserted": true
+      }
+    ]
   }
 }

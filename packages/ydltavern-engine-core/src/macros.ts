@@ -1,3 +1,5 @@
+import { substituteSTMacrosDeep, type STMacroTraceSource } from './macros-st.js';
+
 export type MacroValue = string | number | boolean | null | undefined;
 
 export interface MacroContext {
@@ -21,6 +23,9 @@ export interface SubstituteMacrosOptions {
   readonly overrides?: Readonly<Record<string, MacroValue>>;
   readonly unknownMacro?: 'preserve' | 'empty';
   readonly previewLength?: number;
+  readonly random?: () => number;
+  readonly pickSeed?: () => number;
+  readonly maxIterations?: number;
 }
 
 export type MacroTraceSource = 'context' | 'dynamic' | 'computed' | 'unknown';
@@ -43,6 +48,10 @@ export function substituteMacros(
   context: MacroContext = {},
   options: SubstituteMacrosOptions = {},
 ): SubstituteMacrosResult {
+  if (usesDeepMacroSemantics(text, context, options)) {
+    return substituteMacrosDeepCompat(text, context, options);
+  }
+
   const trace: MacroTraceEntry[] = [];
   const previewLength = options.previewLength ?? 80;
   const now = normalizeDate(options.now ?? context.now ?? Date.now());
@@ -59,6 +68,58 @@ export function substituteMacros(
   });
 
   return { text: replaced, trace };
+}
+
+function usesDeepMacroSemantics(text: string, context: MacroContext, options: SubstituteMacrosOptions): boolean {
+  return /<USER>|<BOT>|<GROUP>|<CHARIFNOTGROUP>|\{\{\s*(?:\/\/|comment|noop|newline|space|trim|random|pick|roll|isotime|isodate|weekday|datetimeformat|idleDuration|idle_duration|timeDiff|getvar|var|setvar|addvar|incvar|decvar|hasvar|varexists|deletevar|flushvar|getglobalvar|setglobalvar|addglobalvar|incglobalvar|decglobalvar|hasglobalvar|globalvarexists|deleteglobalvar|flushglobalvar|hasExtension|time_UTC|time\s*:|date\s*:)[}:\s]/.test(text)
+    || macroSourceHasNestedMacro(context)
+    || macroSourceHasNestedMacro(context.dynamic)
+    || macroSourceHasNestedMacro(context.overrides)
+    || macroSourceHasNestedMacro(options.overrides);
+}
+
+function macroSourceHasNestedMacro(source: object | undefined): boolean {
+  if (source === undefined) return false;
+  return Object.values(source as Record<string, unknown>).some((value) => typeof value === 'string' && value.includes('{{'));
+}
+
+function substituteMacrosDeepCompat(
+  text: string,
+  context: MacroContext,
+  options: SubstituteMacrosOptions,
+): SubstituteMacrosResult {
+  const deep = substituteSTMacrosDeep(text, {
+    env: { ...context, ...context.dynamic, ...context.overrides, ...options.overrides },
+    now: options.now ?? context.now,
+    unknownMacro: options.unknownMacro,
+    random: options.random,
+    pickSeed: options.pickSeed,
+    maxIterations: options.maxIterations,
+  });
+  const previewLength = options.previewLength ?? 80;
+  return {
+    text: deep.text,
+    trace: deep.trace.map((entry): MacroTraceEntry => ({
+      name: entry.name,
+      source: entry.source === 'env' ? resolveContextSource(entry.name, context, options) : mapTraceSource(entry.source),
+      preview: preview(entry.preview, previewLength),
+    })),
+  };
+}
+
+function mapTraceSource(source: STMacroTraceSource): MacroTraceSource {
+  if (source === 'variable' || source === 'control') return 'computed';
+  if (source === 'env') return 'dynamic';
+  return source;
+}
+
+function resolveContextSource(
+  name: string,
+  context: MacroContext,
+  options: SubstituteMacrosOptions,
+): MacroTraceSource {
+  if (lookupDynamic(name, options.overrides, context.overrides, context.dynamic) !== undefined) return 'dynamic';
+  return Object.prototype.hasOwnProperty.call(context, name) ? 'context' : 'dynamic';
 }
 
 function resolveMacro(

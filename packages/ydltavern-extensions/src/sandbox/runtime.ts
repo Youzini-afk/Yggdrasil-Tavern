@@ -4,6 +4,8 @@ import {
   type QuickJSHandle,
   type QuickJSWASMModule,
 } from 'quickjs-emscripten';
+import { installBrowserStubs } from './browser-stubs.js';
+import type { SandboxPermissions } from './permissions.js';
 
 export interface SandboxConfig {
   /** Memory limit in bytes (default 32MB). */
@@ -14,6 +16,8 @@ export interface SandboxConfig {
   readonly callTimeoutMs?: number;
   /** Total execution budget for activation in ms (default 5000ms). */
   readonly activationTimeoutMs?: number;
+  /** Deterministic seed for browser crypto stubs. */
+  readonly seed?: string;
 }
 
 export interface AuditEntry {
@@ -60,13 +64,37 @@ export class ExtensionSandbox {
   }
 
   async eval(code: string, source = '<extension>', timeoutMs = this.config.callTimeoutMs ?? 1000): Promise<unknown> {
+    return this.evalWithType(code, source, 'global', timeoutMs);
+  }
+
+  async evalModule(code: string, specifier = '<extension-module>', timeoutMs = this.config.callTimeoutMs ?? 1000): Promise<unknown> {
+    return this.evalWithType(code, specifier, 'module', timeoutMs);
+  }
+
+  enableRealExtensionLoad(permissions: SandboxPermissions): void {
+    if (!permissions.realExtensionLoad) return;
+    if (!this.context) throw new Error('Sandbox not initialized');
+    installBrowserStubs(this, { seed: this.config.seed ?? this.extensionId });
+  }
+
+  setModuleLoader(loader: (moduleName: string) => string, normalizer?: (baseModuleName: string, requestedName: string) => string): void {
+    if (!this.context) throw new Error('Sandbox not initialized');
+    this.context.runtime.setModuleLoader((moduleName) => loader(moduleName), normalizer ? (base, requested) => normalizer(base, requested) : undefined);
+  }
+
+  async evalWithType(
+    code: string,
+    source: string,
+    type: 'global' | 'module',
+    timeoutMs = this.config.callTimeoutMs ?? 1000,
+  ): Promise<unknown> {
     if (this.destroyed) throw new Error('Sandbox destroyed');
     if (!this.context) throw new Error('Sandbox not initialized');
 
     const deadline = Date.now() + timeoutMs;
     this.context.runtime.setInterruptHandler(() => Date.now() > deadline);
     try {
-      const result = this.context.evalCode(code, source, { type: 'global' });
+      const result = this.context.evalCode(code, source, { type });
       if (result.error) {
         const err = this.context.dump(result.error);
         result.error.dispose();
@@ -137,7 +165,7 @@ export class ExtensionSandbox {
     // a host-provided escape hatch for an allowed API surface.
     const blockedGlobals = ['fetch', 'XMLHttpRequest', 'require', 'process', 'WebSocket', 'Worker'];
     const code = blockedGlobals
-      .map((name) => `Object.defineProperty(globalThis, ${JSON.stringify(name)}, { value: undefined, writable: false, configurable: false });`)
+      .map((name) => `Object.defineProperty(globalThis, ${JSON.stringify(name)}, { value: undefined, writable: false, configurable: true });`)
       .join('\n');
     const result = this.vm.evalCode(code, '<safe-globals>', { type: 'global' });
     result.dispose();

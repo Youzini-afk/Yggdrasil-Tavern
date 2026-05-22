@@ -1,6 +1,8 @@
 import type { ExtensionSandbox } from './runtime.js';
 import type { SandboxPermissions } from './permissions.js';
 import { auditArgsShape } from './audit.js';
+import { ST_EVENT_TYPES } from '@ydltavern/types/st';
+import { EXTENSION_PROMPT_ROLES, EXTENSION_PROMPT_TYPES, ExtensionPromptStore } from '@ydltavern/st-compat';
 
 export interface STHostBridge {
   /** Called from host to read current chat — returns a JSON-serializable copy. */
@@ -15,6 +17,16 @@ export interface STHostBridge {
   /** Read/write extension_settings[extensionId]. */
   getSettings(): unknown;
   setSettings(value: unknown): void;
+  /** Optional shared ST ExtensionPromptStore backing getExtensionPrompt. */
+  extensionPrompts?: ExtensionPromptStore;
+  updateChatMetadata?(values: unknown, reset?: boolean): unknown;
+  getExtensionPrompt?(position?: number, depth?: number, separator?: string, role?: number, wrap?: boolean): Promise<string> | string;
+  substituteParams?(text: string): Promise<string> | string;
+  getTokenCountAsync?(text: string): Promise<number> | number;
+  saveSettingsDebounced?(): void;
+  saveMetadata?(): void;
+  saveMetadataDebounced?(): void;
+  reloadCurrentChat?(): void;
 }
 
 export function bindHostBridge(
@@ -39,6 +51,14 @@ export function bindHostBridge(
           optionalBooleanArg(args[4]),
           optionalNumberArg(args[5]),
         );
+        hostBridge.extensionPrompts?.set(
+          stringArg(args[0]),
+          stringArg(args[1]),
+          optionalNumberArg(args[2]) as never,
+          optionalNumberArg(args[3]),
+          optionalBooleanArg(args[4]),
+          optionalNumberArg(args[5]) as never,
+        );
         return JSON.stringify(null);
       case 'registerSlashCommand': {
         const callbackId = stringArg(args[1]);
@@ -60,6 +80,28 @@ export function bindHostBridge(
       case 'setSettings':
         hostBridge.setSettings(args[0]);
         return JSON.stringify(null);
+      case 'getRequestHeaders':
+        return JSON.stringify({ 'Content-Type': 'application/json' });
+      case 'saveSettingsDebounced':
+        hostBridge.saveSettingsDebounced?.();
+        return JSON.stringify(null);
+      case 'saveMetadata':
+        hostBridge.saveMetadata?.();
+        return JSON.stringify(null);
+      case 'saveMetadataDebounced':
+        hostBridge.saveMetadataDebounced?.();
+        return JSON.stringify(null);
+      case 'reloadCurrentChat':
+        hostBridge.reloadCurrentChat?.();
+        return JSON.stringify(null);
+      case 'updateChatMetadata':
+        return JSON.stringify(updateChatMetadata(hostBridge, args[0], optionalBooleanArg(args[1])));
+      case 'getExtensionPrompt':
+        return JSON.stringify(getExtensionPrompt(hostBridge, args));
+      case 'substituteParams':
+        return JSON.stringify(substituteParams(hostBridge, stringArg(args[0])));
+      case 'getTokenCountAsync':
+        return JSON.stringify(getTokenCountAsync(hostBridge, stringArg(args[0])));
       default:
         throw new Error(`Unknown sandbox host API: ${String(api)}`);
     }
@@ -134,6 +176,22 @@ function makeBootstrapSource(extensionId: string, permissions: SandboxPermission
     });
     Object.defineProperty(globalThis, 'extension_settings', { value: extensionSettings, writable: false, configurable: false });
   }
+  if (permissions.realExtensionLoad) {
+    // ST globals from public/script.js and public/scripts/st-context.js; see
+    // packages/ydltavern-st-compat/src/context-st.ts refs for source lines.
+    globalThis.event_types = ${JSON.stringify(ST_EVENT_TYPES)};
+    globalThis.extension_prompt_types = ${JSON.stringify(EXTENSION_PROMPT_TYPES)};
+    globalThis.extension_prompt_roles = ${JSON.stringify(EXTENSION_PROMPT_ROLES)};
+    globalThis.getRequestHeaders = function getRequestHeaders() { return host('getRequestHeaders'); };
+    globalThis.saveSettingsDebounced = function saveSettingsDebounced() { return host('saveSettingsDebounced'); };
+    globalThis.saveMetadata = function saveMetadata() { return host('saveMetadata'); };
+    globalThis.saveMetadataDebounced = function saveMetadataDebounced() { return host('saveMetadataDebounced'); };
+    globalThis.reloadCurrentChat = function reloadCurrentChat() { return host('reloadCurrentChat'); };
+    globalThis.updateChatMetadata = function updateChatMetadata(values, reset) { return host('updateChatMetadata', [values, reset]); };
+    globalThis.getExtensionPrompt = function getExtensionPrompt(position, depth, separator, role, wrap) { return host('getExtensionPrompt', [position, depth, separator, role, wrap]); };
+    globalThis.substituteParams = function substituteParams(text) { return host('substituteParams', [text]); };
+    globalThis.getTokenCountAsync = function getTokenCountAsync(text) { return host('getTokenCountAsync', [text]); };
+  }
   Object.defineProperty(globalThis, 'kernel', { value: undefined, writable: false, configurable: false });
 })();`;
 }
@@ -151,8 +209,81 @@ function assertAllowed(api: unknown, permissions: SandboxPermissions): void {
     (name === 'setExtensionPrompt' && permissions.extensionPrompts) ||
     ((name === 'eventOn' || name === 'eventEmit') && permissions.events) ||
     (name === 'registerSlashCommand' && permissions.slashCommands) ||
-    ((name === 'getSettings' || name === 'setSettings') && permissions.settings);
+    ((name === 'getSettings' || name === 'setSettings') && permissions.settings) ||
+    (permissions.realExtensionLoad && EXTENDED_REAL_LOAD_APIS.has(name));
   if (!allowed) throw new Error(`Sandbox permission denied for ${name}`);
+}
+
+const EXTENDED_REAL_LOAD_APIS = new Set([
+  'getRequestHeaders',
+  'saveSettingsDebounced',
+  'saveMetadata',
+  'saveMetadataDebounced',
+  'reloadCurrentChat',
+  'updateChatMetadata',
+  'getExtensionPrompt',
+  'substituteParams',
+  'getTokenCountAsync',
+]);
+
+function updateChatMetadata(hostBridge: STHostBridge, values: unknown, reset: boolean | undefined): unknown {
+  if (hostBridge.updateChatMetadata) return hostBridge.updateChatMetadata(values, reset);
+  const snapshot = hostBridge.getContextSnapshot();
+  if (snapshot && typeof snapshot === 'object') {
+    const target = snapshot as { chatMetadata?: Record<string, unknown> };
+    const next = values && typeof values === 'object' ? values as Record<string, unknown> : {};
+    target.chatMetadata = reset ? { ...next } : { ...(target.chatMetadata ?? {}), ...next };
+    return target.chatMetadata;
+  }
+  return values;
+}
+
+function getExtensionPrompt(hostBridge: STHostBridge, args: unknown[]): string {
+  const position = optionalNumberArg(args[0]);
+  const depth = optionalNumberArg(args[1]);
+  const separator = optionalStringArg(args[2]) ?? '\n';
+  const role = optionalNumberArg(args[3]);
+  const wrap = optionalBooleanArg(args[4]) ?? false;
+  if (hostBridge.getExtensionPrompt) {
+    const value = hostBridge.getExtensionPrompt(
+      position,
+      depth,
+      separator,
+      role,
+      wrap,
+    );
+    return typeof value === 'string' ? value : '';
+  }
+  if (hostBridge.extensionPrompts) return renderPromptStoreSync(hostBridge.extensionPrompts, position, depth, separator, role, wrap);
+  return '';
+}
+
+function renderPromptStoreSync(
+  store: ExtensionPromptStore,
+  position: number | undefined,
+  depth: number | undefined,
+  separator: string,
+  role: number | undefined,
+  wrap: boolean,
+): string {
+  const values = store.values()
+    .filter((entry) => position === undefined || entry.position === position)
+    .filter((entry) => depth === undefined || entry.depth === depth)
+    .filter((entry) => role === undefined || entry.role === role)
+    .map((entry) => entry.value)
+    .filter((value) => value.length > 0);
+  const joined = values.join(separator);
+  return joined.length > 0 && wrap ? `${separator}${joined}${separator}` : joined;
+}
+
+function substituteParams(hostBridge: STHostBridge, text: string): string {
+  const value = hostBridge.substituteParams?.(text);
+  return typeof value === 'string' ? value : text;
+}
+
+function getTokenCountAsync(hostBridge: STHostBridge, text: string): number {
+  const value = hostBridge.getTokenCountAsync?.(text);
+  return typeof value === 'number' && Number.isFinite(value) ? value : Math.ceil(text.length / 3.35);
 }
 
 function stringArg(value: unknown): string {

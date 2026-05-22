@@ -132,6 +132,7 @@ export async function modelLiveCallUnary(
     generationType: input.generationType,
     bias: input.bias,
     tools: input.tools,
+    includeTools: Array.isArray(input.tools) && input.tools.length > 0,
   });
 
   const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, input.secret_ref);
@@ -191,6 +192,7 @@ export function modelLiveCallStream(
     generationType: input.generationType,
     bias: input.bias,
     tools: input.tools,
+    includeTools: Array.isArray(input.tools) && input.tools.length > 0,
   });
 
   const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, input.secret_ref);

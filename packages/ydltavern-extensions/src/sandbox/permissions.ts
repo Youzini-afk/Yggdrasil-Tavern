@@ -11,6 +11,8 @@ export interface SandboxPermissions {
   readonly settings: boolean;
   /** Can call kernel.outbound.* via host bridge (NOT exposed in v0). */
   readonly network: boolean;
+  /** Opt-in for real third-party ST extension loading: ESM, browser stubs, extended ST globals. */
+  readonly realExtensionLoad: boolean;
 }
 
 export const DEFAULT_PERMISSIONS: SandboxPermissions = {
@@ -20,6 +22,7 @@ export const DEFAULT_PERMISSIONS: SandboxPermissions = {
   slashCommands: true,
   settings: true,
   network: false,
+  realExtensionLoad: false,
 };
 
 export function mergeSandboxPermissions(permissions?: Partial<SandboxPermissions>): SandboxPermissions {

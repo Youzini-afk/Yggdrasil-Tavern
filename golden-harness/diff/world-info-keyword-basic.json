@@ -2,8 +2,8 @@
   "harness_version": "1.0",
   "scenario": "world-info/keyword-basic",
   "description": "Basic keyword-triggered world info entry",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": {
     "worldInfoBefore": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
     "worldInfoAfter": "",
@@ -16,32 +16,24 @@
     "scenario": "Basic keyword-triggered world info entry"
   },
   "actual": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "Basic keyword-triggered world info entry"
-  },
-  "delta": [
-    {
-      "path": "$.activatedEntries[0]",
-      "expected": {
+    "activatedEntries": [
+      {
         "uid": 0,
         "content": "The ancient castle stands atop a misty hill, its stone walls covered in ivy."
       }
-    },
-    {
-      "path": "$.worldInfoBefore",
-      "expected": "The ancient castle stands atop a misty hill, its stone walls covered in ivy.",
-      "actual": ""
-    }
-  ],
+    ],
+    "scenario": "Basic keyword-triggered world info entry"
+  },
+  "delta": [],
   "diagnostics": {
     "scanDepth": 2,
-    "scanTextChars": 77,
+    "scanTextChars": 154,
     "iterations": 1,
     "budgetType": "characters",
     "budgetLimit": 25,
-    "usedBudget": 0,
+    "usedBudget": 23,
     "warnings": [],
     "unsupported": [
       "ST token-level budget alignment is approximated, not tokenizer exact.",
@@ -52,9 +44,9 @@
       {
         "entryId": "0",
         "source": "golden-harness",
-        "activated": false,
-        "code": "budget_exceeded",
-        "reason": "budget exceeded",
+        "activated": true,
+        "code": "key_match",
+        "reason": "keys matched",
         "iteration": 0,
         "matchedKeys": [
           "castle"
@@ -62,6 +54,16 @@
         "matchedSecondaryKeys": []
       }
     ],
-    "routingTrace": []
+    "routingTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "position": "before",
+        "bucket": "before",
+        "order": 100,
+        "depth": 4,
+        "inserted": true
+      }
+    ]
   }
 }

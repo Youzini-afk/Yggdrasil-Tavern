@@ -1,32 +1,32 @@
 {
   "total": 20,
-  "perfect": 9,
-  "cosmetic": 3,
-  "structural": 8,
+  "perfect": 16,
+  "cosmetic": 4,
+  "structural": 0,
   "unverifiable": 0,
   "error": 0,
   "by_category": {
     "chat": {
       "total": 4,
       "perfect": 0,
-      "cosmetic": 3,
-      "structural": 1,
+      "cosmetic": 4,
+      "structural": 0,
       "unverifiable": 0,
       "error": 0
     },
     "world-info": {
       "total": 4,
-      "perfect": 0,
+      "perfect": 4,
       "cosmetic": 0,
-      "structural": 4,
+      "structural": 0,
       "unverifiable": 0,
       "error": 0
     },
     "macro": {
       "total": 4,
-      "perfect": 1,
+      "perfect": 4,
       "cosmetic": 0,
-      "structural": 3,
+      "structural": 0,
       "unverifiable": 0,
       "error": 0
     },

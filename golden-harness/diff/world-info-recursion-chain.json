@@ -2,8 +2,8 @@
   "harness_version": "1.0",
   "scenario": "world-info/recursion-chain",
   "description": "World info recursion chain: Entry A triggers Entry B via content match",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": {
     "worldInfoBefore": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
     "worldInfoAfter": "",
@@ -20,39 +20,28 @@
     "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
   },
   "actual": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
-  },
-  "delta": [
-    {
-      "path": "$.activatedEntries[0]",
-      "expected": {
+    "activatedEntries": [
+      {
         "uid": 0,
         "content": "The legendary sword Excalibur glows with magical energy. Mention of Merlin."
-      }
-    },
-    {
-      "path": "$.activatedEntries[1]",
-      "expected": {
+      },
+      {
         "uid": 1,
         "content": "Merlin the wizard watches from the tower. He wields ancient runes."
       }
-    },
-    {
-      "path": "$.worldInfoBefore",
-      "expected": "The legendary sword Excalibur glows with magical energy. Mention of Merlin.\nMerlin the wizard watches from the tower. He wields ancient runes.",
-      "actual": ""
-    }
-  ],
+    ],
+    "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
+  },
+  "delta": [],
   "diagnostics": {
     "scanDepth": 2,
-    "scanTextChars": 38,
-    "iterations": 1,
+    "scanTextChars": 181,
+    "iterations": 3,
     "budgetType": "characters",
     "budgetLimit": 50,
-    "usedBudget": 0,
+    "usedBudget": 43,
     "warnings": [],
     "unsupported": [
       "ST token-level budget alignment is approximated, not tokenizer exact.",
@@ -60,18 +49,6 @@
     ],
     "uninserted": [],
     "activationTrace": [
-      {
-        "entryId": "0",
-        "source": "golden-harness",
-        "activated": false,
-        "code": "budget_exceeded",
-        "reason": "budget exceeded",
-        "iteration": 0,
-        "matchedKeys": [
-          "sword"
-        ],
-        "matchedSecondaryKeys": []
-      },
       {
         "entryId": "1",
         "source": "golden-harness",
@@ -81,8 +58,51 @@
         "iteration": 0,
         "matchedKeys": [],
         "matchedSecondaryKeys": []
+      },
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "activated": true,
+        "code": "key_match",
+        "reason": "keys matched",
+        "iteration": 0,
+        "matchedKeys": [
+          "sword"
+        ],
+        "matchedSecondaryKeys": []
+      },
+      {
+        "entryId": "1",
+        "source": "golden-harness",
+        "activated": true,
+        "code": "key_match",
+        "reason": "keys matched",
+        "iteration": 1,
+        "matchedKeys": [
+          "merlin"
+        ],
+        "matchedSecondaryKeys": []
       }
     ],
-    "routingTrace": []
+    "routingTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "position": "before",
+        "bucket": "before",
+        "order": 100,
+        "depth": 4,
+        "inserted": true
+      },
+      {
+        "entryId": "1",
+        "source": "golden-harness",
+        "position": "before",
+        "bucket": "before",
+        "order": 200,
+        "depth": 4,
+        "inserted": true
+      }
+    ]
   }
 }

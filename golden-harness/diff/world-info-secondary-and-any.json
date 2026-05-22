@@ -2,8 +2,8 @@
   "harness_version": "1.0",
   "scenario": "world-info/secondary-and-any",
   "description": "World info with secondary keywords and AND/ANY logic",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": {
     "worldInfoBefore": "A massive dragon with shimmering scales breathes fire across the valley.",
     "worldInfoAfter": "",
@@ -16,32 +16,24 @@
     "scenario": "World info with secondary keywords and AND/ANY logic"
   },
   "actual": {
-    "worldInfoBefore": "",
+    "worldInfoBefore": "A massive dragon with shimmering scales breathes fire across the valley.",
     "worldInfoAfter": "",
-    "activatedEntries": [],
-    "scenario": "World info with secondary keywords and AND/ANY logic"
-  },
-  "delta": [
-    {
-      "path": "$.activatedEntries[0]",
-      "expected": {
+    "activatedEntries": [
+      {
         "uid": 0,
         "content": "A massive dragon with shimmering scales breathes fire across the valley."
       }
-    },
-    {
-      "path": "$.worldInfoBefore",
-      "expected": "A massive dragon with shimmering scales breathes fire across the valley.",
-      "actual": ""
-    }
-  ],
+    ],
+    "scenario": "World info with secondary keywords and AND/ANY logic"
+  },
+  "delta": [],
   "diagnostics": {
     "scanDepth": 2,
-    "scanTextChars": 71,
+    "scanTextChars": 144,
     "iterations": 1,
     "budgetType": "characters",
     "budgetLimit": 25,
-    "usedBudget": 0,
+    "usedBudget": 22,
     "warnings": [],
     "unsupported": [
       "ST token-level budget alignment is approximated, not tokenizer exact.",
@@ -52,9 +44,9 @@
       {
         "entryId": "0",
         "source": "golden-harness",
-        "activated": false,
-        "code": "budget_exceeded",
-        "reason": "budget exceeded",
+        "activated": true,
+        "code": "key_match",
+        "reason": "keys matched",
         "iteration": 0,
         "matchedKeys": [
           "dragon"
@@ -65,6 +57,16 @@
         ]
       }
     ],
-    "routingTrace": []
+    "routingTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "position": "before",
+        "bucket": "before",
+        "order": 100,
+        "depth": 4,
+        "inserted": true
+      }
+    ]
   }
 }

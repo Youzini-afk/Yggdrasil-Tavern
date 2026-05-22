@@ -2,15 +2,9 @@
   "harness_version": "1.0",
   "scenario": "macro/nested-recursive",
   "description": "Nested and recursive macro substitution",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": "Alice says: Hello! End.",
-  "actual": "Alice says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
-  "delta": [
-    {
-      "path": "$",
-      "expected": "Alice says: Hello! End.",
-      "actual": "Alice says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End."
-    }
-  ]
+  "actual": "Alice says: Hello! End.",
+  "delta": []
 }

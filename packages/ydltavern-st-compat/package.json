@@ -16,6 +16,7 @@
     "test": "npm run build && node --test dist/test/**/*.test.js"
   },
   "dependencies": {
+    "@ydltavern/engine-core": "file:../ydltavern-engine-core",
     "@ydltavern/types": "file:../ydltavern-types"
   },
   "devDependencies": {

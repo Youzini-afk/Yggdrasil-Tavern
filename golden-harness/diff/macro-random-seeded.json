@@ -2,15 +2,9 @@
   "harness_version": "1.0",
   "scenario": "macro/random-seeded",
   "description": "Random macro with seeded RNG for deterministic output",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": "Roll: 1. Pick: apple|banana|cherry. Random: 1-100.",
-  "actual": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}.",
-  "delta": [
-    {
-      "path": "$",
-      "expected": "Roll: 1. Pick: apple|banana|cherry. Random: 1-100.",
-      "actual": "Roll: {{roll:d6}}. Pick: {{pick:apple|banana|cherry}}. Random: {{random:1-100}}."
-    }
-  ]
+  "actual": "Roll: 1. Pick: apple|banana|cherry. Random: 1-100.",
+  "delta": []
 }

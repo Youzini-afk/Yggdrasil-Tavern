@@ -68,6 +68,7 @@ export interface BaseSettings {
   readonly group_names?: readonly string[];
   readonly show_thoughts?: boolean;
   readonly reasoning_effort?: string;
+  readonly tool_calling_enabled?: boolean;
   readonly enable_web_search?: boolean;
   readonly request_images?: boolean;
   readonly request_image_resolution?: string;
@@ -125,6 +126,7 @@ export interface BuildChatRequestInput {
   readonly generationType?: GenerationType;
   readonly bias?: string;
   readonly tools?: readonly Record<string, unknown>[];
+  readonly includeTools?: boolean;
 }
 
 export interface ChatRequestBody {
@@ -224,11 +226,11 @@ export function buildChatRequest(input: BuildChatRequestInput): BuildChatRequest
     body.bias = bias;
   }
 
-  // Tools (default tool_choice='auto' if any). Note: the current golden
-  // harness openai-tools fixture still captures no tools because ST only adds
-  // them via ToolManager.registerFunctionToolsOpenAI (openai.js:2779-2780), not
-  // from the scenario's direct `tools` field. Runtime callers keep passthrough.
-  if (tools && tools.length > 0) {
+  // ST openai.js:2779-2781 only adds tools/tool_choice when
+  // ToolManager.canPerformToolCalls(...) returns true. The golden harness's
+  // synthetic ST environment has no tool registrations, so mirror that gate:
+  // emit tools only when explicitly enabled by the caller/settings.
+  if ((input.includeTools === true || settings.tool_calling_enabled === true) && tools && tools.length > 0) {
     body.tools = tools;
     body.tool_choice = 'auto';
   }

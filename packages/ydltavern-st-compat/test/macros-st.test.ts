@@ -14,7 +14,7 @@ test('legacy {{time_UTC-N}} normalized to {{time::UTCN}}', () => {
   const r = substituteSTMacrosDeep('{{time_UTC-5}}', {
     now: new Date('2026-01-01T12:00:00Z'),
   });
-  assert.equal(r.text, '07:00:00');
+  assert.equal(r.text, '7:00 AM');
 });
 
 test('env macros resolve user, char, description, persona, model', () => {
@@ -44,7 +44,7 @@ test('newline and space macros produce N chars', () => {
 test('time/date/isotime/isodate use UTC', () => {
   const now = new Date('2026-05-22T14:30:45Z');
   const r = substituteSTMacrosDeep('{{date}} {{time}} {{isodate}} {{isotime}}', { now });
-  assert.equal(r.text, '2026-05-22 14:30:45 2026-05-22 14:30:45');
+  assert.equal(r.text, 'May 22, 2026 2:30 PM 2026-05-22 14:30');
 });
 
 test('weekday returns full day name', () => {
@@ -63,8 +63,8 @@ test('time::UTC offset shifts hours', () => {
   const now = new Date('2026-05-22T12:00:00Z');
   const plus3 = substituteSTMacrosDeep('{{time::UTC+3}}', { now });
   const minus5 = substituteSTMacrosDeep('{{time::UTC-5}}', { now });
-  assert.equal(plus3.text, '15:00:00');
-  assert.equal(minus5.text, '07:00:00');
+  assert.equal(plus3.text, '3:00 PM');
+  assert.equal(minus5.text, '7:00 AM');
 });
 
 test('random uses injected RNG and picks from comma list', () => {

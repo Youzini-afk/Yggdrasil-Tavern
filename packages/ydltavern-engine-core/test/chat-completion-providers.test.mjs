@@ -89,11 +89,13 @@ test('buildChatRequest disables tools for o1 and gpt-5-chat-latest', () => {
   const r1 = buildChatRequest(baseInput({
     model: 'o1-mini',
     tools: [{ type: 'function', function: { name: 'f' } }],
+    includeTools: true,
   }));
   assert.equal(r1.body.tools, undefined);
   const r2 = buildChatRequest(baseInput({
     model: 'gpt-5-chat-latest',
     tools: [{ type: 'function', function: { name: 'f' } }],
+    includeTools: true,
   }));
   assert.equal(r2.body.tools, undefined);
 });
@@ -248,11 +250,41 @@ test('buildChatRequest sanitizes openai message names', () => {
   assert.equal(r.body.messages[0].name, 'Alice_Smith_');
 });
 
-test('buildChatRequest tools with default tool_choice=auto', () => {
+test('buildChatRequest does not emit tools by default', () => {
   const r = buildChatRequest(baseInput({
     tools: [{ type: 'function', function: { name: 'f', parameters: {} } }],
   }));
+  assert.equal(r.body.tools, undefined);
+  assert.equal(r.body.tool_choice, undefined);
+});
+
+test('buildChatRequest tools with includeTools=true use default tool_choice=auto', () => {
+  const tools = [{ type: 'function', function: { name: 'f', parameters: {} } }];
+  const r = buildChatRequest(baseInput({
+    tools,
+    includeTools: true,
+  }));
+  assert.deepEqual(r.body.tools, tools);
   assert.equal(r.body.tool_choice, 'auto');
+});
+
+test('buildChatRequest emits tools when settings.tool_calling_enabled=true', () => {
+  const tools = [{ type: 'function', function: { name: 'f', parameters: {} } }];
+  const r = buildChatRequest(baseInput({
+    settings: { ...baseInput().settings, tool_calling_enabled: true },
+    tools,
+  }));
+  assert.deepEqual(r.body.tools, tools);
+  assert.equal(r.body.tool_choice, 'auto');
+});
+
+test('buildChatRequest does not emit empty tools even with includeTools=true', () => {
+  const r = buildChatRequest(baseInput({
+    tools: [],
+    includeTools: true,
+  }));
+  assert.equal(r.body.tools, undefined);
+  assert.equal(r.body.tool_choice, undefined);
 });
 
 test('buildChatRequest workers_ai caps top_k and removes n+logit_bias', () => {

@@ -2,15 +2,9 @@
   "harness_version": "1.0",
   "scenario": "macro/time-frozen",
   "description": "Time and date macros with frozen clock",
-  "classification": "structural",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": "Current time: 12:00 PM. Today is May 29, 2025. ISO date: 2025-05-29. Weekday: Thursday.",
-  "actual": "Current time: 12:00:00. Today is 2025-05-29. ISO date: {{isodate}}. Weekday: {{weekday}}.",
-  "delta": [
-    {
-      "path": "$",
-      "expected": "Current time: 12:00 PM. Today is May 29, 2025. ISO date: 2025-05-29. Weekday: Thursday.",
-      "actual": "Current time: 12:00:00. Today is 2025-05-29. ISO date: {{isodate}}. Weekday: {{weekday}}."
-    }
-  ]
+  "actual": "Current time: 12:00 PM. Today is May 29, 2025. ISO date: 2025-05-29. Weekday: Thursday.",
+  "delta": []
 }

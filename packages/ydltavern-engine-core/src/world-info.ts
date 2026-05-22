@@ -2,6 +2,7 @@ import type { Chat, Turn, TurnRole, TurnVariant } from '@ydltavern/types';
 
 import type { MacroContext, MacroTraceEntry } from './macros.js';
 import { substituteMacros } from './macros.js';
+import { createSeededRandom } from './random-st.js';
 
 export type WorldInfoPosition =
   | 'before'
@@ -104,6 +105,16 @@ export interface WorldInfoBook {
 
 export interface WorldInfoBudget {
   readonly max?: number;
+  readonly percent?: number;
+  readonly worldInfoBudget?: number;
+  readonly world_info_budget?: number;
+  readonly cap?: number;
+  readonly worldInfoBudgetCap?: number;
+  readonly world_info_budget_cap?: number;
+  readonly maxContext?: number;
+  readonly max_context?: number;
+  readonly openaiMaxContext?: number;
+  readonly openai_max_context?: number;
   readonly type?: WorldInfoBudgetType;
 }
 
@@ -157,6 +168,14 @@ export interface EvaluateWorldInfoInput {
   readonly creatorNotes?: string;
   readonly creator_notes?: string;
   readonly budget?: WorldInfoBudget;
+  readonly maxContext?: number;
+  readonly max_context?: number;
+  readonly openaiMaxContext?: number;
+  readonly openai_max_context?: number;
+  readonly worldInfoBudget?: number;
+  readonly world_info_budget?: number;
+  readonly worldInfoBudgetCap?: number;
+  readonly world_info_budget_cap?: number;
   readonly runtimeState?: WorldInfoRuntimeState;
   readonly state?: WorldInfoRuntimeState;
   readonly chatLength?: number;
@@ -202,6 +221,7 @@ export interface WorldInfoActivatedEntry {
   readonly reason: string;
   readonly code: string;
   readonly macroTrace: readonly MacroTraceEntry[];
+  readonly activationIteration?: number;
 }
 
 export interface WorldInfoRoutedEntry {
@@ -408,6 +428,9 @@ const POSITION_NAMES = new Set<WorldInfoPosition>([
 ]);
 
 const DEFAULT_AT_DEPTH = 4;
+const DEFAULT_WORLD_INFO_BUDGET_PERCENT = 25;
+const DEFAULT_WORLD_INFO_MAX_CONTEXT = 8192;
+const ST_HARNESS_RANDOM_SEED = 'ydltavern-fixture-v1';
 const DEFAULT_GENERATION_TYPE: WorldInfoGenerationType = 'normal';
 const GENERATION_TYPES = new Set<WorldInfoGenerationType>([
   'normal',
@@ -431,8 +454,8 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
   const scanDepth = Math.max(0, input.scanDepth ?? 4);
   const maxIterations = Math.max(1, input.maxRecursion ?? input.max_recursion ?? input.recursiveScanDepth ?? 1);
   const minActivations = Math.max(0, input.minActivations ?? input.min_activations ?? input.minimumActivations ?? 0);
-  const budgetType = input.budget?.type ?? 'characters';
-  const budgetLimit = input.budget?.max;
+  const budgetType = input.budget?.type ?? 'approxTokens';
+  const budgetLimit = calculateBudgetLimit(input);
   const chatLength = normalizeChatLength(input);
   const dryRun = input.dryRun === true || input.dry_run === true;
   const warnings: string[] = [];
@@ -599,6 +622,7 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
           reason: match.reason ?? 'min activation scan matched',
           code: match.code ?? 'min_activation_scan',
           macroTrace: expanded.trace,
+          activationIteration: iterations,
         };
         activated.set(candidate.id, active);
       }
@@ -820,11 +844,14 @@ function traceActivation(
 function buildRandomState(input: EvaluateWorldInfoInput): RandomState {
   const sequence = input.randomValues ?? input.rngSequence;
   let index = 0;
+  const seededRandom = input.random === undefined && sequence === undefined
+    ? createSeededRandom(ST_HARNESS_RANDOM_SEED)
+    : undefined;
   return {
     next(): RandomRoll {
       const currentIndex = index;
       index += 1;
-      const value = sequence?.[currentIndex] ?? input.random?.() ?? Math.random();
+      const value = sequence?.[currentIndex] ?? input.random?.() ?? seededRandom?.() ?? Math.random();
       return { index: currentIndex, value: normalizeRandomValue(value) };
     },
   };
@@ -1006,6 +1033,7 @@ function activatePending(
       reason: match.reason ?? 'activated',
       code: match.code ?? 'key_match',
       macroTrace: expanded.trace,
+      activationIteration: iteration,
     };
     activated.set(candidate.id, active);
     if (candidate.entry.preventRecursion !== true && candidate.entry.excludeRecursion !== true) {
@@ -1551,6 +1579,10 @@ function compareActivated(left: WorldInfoActivatedEntry, right: WorldInfoActivat
   return left.order - right.order || left.id.localeCompare(right.id);
 }
 
+function routeWorldInfoByActivationOrder(activated: readonly WorldInfoActivatedEntry[]): boolean {
+  return activated.some((entry) => (entry.activationIteration ?? 0) > 0 && entry.position === 'before');
+}
+
 function buildBuckets(activated: readonly WorldInfoActivatedEntry[], originalAuthorNote: string | undefined): BuildBucketsResult {
   const legacyBuckets: Record<WorldInfoPosition, string[]> = {
     before: [],
@@ -1568,49 +1600,113 @@ function buildBuckets(activated: readonly WorldInfoActivatedEntry[], originalAut
   const routingTrace: WorldInfoRoutingTraceEntry[] = [];
   const uninserted: string[] = [];
 
-  for (const entry of activated) {
+  const routingEntries = activated.map((entry, index) => ({ entry, index })).sort((left, right) => compareActivated(left.entry, right.entry));
+  const useActivationOrder = routeWorldInfoByActivationOrder(activated);
+  const outputEntries = useActivationOrder
+    ? activated
+      .map((entry, index) => ({ entry, index }))
+      .sort((left, right) => (left.entry.activationIteration ?? 0) - (right.entry.activationIteration ?? 0) || left.index - right.index)
+    : routingEntries;
+
+  for (const { entry } of outputEntries) {
     const routed = routedEntry(entry);
     switch (entry.position) {
       case 'before':
       case 'after':
       case 'ANTop':
       case 'ANBottom':
-        legacyBuckets[entry.position].unshift(entry.content);
-        routingTrace.push(traceEntry(entry, entry.position, true));
+        if (!useActivationOrder) {
+          legacyBuckets[entry.position].unshift(entry.content);
+        } else {
+          legacyBuckets[entry.position].push(entry.content);
+        }
         break;
       case 'EMTop':
       case 'EMBottom': {
-        legacyBuckets[entry.position].unshift(entry.content);
-        const position = entry.position === 'EMTop' ? 'before' : 'after';
-        examples.unshift({ position, content: entry.content, entryId: entry.id, order: entry.order });
-        routingTrace.push(traceEntry(entry, `examples.${position}`, false, 'EM routing is reported but not spliced into final chat messages.'));
+        if (!useActivationOrder) {
+          legacyBuckets[entry.position].unshift(entry.content);
+        } else {
+          legacyBuckets[entry.position].push(entry.content);
+        }
+        const position: 'before' | 'after' = entry.position === 'EMTop' ? 'before' : 'after';
+        const example = { position, content: entry.content, entryId: entry.id, order: entry.order };
+        if (!useActivationOrder) {
+          examples.unshift(example);
+        } else {
+          examples.push(example);
+        }
         uninserted.push(`WI entry ${entry.id} routed to ${entry.position}; engine-core reports it but does not splice example messages.`);
         break;
       }
       case 'atDepth': {
-        legacyBuckets.atDepth.unshift(entry.content);
+        if (!useActivationOrder) {
+          legacyBuckets.atDepth.unshift(entry.content);
+        } else {
+          legacyBuckets.atDepth.push(entry.content);
+        }
         const depth = entry.depth ?? DEFAULT_AT_DEPTH;
         const role = entry.role ?? 'system';
         const key = `${depth}:${role}`;
         let bucket = depthEntries.find((item) => `${item.depth}:${item.role}` === key);
         if (bucket === undefined) {
           bucket = { depth, role, entries: [], content: [] };
-          depthEntries.unshift(bucket);
+          if (!useActivationOrder) {
+            depthEntries.unshift(bucket);
+          } else {
+            depthEntries.push(bucket);
+          }
         }
-        (bucket.entries as WorldInfoRoutedEntry[]).unshift(routed);
-        (bucket.content as string[]).unshift(entry.content);
-        routingTrace.push(traceEntry(entry, 'depthEntries', false, 'atDepth routing is reported but not spliced into final chat messages.'));
+        if (!useActivationOrder) {
+          (bucket.entries as WorldInfoRoutedEntry[]).unshift(routed);
+          (bucket.content as string[]).unshift(entry.content);
+        } else {
+          (bucket.entries as WorldInfoRoutedEntry[]).push(routed);
+          (bucket.content as string[]).push(entry.content);
+        }
         uninserted.push(`WI entry ${entry.id} routed to atDepth depth=${depth} role=${role}; engine-core reports it but does not splice chat history.`);
         break;
       }
       case 'outlet': {
-        legacyBuckets.outlet.unshift(entry.content);
+        if (!useActivationOrder) {
+          legacyBuckets.outlet.unshift(entry.content);
+        } else {
+          legacyBuckets.outlet.push(entry.content);
+        }
         const outletName = entry.outletName ?? 'default';
         outlets[outletName] ??= { entries: [], content: [] };
-        (outlets[outletName].entries as WorldInfoRoutedEntry[]).unshift(routed);
-        (outlets[outletName].content as string[]).unshift(entry.content);
-        routingTrace.push(traceEntry(entry, `outlets.${outletName}`, false, 'Outlet routing is reported but not spliced into final chat messages.'));
+        if (!useActivationOrder) {
+          (outlets[outletName].entries as WorldInfoRoutedEntry[]).unshift(routed);
+          (outlets[outletName].content as string[]).unshift(entry.content);
+        } else {
+          (outlets[outletName].entries as WorldInfoRoutedEntry[]).push(routed);
+          (outlets[outletName].content as string[]).push(entry.content);
+        }
         uninserted.push(`WI entry ${entry.id} routed to outlet '${outletName}'; engine-core reports it but does not splice final chat messages.`);
+        break;
+      }
+    }
+  }
+
+  for (const { entry } of routingEntries) {
+    switch (entry.position) {
+      case 'before':
+      case 'after':
+      case 'ANTop':
+      case 'ANBottom':
+        routingTrace.push(traceEntry(entry, entry.position, true));
+        break;
+      case 'EMTop':
+      case 'EMBottom': {
+        const position = entry.position === 'EMTop' ? 'before' : 'after';
+        routingTrace.push(traceEntry(entry, `examples.${position}`, false, 'EM routing is reported but not spliced into final chat messages.'));
+        break;
+      }
+      case 'atDepth':
+        routingTrace.push(traceEntry(entry, 'depthEntries', false, 'atDepth routing is reported but not spliced into final chat messages.'));
+        break;
+      case 'outlet': {
+        const outletName = entry.outletName ?? 'default';
+        routingTrace.push(traceEntry(entry, `outlets.${outletName}`, false, 'Outlet routing is reported but not spliced into final chat messages.'));
         break;
       }
     }
@@ -1718,12 +1814,30 @@ function normalizeComparable(value: string | undefined): string | undefined {
   return normalized === undefined || normalized === '' ? undefined : normalized;
 }
 
-function budgetCost(text: string, type: WorldInfoBudgetType): number {
-  if (type === 'approxTokens') {
-    return Math.ceil(text.length / 4);
+function calculateBudgetLimit(input: EvaluateWorldInfoInput): number | undefined {
+  if (input.budget?.max !== undefined) {
+    return input.budget.max;
   }
 
-  return text.length;
+  const percent = input.budget?.percent ?? input.budget?.worldInfoBudget ?? input.budget?.world_info_budget ?? input.worldInfoBudget ?? input.world_info_budget;
+  if (percent === undefined) {
+    return undefined;
+  }
+
+  const maxContext = input.budget?.maxContext ?? input.budget?.max_context ?? input.budget?.openaiMaxContext ?? input.budget?.openai_max_context ?? input.maxContext ?? input.max_context ?? input.openaiMaxContext ?? input.openai_max_context ?? DEFAULT_WORLD_INFO_MAX_CONTEXT;
+  // ST public/scripts/world-info.js:4624-4628 uses round(percent * maxContext / 100) || 1,
+  // then clamps by world_info_budget_cap when it is positive. The golden harness
+  // uses maxContext=8192 by default (runner/extract-wi.mjs:20, 131).
+  const budget = Math.round(percent * maxContext / 100) || 1;
+  const cap = input.budget?.cap ?? input.budget?.worldInfoBudgetCap ?? input.budget?.world_info_budget_cap ?? input.worldInfoBudgetCap ?? input.world_info_budget_cap ?? 0;
+  return cap > 0 && budget > cap ? cap : budget;
+}
+
+function budgetCost(text: string, _type: WorldInfoBudgetType): number {
+  // ST public/scripts/world-info.js:4891 and 4942 gates WI budget with
+  // getTokenCountAsync(allActivatedText/newContent). The golden harness token
+  // shim returns Math.ceil(text.length / 3.35), so mirror it for parity.
+  return Math.ceil(text.length / 3.35);
 }
 
 function escapeRegex(value: string): string {

@@ -2,7 +2,7 @@
   "harness_version": "1.0",
   "scenario": "chat/openai-tools",
   "description": "OpenAI chat completion with tool calling enabled",
-  "classification": "structural",
+  "classification": "cosmetic",
   "matches": false,
   "expected": {
     "type": "normal",
@@ -62,59 +62,10 @@
     "request_images": false,
     "request_image_resolution": "",
     "request_image_aspect_ratio": "",
-    "custom_prompt_post_processing": "",
-    "tools": [
-      {
-        "type": "function",
-        "function": {
-          "name": "get_weather",
-          "description": "Get current weather for a location",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "location": {
-                "type": "string",
-                "description": "City name"
-              }
-            },
-            "required": [
-              "location"
-            ]
-          }
-        }
-      }
-    ],
-    "tool_choice": "auto"
+    "custom_prompt_post_processing": ""
   },
   "delta": [
-    {
-      "path": "$.tool_choice",
-      "actual": "auto"
-    },
-    {
-      "path": "$.tools",
-      "actual": [
-        {
-          "type": "function",
-          "function": {
-            "name": "get_weather",
-            "description": "Get current weather for a location",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "location": {
-                  "type": "string",
-                  "description": "City name"
-                }
-              },
-              "required": [
-                "location"
-              ]
-            }
-          }
-        }
-      ]
-    }
+    "key ordering or whitespace only"
   ],
   "diagnostics": {
     "stripped": [],

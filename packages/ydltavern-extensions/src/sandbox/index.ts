@@ -7,3 +7,5 @@ export type { SandboxPermissions } from './permissions.js';
 export { loadExtensionInSandbox } from './loader.js';
 export type { LoadExtensionInput, LoadedExtension } from './loader.js';
 export type { AuditEntry as SandboxAuditEntry } from './audit.js';
+export { installBrowserStubs } from './browser-stubs.js';
+export type { BrowserStubsOptions } from './browser-stubs.js';

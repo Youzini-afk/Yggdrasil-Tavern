@@ -26,6 +26,71 @@ test('world info probability passes and fails with deterministic random values',
   );
 });
 
+test('world info budgetCost uses ST harness char/3.35 token approximation', () => {
+  const content = 'The ancient castle stands atop a misty hill, its stone walls covered in ivy.';
+  const result = evaluateWorldInfo({
+    chat: chatWithText('castle'),
+    budget: { max: 25, type: 'characters' },
+    book: { entries: [entry('castle', 'castle', content)] },
+  });
+
+  assert.deepEqual(result.activated.map((item) => item.id), ['castle']);
+  assert.equal(result.diagnostics.usedBudget, Math.ceil(content.length / 3.35));
+  assert.equal(result.diagnostics.budgetType, 'characters');
+});
+
+test('world info respects ST budget cap formula maxContext * budget% / 100', () => {
+  const result = evaluateWorldInfo({
+    chat: chatWithText('castle'),
+    maxContext: 101,
+    worldInfoBudget: 25,
+    book: { entries: [entry('castle', 'castle', '12345678901234567890123456')] },
+  });
+
+  assert.equal(result.diagnostics.budgetLimit, Math.round(25 * 101 / 100));
+  assert.deepEqual(result.activated.map((item) => item.id), ['castle']);
+});
+
+test('world info activates entries when within token-approximated budget', () => {
+  const content = '12345678901234567890';
+  const result = evaluateWorldInfo({
+    chat: chatWithText('rune'),
+    budget: { max: 6, type: 'characters' },
+    book: { entries: [entry('within', 'rune', content)] },
+  });
+
+  assert.equal(Math.ceil(content.length / 3.35), 6);
+  assert.deepEqual(result.activated.map((item) => item.id), ['within']);
+  assert.equal(result.diagnostics.usedBudget, 6);
+});
+
+test('world info blocks entries when token-approximated budget is exceeded', () => {
+  const content = '123456789012345678901';
+  const result = evaluateWorldInfo({
+    chat: chatWithText('rune'),
+    budget: { max: 6, type: 'characters' },
+    book: { entries: [entry('overflow', 'rune', content)] },
+  });
+
+  assert.equal(Math.ceil(content.length / 3.35), 7);
+  assert.deepEqual(result.activated, []);
+  assert.equal(result.skipped.find((item) => item.id === 'overflow')?.code, 'budget_exceeded');
+  assert.equal(result.diagnostics.usedBudget, 0);
+});
+
+test('world info probability defaults to seedrandom ydltavern-fixture-v1 sequence', () => {
+  const result = evaluateWorldInfo({
+    chat: chatWithText('potion'),
+    book: { entries: [entry('potion', 'potion', 'seeded probability lore', { useProbability: true, probability: 50 })] },
+  });
+
+  assert.deepEqual(result.activated.map((item) => item.id), ['potion']);
+  const roll = result.diagnostics.activationTrace.find((item) => item.code === 'probability_roll');
+  assert.equal(roll.randomIndex, 0);
+  assert.equal(roll.randomValue, 0.38335875126763275);
+  assert.equal(roll.roll, 38.33587512676328);
+});
+
 test('world info groupOverride selects highest order entry in group', () => {
   const result = evaluateWorldInfo({
     chat: chatWithText('dragon'),
