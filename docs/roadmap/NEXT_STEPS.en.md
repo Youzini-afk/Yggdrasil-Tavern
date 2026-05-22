@@ -2,7 +2,17 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 4 U-track is complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, conditional chat tools emission, World Info budget/probability alignment, macro-engine deep implementation migration, and durable doc updates have landed. This file no longer carries U1-U6 temporary tasks; it records forward-looking work only.
+Round 4 U-track and Round 5 V-track are complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, conditional chat tools emission, World Info budget/probability alignment, macro-engine deep implementation migration, SillyTavern UI parity shell, 9 drawers, ST theme JSON import/export, mobile responsive layout, and durable doc updates have landed. This file no longer carries U1-U6 or V1-V7 temporary tasks; it records forward-looking work only.
+
+## Surface UI follow-up
+
+- **Wire V5 form change handlers**: connect every drawer form handler marked TODO V7 in V5 to `TavernProvider`, instead of updating only local UI or stubs.
+- **SamplerForm → TavernProvider**: write sampler matrix, preset, banned tokens, logit bias, streaming, and related change events into unified settings state.
+- **ConnectionForm / PersonaForm → TavernProvider**: connect provider profiles, status, persona list, persona edit form, and toggles to provider state.
+- **Drawers → live Yggdrasil capabilities**: read the World Info list from `kernel.surface.contribution.list` / future worldbook capabilities; connect the character list to importers; connect extensions, backgrounds, and API profiles to real host data.
+- **clients/web end-to-end hosting**: mount all 9 surface contributions in a real Yggdrasil `clients/web` host, covering iframe SurfaceHost, manifest discovery, slot routing, and drawer-specific entries.
+- **Visual regression testing**: add screenshot baselines for ST classic themes, 9 drawers, message bubble, composer, and mobile breakpoints.
+- **Real font loading**: Noto Sans currently relies on system fonts / host preloading; define an explicit host-level font-loading or bundling strategy.
 
 ## Real extension loading follow-up
 

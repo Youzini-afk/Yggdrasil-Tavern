@@ -24,7 +24,7 @@ Implementation status:
 - `partial-sandboxed` — execution works inside a constrained sandbox; DOM/network/etc. remain incomplete
 - `partial-opt-in` — a real path exists only when the host/profile/env explicitly enable it
 
-Current stage: deep-port complete, with Round 3 T-track tightening and Round 4 U-track closure complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors.
+Current stage: deep-port complete, with Round 3 T-track tightening, Round 4 U-track closure, and Round 5 V-track UI parity complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors.
 
 ## Round 3 T-track summary (May 2026)
 
@@ -48,6 +48,18 @@ After U1-U5 and the U6 documentation pass:
 - Macro scenarios: 4/4 byte-perfect after moving the deep ST-compatible macro implementation into engine-core and making st-compat re-export it.
 - Instruct scenarios: 2/2 byte-perfect; tokenizer scenarios: 6/6 byte-perfect self-baseline.
 - Real extension loading: the QuickJS sandbox can load ESM-shaped extensions with relative imports, virtual ST host module mappings, audited browser stubs, and the `realExtensionLoad` permission gate. Synthetic micro-BME is always-on in tests; real BME is opt-in via `YGG_BME_TEST_PATH` and still stops before full functional boot on unsupported import/stub paths.
+
+## Round 5 V-track summary (May 2026)
+
+After V1-V7 UI parity work:
+
+- UI parity: 9/9 ST drawers are represented in the React shell (AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, Persona, Characters).
+- Visual tokens: ST-aligned with 29 new scoped `--tavern-*` variables and scoped text-shadow under `.tavern-themed-root`.
+- Themes: 3 ST classic presets are available (Dark V 1.0, Azure, Celestial Macaron), alongside 3 YdlTavern native themes.
+- Theme system: ST flat JSON import/export is implemented through `st-theme-importer.ts`.
+- Message bubble: ST `.mes` DOM structure parity for avatar, IDs, timers, token counter, name/timestamp, buttons, swipe controls, reasoning, media, and bias blocks.
+- Mobile: 1000px primary and 768px secondary breakpoints; drawers become full-screen sheets with larger touch targets, safe-area spacing, reduced-motion, and forced-colors handling.
+- Surface manifest: `manifest.yaml` and `surface.manifest.json` now expose 9 contributions (3 original + 6 drawer-specific entries).
 
 ## Overview
 
@@ -73,12 +85,21 @@ After U1-U5 and the U6 documentation pass:
 | built-in extensions | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | extension JS execution | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in; synthetic micro-BME is always-on, real BME is opt-in via `YGG_BME_TEST_PATH` | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | real model calls | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`; `model.live_realtime` bridge to `kernel.outbound.websocket.*` (OpenAI Realtime real; Gemini Live best-effort stub); requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| Product UI | qualitative | product shell with virtualized chat list, themes, settings tabs, extension drawer, quick reply, mobile responsive | partial-shell-with-virtualization-and-themes | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout | implemented for Round 5 V-track UI parity scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | group chat rotation strategies | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Quick reply schema fields | recorded | importer + extension wrapper subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
-| theme schema | recorded | importer + product surface settings slot subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| theme schema | recorded | ST flat JSON importer/exporter + 3 ST classic presets + 3 native themes | implemented for UI theme import/export scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+
+## UI parity rows (Round 5 V-track)
+
+| UI domain | ST target | YdlTavern coverage | Status |
+|---|---|---|---|
+| Theme system | ST flat theme JSON + SmartTheme-style values | `importSTTheme` / `exportSTTheme` flat JSON round-trip; 29 `--tavern-*` tokens; Dark V 1.0 / Azure / Celestial Macaron | implemented |
+| Settings panel / drawers | 9 ST top-drawer entries | TopBar + DrawerShell + 9 drawers; 8 on the left, Characters on the right; `useDrawers` mutual exclusion | implemented |
+| Mobile responsive | ST 1000px mobile breakpoint + 768px tighter breakpoint | `mobile.css`: 1000px primary, 768px secondary, full-screen sheets, touch targets, safe-area, iOS 16px textarea | implemented |
+| Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper mirror `.mes` structure | implemented |
 
 The numbers are approximate. The inventory files and `@ydltavern/types` constants are the source of truth. `stubbed` means the API surface exists but behavior is not fully aligned; `partial` means tested code paths exist but no byte-level compatibility is claimed yet.
 

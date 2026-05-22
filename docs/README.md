@@ -26,6 +26,7 @@
 - [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) —— 通过 Yggdrasil outbound executor 发起 opt-in 真实模型调用
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) —— 通过 Yggdrasil WebSocket outbound 使用 OpenAI Realtime / Gemini Live stub
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) —— 在 QuickJS sandbox 中 opt-in 加载真实 SillyTavern ESM 扩展
+- [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) —— SillyTavern UI/layout fork、9 抽屉、主题、消息、composer 与移动端 parity
 
 ## ST 源码 inventory（机械扫描，ground truth）
 
@@ -62,5 +63,6 @@
 | 配置真实模型调用 | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) |
 | 配置 Realtime WebSocket 模型 | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) |
 | 加载真实 ST 扩展 | [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) |
+| 理解 UI fork / ST parity | [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) |
 | 找 ST 源码里某个 API/事件/命令 | 对应的 `inventory/*.raw.md` |
 | 看某条轨道做什么 | [`tracks/README.md`](tracks/README.md) → 具体轨道文档 |

@@ -24,7 +24,7 @@
 - `partial-sandboxed` —— 能在受限 sandbox 中执行，DOM/网络等能力仍不完整
 - `partial-opt-in` —— 需要 host/profile/env 显式启用的真实路径
 
-当前阶段：深度移植完成，Round 3 T-track tightening 与 Round 4 U-track closure 已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：16 perfect、4 cosmetic、0 structural、0 unverifiable、0 error。
+当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure 与 Round 5 V-track UI parity 已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：16 perfect、4 cosmetic、0 structural、0 unverifiable、0 error。
 
 ## Round 3 T-track summary (May 2026)
 
@@ -48,6 +48,18 @@ After U1-U5 and the U6 documentation pass:
 - Macro scenarios: 4/4 byte-perfect after moving the deep ST-compatible macro implementation into engine-core and making st-compat re-export it.
 - Instruct scenarios: 2/2 byte-perfect; tokenizer scenarios: 6/6 byte-perfect self-baseline.
 - Real extension loading: QuickJS sandbox can load ESM-shaped extensions with relative imports, virtual ST host module mappings, audited browser stubs, and the `realExtensionLoad` permission gate. Synthetic micro-BME is always-on in tests; real BME is opt-in via `YGG_BME_TEST_PATH` and still stops before full functional boot on unsupported import/stub paths.
+
+## Round 5 V-track summary (May 2026)
+
+After V1-V7 UI parity work:
+
+- UI parity: 9/9 ST drawers represented in the React shell (AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, Persona, Characters).
+- Visual tokens: ST-aligned with 29 new scoped `--tavern-*` variables and scoped text-shadow under `.tavern-themed-root`.
+- Themes: 3 ST classic presets available (Dark V 1.0, Azure, Celestial Macaron), alongside 3 YdlTavern native themes.
+- Theme system: ST flat JSON import/export is implemented through `st-theme-importer.ts`.
+- Message bubble: ST `.mes` DOM structure parity for avatar, IDs, timers, token counter, name/timestamp, buttons, swipe controls, reasoning, media, and bias blocks.
+- Mobile: 1000px primary and 768px secondary breakpoints; drawers become full-screen sheets with larger touch targets, safe-area spacing, reduced-motion, and forced-colors handling.
+- Surface manifest: `manifest.yaml` and `surface.manifest.json` now expose 9 contributions (3 original + 6 drawer-specific entries).
 
 ## 总览
 
@@ -73,12 +85,21 @@ After U1-U5 and the U6 documentation pass:
 | 内置扩展 | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | 扩展 JS 执行 | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in；synthetic micro-BME always-on，real BME via `YGG_BME_TEST_PATH` opt-in | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | 真实模型调用 | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`；`model.live_realtime` bridge to `kernel.outbound.websocket.*`（OpenAI Realtime real；Gemini Live best-effort stub）；requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| Product UI | qualitative | product shell with virtualized chat list, themes, settings tabs, extension drawer, quick reply, mobile responsive | partial-shell-with-virtualization-and-themes | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout | implemented for Round 5 V-track UI parity scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | 群聊轮换策略 | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Quick reply schema 字段 | 已记录 | importer + extension wrapper subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | F |
-| 主题 schema | 已记录 | importer + product surface settings slot subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| 主题 schema | 已记录 | ST flat JSON importer/exporter + 3 ST classic presets + 3 native themes | implemented for UI theme import/export scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+
+## UI parity rows（Round 5 V-track）
+
+| UI 域 | ST 目标 | YdlTavern 覆盖 | 状态 |
+|---|---|---|---|
+| Theme system | ST flat theme JSON + SmartTheme-style values | `importSTTheme` / `exportSTTheme` flat JSON round-trip；29 个 `--tavern-*` token；Dark V 1.0 / Azure / Celestial Macaron | implemented |
+| Settings panel / drawers | 9 个 ST 顶部抽屉入口 | TopBar + DrawerShell + 9 drawers；左侧 8 个，右侧 Characters；`useDrawers` mutual exclusion | implemented |
+| Mobile responsive | ST 1000px mobile breakpoint + 768px tighter breakpoint | `mobile.css`：1000px primary、768px secondary、full-screen sheets、touch target、safe-area、iOS 16px textarea | implemented |
+| Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper 复刻 `.mes` 结构 | implemented |
 
 数字大致计数。准确数字以 inventory 和 `@ydltavern/types` 常量为准。`stubbed` 表示 API 表面存在但行为未完整对齐；`partial` 表示已有可测试代码路径但还没宣称字节级兼容。
 

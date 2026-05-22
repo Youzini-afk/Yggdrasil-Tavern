@@ -110,7 +110,25 @@ The World Info pipeline continues to target ST `checkWorldInfo` behavior. After 
 
 YdlTavern provides its own Tavern UI: chat, message rendering, world books, presets, extension management, and settings panels. These live in `@ydltavern/surface`, not `clients/desktop` or a standalone SPA. Yggdrasil only places the surfaces inside platform containers such as Home / Play / Forge / Assistant. The current surface has moved from diagnostics to a product UI skeleton: `react-virtuoso` virtualized chat list, dark/light/parchment theme system, Connection/Sampler/Persona/Theme settings tabs, ExtensionsDrawer driven by loader-st state, QuickReplyBar, and mobile responsive layout.
 
-Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/manifest.yaml` is the Yggdrasil package manifest consumed by the host and exposed through `kernel.surface.contribution.list` for `ydltavern/play`, `ydltavern/settings`, and `ydltavern/extensions`; `packages/ydltavern-surface/surface.manifest.json` is the React bundle descriptor with framework hints such as export name, wrapper class, fonts, fixtures, and sample props for SurfaceHost when mounting the React bundle.
+Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/manifest.yaml` is the Yggdrasil package manifest consumed by the host and exposed through `kernel.surface.contribution.list` for 9 contributions (`ydltavern/play`, `ydltavern/settings`, `ydltavern/extensions`, plus 6 drawer-specific entries); `packages/ydltavern-surface/surface.manifest.json` is the React bundle descriptor with framework hints such as export name, wrapper class, fonts, fixtures, and sample props for SurfaceHost when mounting the React bundle.
+
+#### Shell architecture
+
+After Round 5 V-track, `packages/ydltavern-surface/src/components/shell/` uses a SillyTavern-like shell: `TopBar` provides 9 Font Awesome icon entries, `DrawerShell` owns the shared drawer container and backdrop click-to-close, `Sheld` is the centered 50vw main chat column, and the `drawer-rail` layout owns the left/right drawer placement. The left side contains AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, and Persona; the right side contains Characters.
+
+Drawer state is maintained by the `useDrawers` hook: a single `openId` enforces mutual exclusion, clicking the already-open icon closes it, and clicking the backdrop clears open state. Yggdrasil `clients/web` / Desktop / App still own iframe `SurfaceHost`, navigation, permissions, installation, and platform lifecycle; `@ydltavern/surface` is a React component library, not a standalone app or platform shell.
+
+#### Visual design system
+
+`src/styles/surface.css` defines the scoped visual system. Round 5 added 29 ST-aligned `--tavern-*` tokens covering background, text, accents, chat tint, message tint, shadow, border, font scale, animation, Sheld width, avatars, and icon sizing. The ST theme JSON importer/exporter lives in `src/components/product/themes/st-theme-importer.ts` and converts between ST flat JSON and YdlTavern `TavernTheme`.
+
+There are 6 built-in themes: 3 YdlTavern native themes (dark, light, parchment) and 3 ST classic themes (Dark V 1.0, Azure, Celestial Macaron). Global text-shadow is enabled only under `.tavern-themed-root`, avoiding leakage into the Yggdrasil host page.
+
+#### Mobile responsive
+
+Mobile overrides live in `src/styles/mobile.css`, imported by `surface.css` through `@import`. It uses a 1000px primary breakpoint (matching ST `mobile-styles.css`) and a 768px secondary breakpoint for narrower portrait phones. Below 1000px, drawers become full-screen sheets, the top bar scrolls horizontally, drag/pin handles are hidden, and drawer icons, message buttons, and composer buttons get larger touch targets.
+
+Mobile styling also handles `env(safe-area-inset-bottom)`, and `send_textarea` uses 16px to avoid iOS focus zoom. `prefers-reduced-motion: reduce` disables transitions / animations, while `forced-colors: active` adds explicit borders / outlines.
 
 ### Golden harness
 

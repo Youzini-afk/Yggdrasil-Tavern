@@ -79,6 +79,96 @@
       ],
       "consumes": [],
       "produces": []
+    },
+    {
+      "id": "ydltavern/character",
+      "title": "Tavern · Characters",
+      "description": "Character library surface mirroring the Characters drawer: search, group-chat hint, create/import/edit/duplicate/export/delete affordances.",
+      "status": "surface-slot",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernCharactersSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/world-info",
+      "title": "Tavern · World Info",
+      "description": "World book surface mirroring the World Info drawer: book list, entry editor, and activation diagnostics.",
+      "status": "surface-slot",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernWorldInfoSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/persona",
+      "title": "Tavern · Persona",
+      "description": "Persona surface mirroring the Persona drawer: multi-persona list, edit form, and settings toggles.",
+      "status": "surface-slot",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernPersonaSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/ai-response-config",
+      "title": "Tavern · AI Response Configuration",
+      "description": "Sampler and generation configuration surface mirroring the AI Config drawer: presets, sampler matrix, banned tokens, logit bias, and streaming controls.",
+      "status": "surface-slot",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernAIResponseConfigSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/user-settings",
+      "title": "Tavern · User Settings",
+      "description": "User preference surface mirroring the User Settings drawer: theme picker, UI preferences, font scale, chat width, and persisted settings.",
+      "status": "surface-slot",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernUserSettingsSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
+    },
+    {
+      "id": "ydltavern/backgrounds",
+      "title": "Tavern · Backgrounds",
+      "description": "Background browser surface mirroring the Backgrounds drawer: image browser, folders, search, fit mode, and auto-select controls.",
+      "status": "surface-slot",
+      "entry": {
+        "module": "@ydltavern/surface",
+        "export": "TavernBackgroundsSurface"
+      },
+      "props": [
+        { "name": "className", "type": "string", "required": false }
+      ],
+      "consumes": [],
+      "produces": []
     }
   ],
   "fixtures": [

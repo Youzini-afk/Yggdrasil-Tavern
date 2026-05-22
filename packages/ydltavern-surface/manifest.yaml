@@ -62,3 +62,99 @@ contributes:
         format: esm
         export_name: TavernExtensionsSurface
         wrapper_class: ydltavern-surface
+    - id: ydltavern/character
+      version: 0.1.0
+      slot: experience_entry
+      title: "YdlTavern Characters"
+      description: "Character library surface mirroring the Characters drawer"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernCharactersSurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/world-info
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern World Info"
+      description: "World book management surface mirroring the World Info drawer"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernWorldInfoSurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/persona
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern Persona"
+      description: "Persona management surface mirroring the Persona drawer"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernPersonaSurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/ai-response-config
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern AI Response Configuration"
+      description: "Sampler and generation configuration surface mirroring the AI Config drawer"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernAIResponseConfigSurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/user-settings
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern User Settings"
+      description: "User preferences surface mirroring the User Settings drawer"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernUserSettingsSurface
+        wrapper_class: ydltavern-surface
+    - id: ydltavern/backgrounds
+      version: 0.1.0
+      slot: forge_panel
+      title: "YdlTavern Backgrounds"
+      description: "Background browser surface mirroring the Backgrounds drawer"
+      activation:
+        launch_capability_id: null
+        session_template: null
+        input_schema: {}
+      required_permissions: []
+      metadata:
+        framework: react
+        bundle: dist/index.js
+        format: esm
+        export_name: TavernBackgroundsSurface
+        wrapper_class: ydltavern-surface

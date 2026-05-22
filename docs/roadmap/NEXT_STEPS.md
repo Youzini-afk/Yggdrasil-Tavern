@@ -2,7 +2,17 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 4 U-track 已完成：sandbox ESM loader、browser stubs、extended ST API bridge、BME smoke、chat tools 条件发出、World Info 预算/概率对齐、macro engine 深实现迁移，以及 durable docs 更新均已落地。这里不再保留 U1-U6 临时任务，只记录后续方向。
+Round 4 U-track 与 Round 5 V-track 已完成：sandbox ESM loader、browser stubs、extended ST API bridge、BME smoke、chat tools 条件发出、World Info 预算/概率对齐、macro engine 深实现迁移、SillyTavern UI parity shell、9 抽屉、ST theme JSON import/export、移动端响应式，以及 durable docs 更新均已落地。这里不再保留 U1-U6 或 V1-V7 临时任务，只记录后续方向。
+
+## Surface UI 后续
+
+- **接通 V5 表单 change handlers**：把 V5 中标记 TODO V7 的 drawer form handlers 全部接到 `TavernProvider`，避免只更新局部 UI 或 stub。
+- **SamplerForm → TavernProvider**：sampler matrix、preset、banned tokens、logit bias、streaming 等 change events 写入统一 settings state。
+- **ConnectionForm / PersonaForm → TavernProvider**：provider profile、status、persona list、persona edit form 与 toggles 接入 provider state。
+- **Drawers → live Yggdrasil capabilities**：World Info list 从 `kernel.surface.contribution.list` / 未来 worldbook capability 读取；character list 接入 importers；extensions、backgrounds、API profiles 接真实 host 数据。
+- **clients/web 端到端 hosting**：用真实 Yggdrasil `clients/web` 挂载全部 9 个 surface contributions，覆盖 iframe SurfaceHost、manifest discovery、slot routing 和 drawer-specific entry。
+- **Visual regression testing**：为 ST classic themes、9 drawers、message bubble、composer、mobile breakpoints 建 screenshot baseline。
+- **真实 font loading**：当前 Noto Sans 依赖系统字体 / host 预加载；需要明确 host-level font loading 或 bundle 策略。
 
 ## Real extension loading 后续
 
