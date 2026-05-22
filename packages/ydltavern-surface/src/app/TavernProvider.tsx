@@ -1,7 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Chat } from '@ydltavern/types';
 import { createSTContext, createTurnStore, type STContextRuntime } from '@ydltavern/st-compat';
+import { type STExtensionRecord, type STActivationContext } from '@ydltavern/extensions';
 import { sampleChat } from '../fixtures/sample-chat.js';
+import { DARK_THEME, getThemeById } from '../components/product/themes/built-in-themes.js';
+import type { TavernTheme, TavernThemeSettings } from '../components/product/themes/theme-types.js';
 
 export type TavernDrawer = 'settings' | 'assets' | 'extensions' | 'dev';
 
@@ -18,20 +21,78 @@ export interface TavernRuntimeState {
   readonly editFirstMessage: () => void;
   readonly swipeReply: () => void;
   readonly regenerateReply: () => void;
+
+  // Theme system
+  readonly theme: TavernTheme;
+  readonly themeSettings: TavernThemeSettings;
+  readonly setThemeSettings: (settings: TavernThemeSettings) => void;
+
+  // Mobile drawer state
+  readonly mobileDrawerOpen: boolean;
+  readonly setMobileDrawerOpen: (open: boolean) => void;
+
+  // Extension data
+  readonly extensionRecords: readonly STExtensionRecord[];
+  readonly extensionActivationContext: STActivationContext | undefined;
 }
 
 export interface TavernProviderProps {
   readonly chat?: Chat;
   readonly showDiagnostics?: boolean;
   readonly children: ReactNode;
+  readonly extensionRecords?: readonly STExtensionRecord[];
+  readonly extensionActivationContext?: STActivationContext;
 }
 
 const TavernContext = createContext<TavernRuntimeState | undefined>(undefined);
 
-export function TavernProvider({ chat = sampleChat, showDiagnostics = true, children }: TavernProviderProps): JSX.Element {
+/** Read TavernThemeSettings from localStorage */
+function readThemeSettings(): TavernThemeSettings {
+  try {
+    const raw = localStorage.getItem('ydltavern.themeSettings');
+    if (raw) {
+      const parsed = JSON.parse(raw) as TavernThemeSettings;
+      return parsed;
+    }
+  } catch { /* ignore */ }
+  return {
+    themeId: DARK_THEME.name,
+    density: DARK_THEME.density,
+    fontFamily: DARK_THEME.font.family,
+  };
+}
+
+function writeThemeSettings(settings: TavernThemeSettings): void {
+  try { localStorage.setItem('ydltavern.themeSettings', JSON.stringify(settings)); } catch { /* ignore */ }
+}
+
+export function TavernProvider({
+  chat = sampleChat,
+  showDiagnostics = true,
+  children,
+  extensionRecords = [],
+  extensionActivationContext,
+}: TavernProviderProps): JSX.Element {
   const [revision, setRevision] = useState(0);
   const [input, setInput] = useState('');
   const [activeDrawer, setActiveDrawer] = useState<TavernDrawer>('settings');
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [themeSettings, setThemeSettingsState] = useState<TavernThemeSettings>(readThemeSettings);
+
+  // Recompute TavernTheme when settings change
+  const theme = useMemo(() => {
+    const base = getThemeById(themeSettings.themeId);
+    return {
+      ...base,
+      font: { ...base.font, family: themeSettings.fontFamily },
+      density: themeSettings.density,
+    } as TavernTheme;
+  }, [themeSettings]);
+
+  const setThemeSettings = useCallback((settings: TavernThemeSettings) => {
+    setThemeSettingsState(settings);
+    writeThemeSettings(settings);
+  }, []);
 
   const { runtime, ownStore } = useMemo(() => {
     const store = createTurnStore(chat);
@@ -93,7 +154,29 @@ export function TavernProvider({ chat = sampleChat, showDiagnostics = true, chil
   }, [ctx, ownStore]);
 
   return (
-    <TavernContext.Provider value={{ runtime, liveChat, input, activeDrawer, showDiagnostics, setInput, setActiveDrawer, sendMessage, generateReply, editFirstMessage, swipeReply, regenerateReply }}>
+    <TavernContext.Provider
+      value={{
+        runtime,
+        liveChat,
+        input,
+        activeDrawer,
+        showDiagnostics,
+        setInput,
+        setActiveDrawer,
+        sendMessage,
+        generateReply,
+        editFirstMessage,
+        swipeReply,
+        regenerateReply,
+        theme,
+        themeSettings,
+        setThemeSettings,
+        mobileDrawerOpen,
+        setMobileDrawerOpen,
+        extensionRecords,
+        extensionActivationContext,
+      }}
+    >
       {children}
     </TavernContext.Provider>
   );

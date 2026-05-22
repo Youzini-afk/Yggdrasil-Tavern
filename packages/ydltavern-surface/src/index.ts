@@ -14,6 +14,7 @@
 export { TavernProvider, useTavern } from './app/TavernProvider.js';
 export type { TavernDrawer, TavernProviderProps, TavernRuntimeState } from './app/TavernProvider.js';
 export { TavernShell } from './app/TavernShell.js';
+export { ChatList } from './components/product/ChatList.js';
 export { MessageList } from './components/product/MessageList.js';
 export { MessageComposer } from './components/product/MessageComposer.js';
 export { GenerationControls } from './components/product/GenerationControls.js';
@@ -22,6 +23,24 @@ export { SettingsPanel } from './components/product/SettingsPanel.js';
 export { AssetsPanel } from './components/product/AssetsPanel.js';
 export { ExtensionsPanel } from './components/product/ExtensionsPanel.js';
 export { DevDiagnosticsPanel } from './components/product/DevDiagnosticsPanel.js';
+export { QuickReplyBar } from './components/product/QuickReplyBar.js';
+export type { QuickReplyBarProps } from './components/product/QuickReplyBar.js';
+export { ThemedRoot } from './components/product/themes/ThemedRoot.js';
+export type { ThemedRootProps } from './components/product/themes/ThemedRoot.js';
+export { BUILT_IN_THEMES, getThemeById } from './components/product/themes/built-in-themes.js';
+export type { TavernTheme, TavernThemeSettings, ThemeDensity } from './components/product/themes/theme-types.js';
+export {
+  ConnectionForm,
+  SamplerForm,
+  PersonaForm,
+  ThemeForm,
+} from './components/product/Settings/index.js';
+export type {
+  ConnectionSettings,
+  SamplerSettings,
+  PersonaSettings,
+  TavernThemeSettings as ThemeSettings,
+} from './components/product/Settings/index.js';
 
 export { PromptManagerInspector } from './components/product/PromptManagerInspector.js';
 export type { PromptManagerInspectorProps } from './components/product/PromptManagerInspector.js';

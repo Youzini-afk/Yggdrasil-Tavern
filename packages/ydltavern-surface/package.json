@@ -35,7 +35,9 @@
     "@ydltavern/engine-core": "file:../ydltavern-engine-core",
     "@ydltavern/importers": "file:../ydltavern-importers",
     "@ydltavern/st-compat": "file:../ydltavern-st-compat",
-    "@ydltavern/types": "file:../ydltavern-types"
+    "@ydltavern/types": "file:../ydltavern-types",
+    "@ydltavern/extensions": "file:../ydltavern-extensions",
+    "react-virtuoso": "^4.10.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.23",

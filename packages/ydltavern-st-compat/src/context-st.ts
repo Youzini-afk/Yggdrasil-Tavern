@@ -14,6 +14,10 @@
 import type { Chat, STChatMessage } from '@ydltavern/types';
 import { ST_EVENT_TYPES } from '@ydltavern/types/st';
 import type { STEventSource } from './events.js';
+import { SlashCommandRegistry, type ExecuteSlashCommandsDeepResult } from './stscript-st.js';
+import { registerBatchA } from './slash-commands-batch-a.js';
+import { registerBatchB } from './slash-commands-batch-b.js';
+import { registerBatchG } from './slash-commands-batch-g.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -241,6 +245,13 @@ export interface STContextHostBridge {
   name1: string;
   name2: string;
   mainApi: string;
+  model?: string;
+  tokenizerId?: string;
+  temporaryChat?: boolean;
+  generationStopped?: boolean;
+  continuationRequested?: boolean;
+  regenerationRequested?: boolean;
+  swipeRequested?: 'left' | 'right';
   onlineStatus: string;
   maxContext: number;
   chatMetadata: Record<string, unknown>;
@@ -301,6 +312,7 @@ export interface STContextDeep extends STContextHostBridge {
   // Deprecated stubs
   registerHelper?: () => void;
   executeSlashCommands?: (text: string) => Promise<unknown>;
+  slashCommandRegistry: SlashCommandRegistry;
   getTokenCount?: (text: string) => number;
   renderExtensionTemplate?: (...args: unknown[]) => string;
   renderExtensionTemplateAsync?: (...args: unknown[]) => Promise<string>;
@@ -336,6 +348,7 @@ export function createSTContextDeep(options: CreateSTContextDeepOptions): STCont
   };
 
   const toolManager = options.hostBridge?.toolManager ?? createToolManager();
+  const slashCommandRegistry = new SlashCommandRegistry();
 
   const ctx: STContextDeep = {
     chat: options.hostBridge?.chat ?? [],
@@ -347,6 +360,13 @@ export function createSTContextDeep(options: CreateSTContextDeepOptions): STCont
     name1: options.hostBridge?.name1 ?? 'You',
     name2: options.hostBridge?.name2 ?? 'Assistant',
     mainApi: options.hostBridge?.mainApi ?? 'openai',
+    model: options.hostBridge?.model as string | undefined,
+    tokenizerId: options.hostBridge?.tokenizerId as string | undefined,
+    temporaryChat: options.hostBridge?.temporaryChat as boolean | undefined,
+    generationStopped: options.hostBridge?.generationStopped as boolean | undefined,
+    continuationRequested: options.hostBridge?.continuationRequested as boolean | undefined,
+    regenerationRequested: options.hostBridge?.regenerationRequested as boolean | undefined,
+    swipeRequested: options.hostBridge?.swipeRequested as 'left' | 'right' | undefined,
     onlineStatus: options.hostBridge?.onlineStatus ?? 'no_connection',
     maxContext: options.hostBridge?.maxContext ?? 4096,
     chatMetadata: options.hostBridge?.chatMetadata ?? {},
@@ -386,8 +406,10 @@ export function createSTContextDeep(options: CreateSTContextDeepOptions): STCont
     getExtensionPrompt: extensionPrompts.render.bind(extensionPrompts),
     getExtensionPromptMaxDepth: extensionPrompts.maxDepth.bind(extensionPrompts),
     removeDepthPrompts: extensionPrompts.removeDepthPrompts.bind(extensionPrompts),
-    registerSlashCommand: options.hostBridge?.registerSlashCommand,
-    executeSlashCommandsWithOptions: options.hostBridge?.executeSlashCommandsWithOptions,
+    registerSlashCommand: options.hostBridge?.registerSlashCommand ?? ((def: unknown) => {
+      if (def && typeof def === 'object' && 'name' in def && 'callback' in def) slashCommandRegistry.register(def as never);
+    }),
+    executeSlashCommandsWithOptions: options.hostBridge?.executeSlashCommandsWithOptions ?? ((text) => slashCommandRegistry.execute(text)),
     callPopup: options.hostBridge?.callPopup,
     callGenericPopup: options.hostBridge?.callGenericPopup,
     showLoader: options.hostBridge?.showLoader,
@@ -411,9 +433,14 @@ export function createSTContextDeep(options: CreateSTContextDeepOptions): STCont
     registerHelper: () => undefined,
     executeSlashCommands: options.hostBridge?.executeSlashCommandsWithOptions
       ? (text) => options.hostBridge!.executeSlashCommandsWithOptions!(text)
-      : undefined,
+      : (text) => slashCommandRegistry.execute(text) as Promise<ExecuteSlashCommandsDeepResult>,
+    slashCommandRegistry,
     getTokenCount: (text) => Math.ceil(text.length / 4),
   };
+
+  registerBatchA(slashCommandRegistry, { ctx });
+  registerBatchB(slashCommandRegistry, { ctx });
+  registerBatchG(slashCommandRegistry, { ctx });
 
   return ctx;
 }

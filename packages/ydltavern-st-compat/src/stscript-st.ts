@@ -552,6 +552,20 @@ export interface SlashCommandDef {
   unnamedArgumentList?: UnnamedArgumentDef[];
 }
 
+export interface SlashCommandExecution {
+  readonly name: string;
+  readonly ok: boolean;
+  readonly text: string;
+  readonly error?: string;
+}
+
+export interface ExecuteSlashCommandsDeepResult {
+  readonly ok: boolean;
+  readonly input: string;
+  readonly output: string;
+  readonly outputs: readonly SlashCommandExecution[];
+}
+
 export class SlashCommandRegistry {
   private commands = new Map<string, SlashCommandDef>();
   private aliases = new Map<string, string>();
@@ -582,4 +596,111 @@ export class SlashCommandRegistry {
   resolveAlias(name: string): string {
     return this.aliases.get(name) ?? name;
   }
+
+  async execute(input: string): Promise<ExecuteSlashCommandsDeepResult> {
+    const outputs: SlashCommandExecution[] = [];
+    let ok = true;
+    for (const command of parseSlashCommandLines(input)) {
+      const def = this.get(command.name);
+      if (!def) {
+        ok = false;
+        outputs.push({ name: command.name, ok: false, text: '', error: `Unknown slash command: /${command.name}` });
+        continue;
+      }
+      try {
+        const value = await def.callback(command.namedArgs, command.unnamed);
+        outputs.push({ name: def.name, ok: true, text: String(value ?? '') });
+      } catch (error) {
+        ok = false;
+        outputs.push({ name: def.name, ok: false, text: '', error: error instanceof Error ? error.message : String(error) });
+      }
+    }
+    return {
+      ok,
+      input,
+      output: outputs.map((entry) => entry.text).filter((text) => text.length > 0).join('\n'),
+      outputs,
+    };
+  }
+}
+
+interface ParsedSlashCommandLine {
+  readonly name: string;
+  readonly namedArgs: Record<string, ScopeValue>;
+  readonly unnamed: string;
+}
+
+function parseSlashCommandLines(input: string): ParsedSlashCommandLine[] {
+  return input
+    .split(/[\n;]/u)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('/'))
+    .map(parseSlashCommandLine)
+    .filter((line): line is ParsedSlashCommandLine => line !== undefined);
+}
+
+function parseSlashCommandLine(line: string): ParsedSlashCommandLine | undefined {
+  const withoutSlash = line.slice(1).trimStart();
+  if (!withoutSlash) return undefined;
+  const match = withoutSlash.match(/^(\S+)(?:\s+([\s\S]*))?$/u);
+  if (!match) return undefined;
+  const name = String(match[1] ?? '').toLowerCase();
+  let rest = match[2] ?? '';
+  const namedArgs: Record<string, ScopeValue> = {};
+
+  while (rest.length > 0) {
+    const parsed = readNamedArgument(rest);
+    if (!parsed) break;
+    if (parsed.value === '' && parsed.consumed < rest.length && /\s/u.test(rest[parsed.consumed] ?? '')) break;
+    if (!looksLikeCommandNamedArgument(rest, parsed.consumed)) break;
+    namedArgs[parsed.key] = parsed.value;
+    rest = rest.slice(parsed.consumed).trimStart();
+  }
+
+  return { name, namedArgs, unnamed: unquote(rest) };
+}
+
+function readNamedArgument(input: string): { key: string; value: string; consumed: number } | undefined {
+  const eq = input.indexOf('=');
+  if (eq <= 0) return undefined;
+  const key = input.slice(0, eq);
+  if (/\s/u.test(key) || key.length === 0 || !/^[A-Za-z_][A-Za-z0-9_-]*$/u.test(key)) return undefined;
+  const valueStart = eq + 1;
+  const first = input[valueStart];
+  if (first === '"' || first === "'") {
+    let value = '';
+    let index = valueStart + 1;
+    while (index < input.length) {
+      const char = input[index] ?? '';
+      if (char === '\\') {
+        value += input[index + 1] ?? '';
+        index += 2;
+        continue;
+      }
+      if (char === first) return { key, value, consumed: index + 1 };
+      value += char;
+      index += 1;
+    }
+    return { key, value, consumed: input.length };
+  }
+
+  const nextSpace = input.slice(valueStart).search(/\s/u);
+  const end = nextSpace === -1 ? input.length : valueStart + nextSpace;
+  return { key, value: input.slice(valueStart, end), consumed: end };
+}
+
+function unquote(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length >= 2 && ((trimmed[0] === '"' && trimmed.at(-1) === '"') || (trimmed[0] === "'" && trimmed.at(-1) === "'"))) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function looksLikeCommandNamedArgument(input: string, consumed: number): boolean {
+  const suffix = input.slice(consumed).trimStart();
+  if (suffix.length === 0) return true;
+  const nextEquals = suffix.indexOf('=');
+  const nextSpace = suffix.search(/\s/u);
+  return nextEquals > 0 && (nextSpace === -1 || nextEquals < nextSpace);
 }

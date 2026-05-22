@@ -52,6 +52,8 @@ export type {
   NamedArgumentDef,
   UnnamedArgumentDef,
   SlashCommandDef,
+  SlashCommandExecution as SlashCommandExecutionDeep,
+  ExecuteSlashCommandsDeepResult,
 } from './stscript-st.js';
 export {
   EXTENSION_PROMPT_TYPES,

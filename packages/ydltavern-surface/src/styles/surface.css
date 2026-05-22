@@ -1970,3 +1970,663 @@
     margin-left: 0;
   }
 }
+
+/* ==========================================================================
+   P6: Theme system — CSS variable aliases
+   Each token is defined on .ydltavern-surface as a default (dark theme). The
+   .tavern-themed-root overrides these via inline styles set by ThemedRoot.
+   ========================================================================== */
+
+.ydltavern-surface {
+  /* Theme CSS variable aliases (default = dark) */
+  --tavern-bg-primary: var(--color-bg);
+  --tavern-bg-secondary: var(--color-bg-raised);
+  --tavern-bg-tertiary: var(--color-bg-sunken);
+  --tavern-fg-primary: var(--color-text);
+  --tavern-fg-secondary: var(--color-text-soft);
+  --tavern-fg-muted: var(--color-text-muted);
+  --tavern-accent-primary: var(--color-amber);
+  --tavern-accent-hover: var(--color-amber-soft);
+  --tavern-user-bubble: var(--color-violet);
+  --tavern-assistant-bubble: var(--color-amber);
+  --tavern-system-bubble: var(--color-cyan);
+  --tavern-border: var(--color-border);
+  --tavern-shadow: var(--color-border);
+  --tavern-font-family: var(--font-body);
+  --tavern-font-size-base: 15px;
+  --tavern-font-size-sm: 13px;
+  --tavern-font-size-lg: 18px;
+  --tavern-density: comfortable;
+}
+
+.ydltavern-surface .tavern-themed-root {
+  /* Children inherit theme tokens from inline style set by ThemedRoot */
+}
+
+/* ---------- Virtualized ChatList (react-virtuoso) ------------------------- */
+
+.ydltavern-surface .tavern-chat-list {
+  flex: 1;
+  min-height: 0;
+}
+
+.ydltavern-surface .tavern-chat-list > .virtuoso-grid-list {
+  padding: 22px;
+}
+
+.ydltavern-surface .tavern-chat-list .turn {
+  margin-bottom: 18px;
+}
+
+/* ---------- Settings tabs + forms ----------------------------------------- */
+
+.ydltavern-surface .settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.ydltavern-surface .settings-tab {
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  transition: background 100ms, color 100ms;
+}
+
+.ydltavern-surface .settings-tab:hover {
+  background: var(--color-panel-2);
+}
+
+.ydltavern-surface .settings-tab.is-active {
+  border-color: var(--color-cyan-edge);
+  color: var(--color-cyan-soft);
+  background: var(--color-cyan-bg);
+}
+
+.ydltavern-surface .settings-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ydltavern-surface .settings-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ydltavern-surface .settings-form-title {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--color-text);
+}
+
+.ydltavern-surface .settings-form-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.ydltavern-surface .settings-form-sliders {
+  display: grid;
+  gap: 10px;
+}
+
+.ydltavern-surface .settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ydltavern-surface .settings-field-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.ydltavern-surface .settings-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.ydltavern-surface .settings-value-indicator {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-cyan-soft);
+}
+
+.ydltavern-surface .settings-input,
+.ydltavern-surface .settings-textarea,
+.ydltavern-surface .settings-select {
+  padding: 8px 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.ydltavern-surface .settings-input:focus,
+.ydltavern-surface .settings-textarea:focus {
+  border-color: var(--color-cyan-edge);
+}
+
+.ydltavern-surface .settings-input-error {
+  border-color: var(--color-rose);
+}
+
+.ydltavern-surface .settings-field-error {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-rose);
+}
+
+.ydltavern-surface .settings-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.ydltavern-surface .settings-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.ydltavern-surface .settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-cyan-soft);
+  border: 2px solid var(--color-cyan);
+  cursor: pointer;
+}
+
+.ydltavern-surface .settings-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-cyan-soft);
+  border: 2px solid var(--color-cyan);
+  cursor: pointer;
+}
+
+.ydltavern-surface .settings-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-cyan);
+  cursor: pointer;
+}
+
+.ydltavern-surface .settings-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ydltavern-surface .settings-button {
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-cyan-edge);
+  border-radius: var(--radius-sm);
+  background: var(--color-cyan-bg);
+  color: var(--color-cyan-soft);
+  cursor: pointer;
+}
+
+.ydltavern-surface .settings-button:hover {
+  background: var(--color-cyan-edge);
+  color: var(--color-text);
+}
+
+/* ---------- Theme picker cards -------------------------------------------- */
+
+.ydltavern-surface .theme-card-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ydltavern-surface .theme-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.ydltavern-surface .theme-card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.ydltavern-surface .theme-card-selected {
+  border-color: var(--color-cyan-edge);
+  background: var(--color-cyan-bg);
+}
+
+.ydltavern-surface .theme-card-swatch {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+}
+
+.ydltavern-surface .theme-card-swatch-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-style: italic;
+}
+
+.ydltavern-surface .theme-card-name {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-soft);
+}
+
+/* ---------- Extensions panel (real state) ---------------------------------- */
+
+.ydltavern-surface .extension-summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ydltavern-surface .ext-count-badge {
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+.ydltavern-surface .ext-activated {
+  color: var(--color-emerald);
+  border: 1px solid rgba(103, 193, 159, 0.3);
+  background: rgba(103, 193, 159, 0.08);
+}
+
+.ydltavern-surface .ext-skipped {
+  color: var(--color-rose);
+  border: 1px solid rgba(217, 122, 122, 0.3);
+  background: rgba(217, 122, 122, 0.08);
+}
+
+.ydltavern-surface .extension-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ydltavern-surface .ext-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ydltavern-surface .ext-row-inactive {
+  opacity: 0.7;
+}
+
+.ydltavern-surface .ext-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ydltavern-surface .ext-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.ydltavern-surface .ext-id {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.ydltavern-surface .ext-display-name {
+  font-size: 12px;
+  color: var(--color-text-soft);
+}
+
+.ydltavern-surface .ext-version {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-faint);
+}
+
+.ydltavern-surface .ext-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ydltavern-surface .ext-status {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ydltavern-surface .ext-status-ok {
+  color: var(--color-emerald);
+}
+
+.ydltavern-surface .ext-status-skipped {
+  color: var(--color-rose);
+}
+
+.ydltavern-surface .ext-status-disabled {
+  color: var(--color-text-muted);
+}
+
+.ydltavern-surface .ext-toggle {
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  color: var(--color-text-soft);
+  cursor: pointer;
+}
+
+.ydltavern-surface .ext-toggle:hover {
+  border-color: var(--color-border-strong);
+}
+
+.ydltavern-surface .ext-reasons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ydltavern-surface .ext-reason {
+  font-size: 11px;
+  color: var(--color-rose);
+  padding: 2px 0 2px 12px;
+  position: relative;
+}
+
+.ydltavern-surface .ext-reason::before {
+  content: "\2715";
+  position: absolute;
+  left: 0;
+  font-size: 9px;
+}
+
+.ydltavern-surface .ext-hooks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ydltavern-surface .ext-hook-badge {
+  display: inline-flex;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  background: var(--color-amber-bg);
+  color: var(--color-amber-soft);
+  border: 1px solid var(--color-amber-edge);
+}
+
+/* ---------- Quick Reply Bar ----------------------------------------------- */
+
+.ydltavern-surface .tavern-quick-reply-bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-raised);
+  scrollbar-width: thin;
+}
+
+.ydltavern-surface .tavern-quick-reply-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.ydltavern-surface .tavern-quick-reply-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ydltavern-surface .tavern-quick-reply-bar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+.ydltavern-surface .qr-set {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ydltavern-surface .qr-set-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.ydltavern-surface .qr-items {
+  display: flex;
+  gap: 4px;
+}
+
+.ydltavern-surface .qr-button {
+  padding: 4px 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-panel);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 100ms, color 100ms, border-color 100ms;
+}
+
+.ydltavern-surface .qr-button:hover {
+  background: var(--color-violet-bg);
+  border-color: var(--color-violet-edge);
+  color: var(--color-violet-soft);
+}
+
+/* ---------- Mobile responsive --------------------------------------------- */
+
+.ydltavern-surface .tablet-up {
+  display: contents;
+}
+
+.ydltavern-surface .mobile-hamburger,
+.ydltavern-surface .mobile-drawer-close,
+.ydltavern-surface .mobile-character-chip {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ydltavern-surface .tablet-up {
+    display: none;
+  }
+
+  .ydltavern-surface .mobile-hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .ydltavern-surface .mobile-hamburger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--color-text-soft);
+    border-radius: 1px;
+  }
+
+  .ydltavern-surface .mobile-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .ydltavern-surface .mobile-character-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 8px;
+  }
+
+  .ydltavern-surface .character-chip-avatar {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--color-amber-bg);
+    border: 1px solid var(--color-amber-edge);
+    color: var(--color-amber-soft);
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .ydltavern-surface .character-chip-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--color-text);
+  }
+
+  .ydltavern-surface .tavern-product-topbar {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .ydltavern-surface .tavern-topnav {
+    display: none;
+  }
+
+  .ydltavern-surface .tavern-product-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ydltavern-surface .tavern-left-rail {
+    padding: 8px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .ydltavern-surface .tavern-right-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--color-bg);
+    border-left: 0;
+    padding: 56px 20px 20px;
+    overflow: auto;
+    transform: translateX(100%);
+    transition: transform 200ms ease;
+  }
+
+  .ydltavern-surface .tavern-right-drawer.is-open {
+    transform: translateX(0);
+  }
+
+  .ydltavern-surface .tavern-chat-main {
+    min-height: 400px;
+  }
+
+  .ydltavern-surface .product-composer {
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ydltavern-surface .tavern-right-drawer {
+    transition: none;
+  }
+}
+
+/* ---------- Scrollbar styling for the chat list --------------------------- */
+
+.ydltavern-surface .tavern-chat-list .virtuoso-grid-item {
+  overflow: visible;
+}
+
+/* ---------- P6: product shell uses theme CSS variables --------------------- */
+
+.ydltavern-surface .tavern-product-shell {
+  background: var(--tavern-bg-primary, var(--color-bg-sunken));
+  color: var(--tavern-fg-primary, var(--color-text));
+}
+
+.ydltavern-surface .tavern-chat-main {
+  background: var(--tavern-bg-primary, var(--color-bg));
+}

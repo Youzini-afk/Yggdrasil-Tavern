@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@ydltavern/engine-core": "file:../ydltavern-engine-core",
-    "@ydltavern/types": "file:../ydltavern-types"
+    "@ydltavern/types": "file:../ydltavern-types",
+    "quickjs-emscripten": "^0.31.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

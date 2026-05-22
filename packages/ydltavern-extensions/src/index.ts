@@ -1,5 +1,6 @@
 export * from './registry.js';
 export * from './loader.js';
+export * from './sandbox/index.js';
 export * from './token-counter.js';
 export * from './regex.js';
 export * from './quick-reply.js';
