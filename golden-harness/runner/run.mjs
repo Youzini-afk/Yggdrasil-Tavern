@@ -6,7 +6,7 @@
  *   node runner/run.mjs --scenario scenarios/instruct/chatml.json
  *   node runner/run.mjs --all
  *
- * For each scenario, determines its category (chat/wi/macro/instruct),
+ * For each scenario, determines its category (chat/wi/macro/instruct/tokenizer),
  * calls the corresponding extract-*.mjs function, and writes the result
  * to fixtures/<category>/<name>.json.
  */
@@ -16,7 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { mkdir, writeFile, readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
-// Install globals BEFORE anything else
+// Register the ST module loader and install globals BEFORE loading ST modules.
+import '../shims/register-loader.mjs';
 import '../shims/globals.mjs';
 
 // Now that globals are installed and loader is active, import the ST loader
@@ -25,6 +26,7 @@ import { extractInstruct } from './extract-instruct.mjs';
 import { extractMacro } from './extract-macro.mjs';
 import { extractWI } from './extract-wi.mjs';
 import { extractPrompt } from './extract-prompt.mjs';
+import { extractTokenizer } from './extract-tokenizer.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const HARNESS_ROOT = resolve(__dirname, '..');
@@ -57,7 +59,7 @@ if (!scenarioPath && !runAll) {
 function parseScenarioPath(path) {
   const rel = resolve(path).replace(resolve(HARNESS_ROOT, 'scenarios') + '/', '');
   const parts = rel.split('/');
-  const category = parts[0]; // chat, world-info, macro, instruct
+  const category = parts[0]; // chat, world-info, macro, instruct, tokenizer
   const name = basename(parts[parts.length - 1], '.json');
   return { category, name, rel };
 }
@@ -71,6 +73,7 @@ function getExtractor(category) {
     case 'macro': return extractMacro;
     case 'world-info': return extractWI;
     case 'chat': return extractPrompt;
+    case 'tokenizer': return extractTokenizer;
     default: throw new Error(`Unknown scenario category: ${category}`);
   }
 }
@@ -80,7 +83,7 @@ function getExtractor(category) {
  */
 async function findAllScenarios() {
   const scenarios = [];
-  const categories = ['chat', 'world-info', 'macro', 'instruct'];
+  const categories = ['chat', 'world-info', 'macro', 'instruct', 'tokenizer'];
 
   for (const cat of categories) {
     const catDir = resolve(HARNESS_ROOT, 'scenarios', cat);

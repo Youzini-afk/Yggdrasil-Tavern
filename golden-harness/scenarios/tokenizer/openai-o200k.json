@@ -1,0 +1,6 @@
+{
+  "_description": "OpenAI o200k_base family via gpt-4o model hint. Expected exact local BPE count.",
+  "model_hint": "gpt-4o",
+  "text": "Hello world 你好世界",
+  "expected_tokenizer_id": "OPENAI"
+}

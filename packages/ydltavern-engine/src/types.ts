@@ -4,7 +4,12 @@ export const PROTOCOL_VERSION = "0.1.0";
 
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
-export type Handler = (input: unknown) => unknown | Promise<unknown>;
+export interface HandlerContext {
+  readonly kernelClient?: unknown;
+  readonly emitFrame?: (frame: unknown) => void;
+}
+
+export type Handler = (input: unknown, context?: HandlerContext) => unknown | Promise<unknown>;
 export type HandlerRecord = Record<string, Handler>;
 
 export interface InvocationCounters {

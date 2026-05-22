@@ -11,7 +11,9 @@ import {
   HuggingFaceTokenizerAdapter,
   createHuggingFaceTokenizer,
   getTokenizer,
+  countTokens,
   createGuesstimateAdapter,
+  getTokenizerBestMatch,
 } from '../dist/index.js';
 
 const MINIMAL_HF_TOKENIZER_JSON = {
@@ -437,6 +439,67 @@ test('getTokenizer(NONE) returns guesstimate fallback', async () => {
 test('getTokenizer(MISTRAL) remains guesstimate fallback because HF source is host-provided', async () => {
   const adapter = await getTokenizer(TOKENIZER.MISTRAL);
   assert.equal(adapter.fallback, true);
+});
+
+// ---------------------------------------------------------------------------
+// getTokenizerBestMatch model-name shorthand
+
+test('getTokenizerBestMatch routes common model names to ST tokenizer ids', () => {
+  assert.equal(getTokenizerBestMatch('gpt-4o'), TOKENIZER.OPENAI);
+  assert.equal(getTokenizerBestMatch('claude-3-5-sonnet'), TOKENIZER.CLAUDE);
+  assert.equal(getTokenizerBestMatch('llama-3-8b-instruct'), TOKENIZER.LLAMA3);
+  assert.equal(getTokenizerBestMatch('llama-2-7b-chat'), TOKENIZER.LLAMA);
+  assert.equal(getTokenizerBestMatch('mistral-large-2'), TOKENIZER.MISTRAL);
+});
+
+// ---------------------------------------------------------------------------
+// countTokens high-level registry runtime
+
+test('countTokens routes gpt-4 to OPENAI exact adapter', async () => {
+  const result = await countTokens('hello world', { modelHint: 'gpt-4' });
+  assert.equal(result.tokenizerId, TOKENIZER.OPENAI);
+  assert.equal(result.accuracy, 'exact');
+  assert.ok(result.count > 0);
+});
+
+test('countTokens routes claude-3-opus to CLAUDE approximation', async () => {
+  const result = await countTokens('hello world', { modelHint: 'claude-3-opus' });
+  assert.equal(result.tokenizerId, TOKENIZER.CLAUDE);
+  assert.equal(result.accuracy, 'approximation');
+  assert.ok(result.count > 0);
+});
+
+test('countTokens routes llama-3-8b to LLAMA3 exact adapter', async () => {
+  const result = await countTokens('hello world', { modelHint: 'llama-3-8b' });
+  assert.equal(result.tokenizerId, TOKENIZER.LLAMA3);
+  assert.equal(result.accuracy, 'exact');
+  assert.ok(result.count > 0);
+});
+
+test('countTokens routes mistral-7b to MISTRAL guesstimate without HF source', async () => {
+  const result = await countTokens('hello world', { modelHint: 'mistral-7b' });
+  assert.equal(result.tokenizerId, TOKENIZER.MISTRAL);
+  assert.equal(result.accuracy, 'guesstimate');
+  assert.equal(result.count, guesstimate('hello world'));
+});
+
+test('countTokens tokenizerId forces override', async () => {
+  const result = await countTokens('hello world', { tokenizerId: TOKENIZER.LLAMA });
+  assert.equal(result.tokenizerId, TOKENIZER.LLAMA);
+  assert.equal(result.accuracy, 'exact');
+});
+
+test('countTokens second call reports warmCache=true for same id/model key', async () => {
+  const options = { modelHint: 'gpt-4-warm-cache-test' };
+  const first = await countTokens('hello world', options);
+  const second = await countTokens('hello world', options);
+  assert.equal(first.warmCache, false);
+  assert.equal(second.warmCache, true);
+});
+
+test('countTokens with empty text returns non-negative count', async () => {
+  const result = await countTokens('', { modelHint: 'gpt-4' });
+  assert.ok(result.count >= 0);
 });
 
 // ---------------------------------------------------------------------------

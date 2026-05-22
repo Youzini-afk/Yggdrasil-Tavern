@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "tokenizer/claude-basic.json",
+    "category": "tokenizer",
+    "name": "claude-basic",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Claude tokenizer family via claude model hint. Expected local text approximation, not Messages API ground truth.",
+    "model_hint": "claude-3-5-sonnet",
+    "text": "Hello world",
+    "expected_tokenizer_id": "CLAUDE"
+  },
+  "output": {
+    "text_length": 11,
+    "tokenizer_id": "CLAUDE",
+    "count": 2,
+    "accuracy": "approximation",
+    "expected_tokenizer_id": "CLAUDE",
+    "matches_expected": true
+  }
+}

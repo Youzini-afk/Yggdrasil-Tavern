@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "tokenizer/openai-cl100k.json",
+    "category": "tokenizer",
+    "name": "openai-cl100k",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "OpenAI cl100k_base family via gpt-4 model hint. Expected exact local BPE count.",
+    "model_hint": "gpt-4",
+    "text": "Hello world",
+    "expected_tokenizer_id": "OPENAI"
+  },
+  "output": {
+    "text_length": 11,
+    "tokenizer_id": "OPENAI",
+    "count": 2,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "OPENAI",
+    "matches_expected": true
+  }
+}

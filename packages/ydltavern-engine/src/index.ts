@@ -5,12 +5,13 @@ import { deepPortHandlers } from "./capabilities/deep-port.js";
 import { describeHandlers } from "./capabilities/describe.js";
 import { createDiagnosticsHandlers } from "./capabilities/diagnostics.js";
 import { extensionHandlers } from "./capabilities/extensions.js";
+import { modelLiveCallHandlers } from "./capabilities/model-live-call.js";
 import { modelHandlers } from "./capabilities/model.js";
 import { presetHandlers } from "./capabilities/preset.js";
 import { scriptHandlers } from "./capabilities/script.js";
 import { turnHandlers } from "./capabilities/turn.js";
 import { worldInfoHandlers } from "./capabilities/world-info.js";
-import { PACKAGE_ID, PROTOCOL_VERSION, type HandlerRecord, type InvocationCounters, type JsonValue } from "./types.js";
+import { PACKAGE_ID, PROTOCOL_VERSION, type HandlerContext, type HandlerRecord, type InvocationCounters, type JsonValue } from "./types.js";
 
 interface JsonRpcRequest {
   jsonrpc?: "2.0";
@@ -27,7 +28,7 @@ interface CapabilityInvokeParams {
 interface SdkModule {
   serveSubprocessPackage?: (options: {
     onHandshake?: (params: Record<string, unknown>) => JsonValue | Promise<JsonValue>;
-    onInvoke: (params: CapabilityInvokeParams) => JsonValue | Promise<JsonValue>;
+    onInvoke: (params: CapabilityInvokeParams, context?: HandlerContext) => JsonValue | Promise<JsonValue>;
   }) => void;
 }
 
@@ -45,6 +46,7 @@ const handlers: HandlerRecord = {
   ...scriptHandlers,
   ...extensionHandlers,
   ...modelHandlers,
+  ...modelLiveCallHandlers,
   ...deepPortHandlers,
   ...createDiagnosticsHandlers(counters),
 };
@@ -59,7 +61,7 @@ const handshake = (): JsonValue => ({
   capabilities: Object.keys(handlers).sort(),
 });
 
-const invoke = async (params: CapabilityInvokeParams): Promise<JsonValue> => {
+const invoke = async (params: CapabilityInvokeParams, context?: HandlerContext): Promise<JsonValue> => {
   const capabilityId = params.capability_id;
   if (!capabilityId) {
     throw new Error("missing capability_id");
@@ -73,7 +75,7 @@ const invoke = async (params: CapabilityInvokeParams): Promise<JsonValue> => {
   counters.total += 1;
   counters.byCapability[capabilityId] = (counters.byCapability[capabilityId] ?? 0) + 1;
 
-  return toJsonValue(await handler(params.input));
+  return toJsonValue(await handler(params.input, context));
 };
 
 const respond = (id: JsonRpcRequest["id"], payload: Record<string, JsonValue>): void => {
@@ -124,7 +126,7 @@ const main = async (): Promise<void> => {
       if (typeof sdk.serveSubprocessPackage === "function") {
         sdk.serveSubprocessPackage({
           onHandshake: () => handshake(),
-          onInvoke: (params: CapabilityInvokeParams) => invoke(params),
+          onInvoke: (params: CapabilityInvokeParams, context?: HandlerContext) => invoke(params, context),
         });
         return;
       }

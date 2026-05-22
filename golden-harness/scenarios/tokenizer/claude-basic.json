@@ -1,0 +1,6 @@
+{
+  "_description": "Claude tokenizer family via claude model hint. Expected local text approximation, not Messages API ground truth.",
+  "model_hint": "claude-3-5-sonnet",
+  "text": "Hello world",
+  "expected_tokenizer_id": "CLAUDE"
+}

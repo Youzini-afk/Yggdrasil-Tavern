@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "tokenizer/llama3-basic.json",
+    "category": "tokenizer",
+    "name": "llama3-basic",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Llama 3 tokenizer family via llama-3 model hint. Expected exact local tokenizer count, including BOS/EOS package behavior.",
+    "model_hint": "llama-3-8b-instruct",
+    "text": "Hello world",
+    "expected_tokenizer_id": "LLAMA3"
+  },
+  "output": {
+    "text_length": 11,
+    "tokenizer_id": "LLAMA3",
+    "count": 4,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "LLAMA3",
+    "matches_expected": true
+  }
+}

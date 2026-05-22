@@ -182,7 +182,11 @@ export interface BestMatchInput {
   remoteConnected?: boolean;
 }
 
-export function getTokenizerBestMatch(input: BestMatchInput): TokenizerId {
+export function getTokenizerBestMatch(input: BestMatchInput | string): TokenizerId {
+  if (typeof input === 'string') {
+    return getTokenizerBestMatchForModel(input);
+  }
+
   const { api, model = '', novelModel = '', remoteConnected = false } = input;
   const m = model.toLowerCase();
 
@@ -240,6 +244,24 @@ export function getTokenizerBestMatch(input: BestMatchInput): TokenizerId {
     return TOKENIZER.LLAMA;
   }
 
+  return TOKENIZER.OPENAI;
+}
+
+function getTokenizerBestMatchForModel(model: string): TokenizerId {
+  const m = model.toLowerCase();
+  if (m.includes('claude')) return TOKENIZER.CLAUDE;
+  if (m.includes('llama-3') || m.includes('llama3')) return TOKENIZER.LLAMA3;
+  if (m.includes('llama-2') || m.includes('llama2') || m.includes('llama-1') || m.includes('llama1')) return TOKENIZER.LLAMA;
+  if (m.includes('mistral')) return TOKENIZER.MISTRAL;
+  if (m.includes('gemma')) return TOKENIZER.GEMMA;
+  if (m.includes('jamba')) return TOKENIZER.JAMBA;
+  if (m.includes('qwen')) return TOKENIZER.QWEN2;
+  if (m.includes('command-a')) return TOKENIZER.COMMAND_A;
+  if (m.includes('command-r')) return TOKENIZER.COMMAND_R;
+  if (m.includes('nemo')) return TOKENIZER.NEMO;
+  if (m.includes('deepseek')) return TOKENIZER.DEEPSEEK;
+  if (m.includes('yi')) return TOKENIZER.YI;
+  if (m === 'gpt2' || m.includes('gpt-2')) return TOKENIZER.GPT2;
   return TOKENIZER.OPENAI;
 }
 

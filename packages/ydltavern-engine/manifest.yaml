@@ -198,6 +198,18 @@ provides:
     output_schema: {}
     streaming: false
     description: Detects SD generation triggers in text via processSdTriggers.
+  - id: ydltavern/engine/model.live_call
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Real provider chat completion via Yggdrasil public outbound (unary).
+  - id: ydltavern/engine/model.live_call.stream
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: true
+    description: Real provider chat completion via Yggdrasil public outbound (streaming SSE).
 consumes: []
 contributes:
   schemas: []
@@ -206,8 +218,21 @@ contributes:
   surfaces: []
 permissions:
   network:
-    declarations: []
+    declarations:
+      - host: api.openai.com
+        methods: [POST]
+      - host: api.deepseek.com
+        methods: [POST]
+      - host: api.anthropic.com
+        methods: [POST]
+      - host: openrouter.ai
+        methods: [POST]
     hosts: []
+  secret_refs:
+    - secret_ref:env:OPENAI_API_KEY
+    - secret_ref:env:DEEPSEEK_API_KEY
+    - secret_ref:env:ANTHROPIC_API_KEY
+    - secret_ref:env:OPENROUTER_API_KEY
 sandbox_policy:
   cpu_quota_ms_per_invoke: 10000
   memory_mb: 256

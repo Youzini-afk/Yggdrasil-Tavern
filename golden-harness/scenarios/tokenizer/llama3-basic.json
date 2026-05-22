@@ -1,0 +1,6 @@
+{
+  "_description": "Llama 3 tokenizer family via llama-3 model hint. Expected exact local tokenizer count, including BOS/EOS package behavior.",
+  "model_hint": "llama-3-8b-instruct",
+  "text": "Hello world",
+  "expected_tokenizer_id": "LLAMA3"
+}

@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "tokenizer/openai-o200k.json",
+    "category": "tokenizer",
+    "name": "openai-o200k",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "OpenAI o200k_base family via gpt-4o model hint. Expected exact local BPE count.",
+    "model_hint": "gpt-4o",
+    "text": "Hello world 你好世界",
+    "expected_tokenizer_id": "OPENAI"
+  },
+  "output": {
+    "text_length": 16,
+    "tokenizer_id": "OPENAI",
+    "count": 5,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "OPENAI",
+    "matches_expected": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "tokenizer/openai-r50k-gpt2.json",
+    "category": "tokenizer",
+    "name": "openai-r50k-gpt2",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "GPT-2/r50k_base family via gpt2 model hint. Expected exact local BPE count.",
+    "model_hint": "gpt2",
+    "text": "Hello world",
+    "expected_tokenizer_id": "GPT2"
+  },
+  "output": {
+    "text_length": 11,
+    "tokenizer_id": "GPT2",
+    "count": 2,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "GPT2",
+    "matches_expected": true
+  }
+}

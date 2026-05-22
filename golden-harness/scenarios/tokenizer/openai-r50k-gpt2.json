@@ -1,0 +1,6 @@
+{
+  "_description": "GPT-2/r50k_base family via gpt2 model hint. Expected exact local BPE count.",
+  "model_hint": "gpt2",
+  "text": "Hello world",
+  "expected_tokenizer_id": "GPT2"
+}

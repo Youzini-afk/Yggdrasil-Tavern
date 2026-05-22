@@ -57,6 +57,26 @@ node --import ./shims/register-loader.mjs runner/run.mjs --scenario scenarios/in
 
 Fixtures are written to `fixtures/<category>/<name>.json`.
 
+### Tokenizer Fixtures
+
+The `tokenizer/` scenario category is a P2.5 runtime-registry baseline. Unlike
+the original v0 categories, tokenizer fixtures are currently generated from
+YdlTavern's own `countTokens(text, { modelHint })` adapters rather than from ST's
+backend `getTokenCountAsync(...)` endpoint. Treat these as a self-baseline for
+regression detection until a future harness revision can capture ST backend
+counts directly.
+
+Accuracy levels in tokenizer fixture output:
+
+| Accuracy | Meaning | Families |
+|----------|---------|----------|
+| `exact` | Local BPE/tokenizer package is used. | OpenAI/GPT-2 (`gpt-tokenizer`), Llama 1/2, Llama 3, HF tokenizer source when supplied by caller |
+| `approximation` | Local text-only estimate; structured API-specific content is not represented. | Claude (`@anthropic-ai/tokenizer`) |
+| `guesstimate` | ST-compatible UTF-8 byte length / 3.35 fallback because no real local tokenizer source is available. | Mistral/Qwen/Gemma/etc. without caller-supplied HF source |
+
+HF-family tokenizers are not auto-fetched by the harness or runtime; callers must
+provide a `tokenizer.json` source for exact counts.
+
 ### Compare YdlTavern Output Against Fixtures
 
 ```bash
@@ -125,6 +145,7 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 | chat | `sendOpenAIRequest` | 4 | ✅ Full — fetch interceptor captures assembled request body |
 | macro | `evaluateMacros` | 4 | ⚠️ Partial — fallback env substitution; full engine fails on missing DOM state |
 | world-info | `checkWorldInfo` | 4 | ⚠️ Structural — function runs but finds 0 entries (WI data store not populated) |
+| tokenizer | YdlTavern `countTokens` | 6 | ✅ Self-baseline — local adapter output, not ST ground truth yet |
 
 ## v0 Results
 

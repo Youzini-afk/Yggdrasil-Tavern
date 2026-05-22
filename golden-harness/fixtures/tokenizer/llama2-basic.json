@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "harness_version": "0.1.0",
+    "generated_at": "2025-05-29T12:00:00.000Z",
+    "scenario": "tokenizer/llama2-basic.json",
+    "category": "tokenizer",
+    "name": "llama2-basic",
+    "skipped": false,
+    "error": null
+  },
+  "input": {
+    "_description": "Llama 1/2 tokenizer family via llama-2 model hint. Expected exact local tokenizer count, including BOS package behavior.",
+    "model_hint": "llama-2-7b-chat",
+    "text": "Hello world",
+    "expected_tokenizer_id": "LLAMA"
+  },
+  "output": {
+    "text_length": 11,
+    "tokenizer_id": "LLAMA",
+    "count": 3,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "LLAMA",
+    "matches_expected": true
+  }
+}

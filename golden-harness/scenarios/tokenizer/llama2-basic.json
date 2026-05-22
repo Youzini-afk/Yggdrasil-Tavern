@@ -1,0 +1,6 @@
+{
+  "_description": "Llama 1/2 tokenizer family via llama-2 model hint. Expected exact local tokenizer count, including BOS package behavior.",
+  "model_hint": "llama-2-7b-chat",
+  "text": "Hello world",
+  "expected_tokenizer_id": "LLAMA"
+}

@@ -6,4 +6,5 @@ export type { LlamaAdapterOptions } from './llama-adapter.js';
 export { AnthropicTokenizerAdapter } from './anthropic-adapter.js';
 export { HuggingFaceTokenizerAdapter, createHuggingFaceTokenizer } from './huggingface-adapter.js';
 export type { HuggingFaceTokenizerSource } from './huggingface-adapter.js';
-export { getTokenizer, createGuesstimateAdapter } from './registry.js';
+export { getTokenizer, createGuesstimateAdapter, countTokens } from './registry.js';
+export type { CountTokensOptions, CountTokensResult } from './registry.js';
