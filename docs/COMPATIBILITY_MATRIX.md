@@ -24,7 +24,7 @@
 - `partial-sandboxed` —— 能在受限 sandbox 中执行，DOM/网络等能力仍不完整
 - `partial-opt-in` —— 需要 host/profile/env 显式启用的真实路径
 
-当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity、Round 6 W-track 收敛与 Round 7 X-track slash/font 收尾已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error。
+当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity、Round 6 W-track 收敛、Round 7 X-track slash/font 收尾与 Round 8 Y-track ST extension same-window compatibility 已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error。
 
 ## Round 3 T-track summary (May 2026)
 
@@ -93,6 +93,27 @@ Batch breakdown:
 | M | Extension/Tools | 36 commands: 2 real + 4 plan-only + 30 unsupported |
 | N | Debug/Dev/Secret | 8 commands: 3 real + 5 plan-only |
 
+## Round 8 Y-track summary (May 2026)
+
+Y-track 完成 same-window ST extension host：
+
+- `.mes_text` 现在通过 `formatMessage()` 渲染 sanitized HTML，而不是 React plain text。
+- React 渲染 ST DOM anchors，并明确让出 jQuery territories：`#chat`、`#extensions_settings`、`#extensions_settings2`、`#extensionsMenu`、`#movingDivs`、`#leftSendForm`、`#rightSendForm` 与 `.mes_buttons_extra`。
+- `mountSTGlobals()` 将 `SillyTavern`、`eventSource`、`chat`、`characters`、settings、slash helpers、formatting helpers 与 legacy libraries 安装到 `globalThis`。
+- ST 标准 ESM shim URLs 已存在：`/script.js` 加六个 `/scripts/` modules。
+- messageFormatting pipeline 使用 showdown + DOMPurify + hooks。
+- 真实扩展 smoke tests 验证 BME 与 shujuku bootstrap chains。
+- Round 8 收尾测试数：`ydltavern-surface` 88 tests passing；`ydltavern-st-compat` 703 tests passing。
+
+| Capability | Before R8 | After R8 |
+|---|---|---|
+| `.mes_text` rendering | Plain text via React children | `dangerouslySetInnerHTML` via `formatMessage()` |
+| Extension DOM IDs | Missing | All audited ST IDs rendered |
+| ST globals | sandbox-only | Real `globalThis` via `mountSTGlobals` |
+| ESM compat shims | Missing | `/script.js` + 6 `scripts/` shim files |
+| messageFormatting pipeline | None | Full ST pipeline with hooks |
+| Real extension smoke | Sandbox-only | Bootstrap chain verified |
+
 ## 总览
 
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
@@ -115,9 +136,9 @@ Batch breakdown:
 | tokenizers: OPENAI/GPT2/LLAMA/LLAMA3/CLAUDE | 5 families | real local adapters; Claude is local text approximation；golden harness 6/6 perfect | implemented for current golden tokenizer scenarios | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | tokenizers: HF families | 9 families | `@huggingface/tokenizers` path for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A；`fetchHuggingFaceTokenizer` 可经 Yggdrasil `kernel.outbound.execute` runtime-fetch `tokenizer.json`，支持 SHA-256 pin 与 LRU cache | partial-real | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | 内置扩展 | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
-| 扩展 JS 执行 | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in；synthetic micro-BME always-on，real BME via `YGG_BME_TEST_PATH` opt-in | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
+| 扩展 JS 执行 | ST extension JS | Same-window ST DOM fork for browser extensions: DOM anchors, `globalThis` bootstrap, ST ESM URL shims, full page APIs; QuickJS sandbox remains available for constrained synthetic tests | partial-real / same-window implemented for Round 8 smoke | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | 真实模型调用 | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`；`model.live_realtime` bridge to `kernel.outbound.websocket.*`（OpenAI Realtime real；Gemini Live best-effort stub）；requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout, all drawers wired to TavernProvider state | implemented for Round 6 W-track UI state scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes`/`.mes_text` HTML message DOM, extension anchors, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout, provider-backed drawers | implemented for Round 8 extension DOM scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | 群聊轮换策略 | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |

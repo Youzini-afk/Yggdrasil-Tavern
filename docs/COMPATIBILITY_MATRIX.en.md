@@ -24,7 +24,7 @@ Implementation status:
 - `partial-sandboxed` — execution works inside a constrained sandbox; DOM/network/etc. remain incomplete
 - `partial-opt-in` — a real path exists only when the host/profile/env explicitly enable it
 
-Current stage: deep-port complete, with Round 3 T-track tightening, Round 4 U-track closure, Round 5 V-track UI parity, Round 6 W-track convergence, and Round 7 X-track slash/font closure complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors.
+Current stage: deep-port complete, with Round 3 T-track tightening, Round 4 U-track closure, Round 5 V-track UI parity, Round 6 W-track convergence, Round 7 X-track slash/font closure, and Round 8 Y-track ST extension same-window compatibility complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors.
 
 ## Round 3 T-track summary (May 2026)
 
@@ -93,6 +93,27 @@ Batch breakdown:
 | M | Extension/Tools | 36 commands: 2 real + 4 plan-only + 30 unsupported |
 | N | Debug/Dev/Secret | 8 commands: 3 real + 5 plan-only |
 
+## Round 8 Y-track summary (May 2026)
+
+Y-track completed the same-window ST extension host:
+
+- `.mes_text` now renders sanitized HTML through `formatMessage()` rather than plain React text.
+- React renders ST DOM anchors and cedes explicit jQuery territories: `#chat`, `#extensions_settings`, `#extensions_settings2`, `#extensionsMenu`, `#movingDivs`, `#leftSendForm`, `#rightSendForm`, and `.mes_buttons_extra`.
+- `mountSTGlobals()` installs `SillyTavern`, `eventSource`, `chat`, `characters`, settings, slash helpers, formatting helpers, and legacy libraries on `globalThis`.
+- ST-standard ESM shim URLs exist at `/script.js` plus six `/scripts/` modules.
+- The messageFormatting pipeline uses showdown + DOMPurify + hooks.
+- Real extension smoke tests verify BME and shujuku bootstrap chains.
+- Round 8 close counts: `ydltavern-surface` 88 tests passing; `ydltavern-st-compat` 703 tests passing.
+
+| Capability | Before R8 | After R8 |
+|---|---|---|
+| `.mes_text` rendering | Plain text via React children | `dangerouslySetInnerHTML` via `formatMessage()` |
+| Extension DOM IDs | Missing | All audited ST IDs rendered |
+| ST globals | sandbox-only | Real `globalThis` via `mountSTGlobals` |
+| ESM compat shims | Missing | `/script.js` + 6 `scripts/` shim files |
+| messageFormatting pipeline | None | Full ST pipeline with hooks |
+| Real extension smoke | Sandbox-only | Bootstrap chain verified |
+
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
@@ -115,9 +136,9 @@ Batch breakdown:
 | tokenizers: OPENAI/GPT2/LLAMA/LLAMA3/CLAUDE | 5 families | real local adapters; Claude is a local text approximation; golden harness is 6/6 perfect | implemented for current golden tokenizer scenarios | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | tokenizers: HF families | 9 families | `@huggingface/tokenizers` path for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A; `fetchHuggingFaceTokenizer` can runtime-fetch `tokenizer.json` through Yggdrasil `kernel.outbound.execute`, with SHA-256 pinning and an LRU cache | partial-real | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | built-in extensions | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
-| extension JS execution | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in; synthetic micro-BME is always-on, real BME is opt-in via `YGG_BME_TEST_PATH` | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
+| extension JS execution | ST extension JS | Same-window ST DOM fork for browser extensions: DOM anchors, `globalThis` bootstrap, ST ESM URL shims, full page APIs; QuickJS sandbox remains available for constrained synthetic tests | partial-real / same-window implemented for Round 8 smoke | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | real model calls | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`; `model.live_realtime` bridge to `kernel.outbound.websocket.*` (OpenAI Realtime real; Gemini Live best-effort stub); requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout, all drawers wired to TavernProvider state | implemented for Round 6 W-track UI state scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes`/`.mes_text` HTML message DOM, extension anchors, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout, provider-backed drawers | implemented for Round 8 extension DOM scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | group chat rotation strategies | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |

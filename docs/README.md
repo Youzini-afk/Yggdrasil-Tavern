@@ -8,8 +8,8 @@
 
 - [`CHARTER.md`](CHARTER.md) —— 不变的根本原则
 - [`COMPATIBILITY.md`](COMPATIBILITY.md) —— SillyTavern 资源与扩展的兼容范围（总图）
-- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.md) —— 兼容覆盖率雷达，按域分项；Round 7 后记录 199/199 slash command canonical 覆盖与 @fontsource 字体打包
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) —— 与 Yggdrasil 的关系；包含 A-N slash command 注册、plan-only/unsupported sentinel 和字体打包策略
+- [`COMPATIBILITY_MATRIX.md`](COMPATIBILITY_MATRIX.md) —— 兼容覆盖率雷达，按域分项；Round 8 后记录 ST 扩展 same-window 兼容、199/199 slash command canonical 覆盖与 @fontsource 字体打包
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) —— 与 Yggdrasil 的关系；包含扩展托管模型、A-N slash command 注册、plan-only/unsupported sentinel 和字体打包策略
 
 ## 内部架构
 
@@ -18,7 +18,7 @@
 
 ## 路线图
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列；X-track 已完成，保留后续性能、重扩展、Phase B 与字体子集事项
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列；Y-track 已完成，保留 Round 9 生产扩展托管、Activity Drawer、性能 baseline 与 Phase B 事项
 
 ## Guides
 
@@ -26,8 +26,16 @@
 - [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) —— 通过 Yggdrasil outbound executor 发起 opt-in 真实模型调用
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) —— 通过 Yggdrasil WebSocket outbound 使用 OpenAI Realtime / Gemini Live stub
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) —— 在 QuickJS sandbox 中 opt-in 加载真实 SillyTavern ESM 扩展
+- [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.md) —— Round 8 same-window ST 扩展兼容承诺、DOM 契约、globals 与 URL layout
 - [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) —— SillyTavern UI/layout fork、9 抽屉、主题、消息、composer 与移动端 parity
 - [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) —— Yggdrasil clients/web 如何解析、iframe 挂载并通过 RPC bridge 运行 YdlTavern surface bundle
+
+
+## Research archives
+
+- [`research/round8/EXTENSION_FORK_RESEARCH.md`](research/round8/EXTENSION_FORK_RESEARCH.md) —— Round 8 same-window ST DOM fork 决策归档
+- [`research/round8/ST_DOM_CONTRACT.md`](research/round8/ST_DOM_CONTRACT.md) —— ST DOM IDs/classes、messageFormatting、DOMPurify hooks 与 ESM/globals 台账
+- [`research/round8/MESSAGE_FORMATTING_PIPELINE.md`](research/round8/MESSAGE_FORMATTING_PIPELINE.md) —— YdlTavern messageFormatting 实现说明
 
 ## ST 源码 inventory（机械扫描，ground truth）
 
@@ -50,7 +58,7 @@
 | [E STScript & slash](tracks/E_STSCRIPT_AND_SLASH.md) | 内置 slash commands / 宏 / STScript 解析器 / 变量域 |
 | [F 内置扩展](tracks/F_BUILTIN_EXTENSIONS.md) | 14 个内置扩展，每个一个 YdlTavern 包 |
 | [G UI 重写](tracks/G_UI_REWRITE.md) | 前端布局 / 操作流 / 主题系统 / 渲染管线 |
-| [H 扩展加载](tracks/H_EXTENSION_LOADER.md) | ST 风格扩展加载器 + Yggdrasil 包通道双轨 |
+| [H 扩展加载 / ST DOM Fork](tracks/H_EXTENSION_LOADER.md) | Same-window ST 扩展兼容 + Yggdrasil 包通道双轨 |
 | [I 高级特性](tracks/I_ADVANCED.md) | World info 触发引擎 / 群聊轮换 / persona 锁 / instruct mode |
 
 ## 最短读路径
@@ -63,7 +71,7 @@
 | 生成 ST 对齐 fixture | [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.md) |
 | 配置真实模型调用 | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) |
 | 配置 Realtime WebSocket 模型 | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) |
-| 加载真实 ST 扩展 | [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) |
+| 加载真实 ST 扩展 | [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.md) → [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) |
 | 理解 UI fork / ST parity | [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) |
 | 本地挂载 YdlTavern surface bundle | [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) |
 | 找 ST 源码里某个 API/事件/命令 | 对应的 `inventory/*.raw.md` |

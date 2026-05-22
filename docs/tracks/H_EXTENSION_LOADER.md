@@ -1,4 +1,4 @@
-# H 轨道：扩展加载
+# H 轨道：扩展加载 / ST DOM Fork
 
 > [English](./H_EXTENSION_LOADER.en.md) · [中文](./H_EXTENSION_LOADER.md)
 
@@ -6,12 +6,12 @@
 
 第三方扩展加载与运行环境。两条平行通道：
 
-1. **ST 风格通道**——老 ST 扩展（`manifest.json` + `index.js`）直接放进来即可。
+1. **ST 风格通道**——老 ST 扩展（`manifest.json` + `index.js`）通过 perfect ST DOM fork same-window 运行，无需修改。
 2. **Yggdrasil 包通道**——能感知 Yggdrasil 公开协议的新扩展走 Yggdrasil 普通能力包，享受平台所有能力。
 
 ## ST 风格通道
 
-加载方式跟 ST 一致：
+Round 8 后状态为 **perfect ST DOM fork — extensions run unmodified**。加载方式跟 ST 一致：
 
 - 扩展放在 `extensions/<name>/` 目录
 - `manifest.json` 声明依赖
@@ -21,10 +21,10 @@
 
 安全：
 
-- ST-style JS 默认跑在 QuickJS sandbox，不与 YdlTavern 主进程共享 JS context。
-- 真实多文件 ESM 扩展加载需要 `realExtensionLoad: true` permission opt-in。
-- `fetch` / XHR / WebSocket / Worker / IndexedDB 当前阻断；未来只能通过 Yggdrasil capability bridge 开放受审计路径。
-- 扩展通过兼容层触发的 host API 调用进入 audit log，记录调用名与脱敏参数形状。
+- ST-style JS 在 YdlTavern 页面同一个 window 中运行，匹配 ST 信任模型。
+- React 渲染 ST DOM anchors，并让出 `#extensions_settings`、`#extensionsMenu`、`#movingDivs`、`.mes_buttons_extra` 等 jQuery territories。
+- `mountSTGlobals()` 提供 `SillyTavern`、`eventSource`、`chat` 等页面 globals。
+- `/script.js` 与 `/scripts/*.js` shims 保持扩展 relative ESM imports 不变。
 - 扩展安装时给警告，信任级别由用户决定（跟 ST 一样）。
 
 ## Yggdrasil 包通道
@@ -53,7 +53,7 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 
 ## 当前状态
 
-当前 H 轨道已有 ESM-capable sandbox loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时、浏览器 stub 和审计。状态为 `partial-sandboxed / partial-opt-in`：synthetic micro-BME smoke always-on，真实 BME smoke 通过 `YGG_BME_TEST_PATH` opt-in；不支持 extension network/fetch/XHR，真实 DOM/style/i18n 注入不完整，真实 git/zip 安装仍未落地。
+当前 H 轨道已有 same-window ST DOM fork 与保留的 ESM-capable sandbox loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时、浏览器 stub 和审计。状态为 Round 8 same-window smoke implemented：BME 与 shujuku bootstrap 已有真实扩展 smoke；QuickJS sandbox 仍用于受限 synthetic tests；真实生产 `/scripts/extensions/<id>/` hosting 与安装 UX 留给 Round 9。
 
 Round 4 U-track 新增的 loader 能力：
 

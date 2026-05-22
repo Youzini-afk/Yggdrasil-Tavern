@@ -1,4 +1,4 @@
-# H Track: Extension Loading
+# H Track: Extension Loading / ST DOM Fork
 
 > [English](./H_EXTENSION_LOADER.en.md) · [中文](./H_EXTENSION_LOADER.md)
 
@@ -6,12 +6,12 @@
 
 Third-party extension loading and runtime environment. Two parallel channels:
 
-1. **ST-style channel** — old ST extensions (`manifest.json` + `index.js`) can be dropped in directly.
+1. **ST-style channel** — old ST extensions (`manifest.json` + `index.js`) run through a perfect ST DOM fork in the same window, unmodified.
 2. **Yggdrasil package channel** — new extensions aware of the Yggdrasil public protocol use ordinary Yggdrasil capability packages and get all platform capabilities.
 
 ## ST-style channel
 
-Loading is the same as ST:
+After Round 8 the status is **perfect ST DOM fork — extensions run unmodified**. Loading is the same as ST:
 
 - Extensions live in the `extensions/<name>/` directory
 - `manifest.json` declares dependencies
@@ -21,10 +21,10 @@ Loading is the same as ST:
 
 Security:
 
-- ST-style JS runs in the QuickJS sandbox by default, not in the YdlTavern main-process JS context.
-- Real multi-file ESM extension loading requires the `realExtensionLoad: true` permission opt-in.
-- `fetch` / XHR / WebSocket / Worker / IndexedDB are currently blocked; future support must go through audited Yggdrasil capability bridges.
-- Host API calls triggered through the compatibility bridge enter the audit log with call names and redacted argument shapes.
+- ST-style JS runs in the same YdlTavern page window, matching the ST trust model.
+- React renders ST DOM anchors and cedes `#extensions_settings`, `#extensionsMenu`, `#movingDivs`, `.mes_buttons_extra`, and related jQuery territories.
+- `mountSTGlobals()` provides page globals such as `SillyTavern`, `eventSource`, and `chat`.
+- `/script.js` and `/scripts/*.js` shims preserve extension relative ESM imports unchanged.
 - Installation warns the user, and the user decides the trust level (same as ST).
 
 ## Yggdrasil package channel
@@ -53,7 +53,7 @@ Depends on Yggdrasil's git installation capability:
 
 ## Current status
 
-Track H now has an ESM-capable sandbox loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, browser stubs, and audit. Status is `partial-sandboxed / partial-opt-in`: synthetic micro-BME smoke is always-on, real BME smoke is opt-in through `YGG_BME_TEST_PATH`; extension network/fetch/XHR are not supported, real DOM/style/i18n injection is incomplete, and real git/zip installation is not in place.
+Track H now has a same-window ST DOM fork plus the retained ESM-capable sandbox loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, browser stubs, and audit. Status is Round 8 same-window smoke implemented: BME and shujuku bootstrap have real-extension smoke coverage; the QuickJS sandbox remains for constrained synthetic tests; production `/scripts/extensions/<id>/` hosting and installation UX remain for Round 9.
 
 Round 4 U-track added these loader capabilities:
 

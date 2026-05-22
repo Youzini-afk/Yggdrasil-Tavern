@@ -2,7 +2,14 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 4 U-track, Round 5 V-track, Round 6 W-track, and Round 7 X-track are complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, World Info budget/probability alignment, macro-engine deep implementation migration, SillyTavern UI parity shell, 9 provider-backed drawers, ST theme JSON import/export, browser-ready surface bundle, 9 mount adapters, the clients/web E2E demo path, @fontsource font bundling, full slash-command A-N canonical coverage, and durable doc updates have landed. This file no longer carries W/X items; it records forward-looking work only.
+Round 8 Y-track is complete: same-window ST extension hosting, messageFormatting (showdown + DOMPurify + hooks), React DOM territory cession, `mountSTGlobals()`, ST URL layout shims, Vite dev middleware, and BME/shujuku real-extension smoke tests have landed. This file no longer carries Y-track items; it records Round 9 candidates and forward-looking work.
+
+## Round 9 candidates
+
+- **Production extension hosting**: implement the host static route for `/scripts/extensions/<id>/`, serving installed extension files and ST compatibility shims.
+- **Activity Drawer**: transparently show extension activity (fetch URL hashes, localStorage writes, slash command registrations, event listeners, DOM mount targets) without blocking.
+- **Performance baseline benchmark**: pin benchmark inputs and reporting for subprocess JSON-RPC, SSE streaming, and prompt construction.
+- **Phase B pain-point resolution**: advance the protocol boundaries and user paths for multi-agent / MCP / vector RAG / ToolManager.
 
 ## Performance baseline benchmark
 
@@ -20,24 +27,9 @@ Round 4 U-track, Round 5 V-track, Round 6 W-track, and Round 7 X-track are compl
 
 ## Surface hosting and marketplace
 
-- **Production bundle hosting**: implement a package static route on the Yggdrasil host so installed package `bundle.mjs`, styles, and fonts are exposed as same-origin URLs.
-- **Real font Unicode subset extension**: the current bundle includes only the @fontsource Latin subset (4 woff2 files, ~50KB); CJK/emoji/broader Unicode coverage needs a separate subset and bundle-size strategy.
+- **Production bundle hosting**: implement a package static route on the Yggdrasil host so installed package `bundle.mjs`, styles, fonts, ST compatibility shims, and extension files are exposed as same-origin URLs.
 - **Cross-origin allowlist**: design surface bundle allowlists, integrity pins, version pins, and audit metadata for community marketplaces; same-origin remains the default.
 - **Multiple mounted surfaces**: expand the current single outlet to manage multiple iframe surfaces while preserving sandbox and lifecycle isolation.
-
-## Heavy extension compatibility decision
-
-- **BME-class extensions**: keep BME and similar heavy extensions as an explicit decision point rather than claiming compatibility by default. Options: A) extend browser/DOM/ESM stubs until functional smoke passes; B) provide audited host capability bridges for high-risk APIs; C) mark unsupported/needs-patch and maintain compatibility records.
-- **Decision criteria**: choose A/B/C based on permission boundaries, audit visibility, maintenance cost, and real user value; do not weaken the sandbox default security model for one extension.
-
-## Real extension loading follow-up
-
-- **Smarter ESM resolution**: handle BME-style `regex/engine.js` paths, extension-local aliases, directory indexes, extensionless imports, and other common path patterns.
-- **More browser stubs**: consider a basic `Map`-backed IndexedDB stub, prioritized for initialization-time schema/setup rather than full Dexie/IndexedDB compatibility.
-- **Audited fetch bridge**: do not enable raw sandbox `fetch`; route outbound through a Yggdrasil outbound capability bridge so host allowlists, `secret_ref`, redaction, audit, and timeout behavior apply.
-- **WASM loading via host bridge**: design a host-mediated WASM loading path for extensions that need native acceleration, while retaining audit and resource limits.
-- **Worker stub**: provide a minimal Worker-like stub, first for initialization and message-registration paths, then reassess real background execution.
-- **Full BME functional smoke**: once ESM resolution and browser stubs are richer, upgrade the current env-gated BME bootstrap smoke into a functional smoke. Until then, do not claim full BME support.
 
 ## Golden harness follow-up
 
@@ -46,6 +38,6 @@ Round 4 U-track, Round 5 V-track, Round 6 W-track, and Round 7 X-track are compl
 
 ## Extension ecosystem follow-up
 
-- Move more plan-only / provider-heavy built-in extensions to executable but audited paths.
 - Maintain separate compatibility records for real third-party extensions: loadable, initializes, core functionality works, needs patch, unsupported.
-- Extension installation still depends on future git/zip/package-installer flows; do not equate loading capability with installation capability.
+- Add legacy library shims and ST module URL shims as community extensions reveal gaps.
+- Extension installation uses the Yggdrasil git package channel; loading capability does not mean installation UX is complete.
