@@ -1,5 +1,6 @@
 import {
   applyPromptBudget,
+  buildModelCallPlan,
   buildOpenAIChatRequest,
   buildPrompt,
   buildTextCompletionRequest,
@@ -18,6 +19,7 @@ import type { Turn } from "@ydltavern/types";
 import { PACKAGE_ID, createCapabilityMeta, inputRecord, stableInputRef, stringField, type HandlerRecord } from "../types.js";
 
 import { readChat, readPromptBlocks, readPromptCriticalInput } from "./prompt-critical.js";
+import { readModelProfile } from "./model.js";
 
 const GENERATE_ID = `${PACKAGE_ID}/turn.generate`;
 const SWIPE_ID = `${PACKAGE_ID}/turn.swipe`;
@@ -55,6 +57,14 @@ export const generateTurnSnapshot = (input: unknown) => {
         stream: readBoolean(record["stream"]),
       })
     : buildOpenAIChatRequest({ model, messages: prompt.messages, sampler, stream: false });
+  const requestPayload = "request" in requestShape ? requestShape.request : requestShape;
+  const modelCallPlan = record["model_profile"] !== undefined || record["modelProfile"] !== undefined
+    ? buildModelCallPlan({
+        profile: readModelProfile(record["model_profile"] ?? record["modelProfile"]),
+        requestShape: requestPayload,
+        stream: readBoolean(record["stream"]),
+      })
+    : undefined;
   const normalizedStreamPreview = normalizeStreamPreview(record["stream_preview"] ?? record["streamPreview"], mode, textProvider);
   const text = deterministicGenerationText(record, prompt.text || prompt.messages.map((message) => message.content).join("\n"));
   const createdAt = 0;
@@ -107,10 +117,11 @@ export const generateTurnSnapshot = (input: unknown) => {
     {
       type: "request_built",
       mode,
-      request_shape: "request" in requestShape ? requestShape.request : requestShape,
+      request_shape: requestPayload,
       diagnostics: "diagnostics" in requestShape ? requestShape.diagnostics : undefined,
       token_budget: tokenBudget,
       prompt_routing: promptRouting.diagnostics,
+      model_call_plan: modelCallPlan,
     },
     { type: "stream_preview", frames: normalizedStreamPreview },
     { type: "token", text },
@@ -121,6 +132,7 @@ export const generateTurnSnapshot = (input: unknown) => {
     meta: createCapabilityMeta(GENERATE_ID, { deterministic: true, fake_generation: true, model }),
     prompt,
     request_shape: requestShape,
+    model_call_plan: modelCallPlan,
     token_budget: tokenBudget,
     prompt_routing: promptRouting,
     normalized_stream_preview: normalizedStreamPreview,

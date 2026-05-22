@@ -1,5 +1,6 @@
 export * from './macros.js';
 export * from './golden.js';
+export * from './model-boundary.js';
 export * from './openai.js';
 export * from './prompt.js';
 export * from './prompt-critical.js';

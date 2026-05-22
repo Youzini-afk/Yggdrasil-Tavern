@@ -4,6 +4,7 @@ import { assetHandlers } from "./capabilities/asset.js";
 import { describeHandlers } from "./capabilities/describe.js";
 import { createDiagnosticsHandlers } from "./capabilities/diagnostics.js";
 import { extensionHandlers } from "./capabilities/extensions.js";
+import { modelHandlers } from "./capabilities/model.js";
 import { presetHandlers } from "./capabilities/preset.js";
 import { scriptHandlers } from "./capabilities/script.js";
 import { turnHandlers } from "./capabilities/turn.js";
@@ -42,6 +43,7 @@ const handlers: HandlerRecord = {
   ...assetHandlers,
   ...scriptHandlers,
   ...extensionHandlers,
+  ...modelHandlers,
   ...createDiagnosticsHandlers(counters),
 };
 

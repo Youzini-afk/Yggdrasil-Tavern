@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { assetHandlers } from "../dist/capabilities/asset.js";
 import { extensionHandlers } from "../dist/capabilities/extensions.js";
+import { modelHandlers } from "../dist/capabilities/model.js";
 import { presetHandlers } from "../dist/capabilities/preset.js";
 import { scriptHandlers } from "../dist/capabilities/script.js";
 import { turnHandlers } from "../dist/capabilities/turn.js";
@@ -257,6 +258,50 @@ test("turn.generate can build text completion and normalize stream preview", () 
   assert.equal(streamFrame.frames[0].type, "delta");
   assert.equal(streamFrame.frames[1].type, "reasoning_delta");
   assert.equal(streamFrame.frames[2].type, "end");
+});
+
+test("model capabilities plan calls and consume stream frames", () => {
+  const planned = modelHandlers[`${PACKAGE_ID}/model.plan_call`]({
+    profile: { provider: "fake-local", model: "fake-model", mode: "chat" },
+    request_shape: { messages: [{ role: "user", content: "hi" }] },
+    stream: true,
+  });
+
+  assert.equal(planned.plan.live, false);
+  assert.equal(planned.plan.requiresHostExecution, true);
+  assert.equal(planned.plan.stream, true);
+  assert.equal(planned.plan.envelope.method, "kernel.outbound.execute");
+  assert.equal(planned.plan.envelope.destination_host, "fake-local");
+
+  const consumed = modelHandlers[`${PACKAGE_ID}/model.consume_stream`]({
+    frames: [
+      { type: "delta", text: "hi" },
+      { type: "reasoning_delta", text: "why" },
+      { type: "tool_call_delta", toolCall: { id: "tool" } },
+      { type: "end", reason: "stop" },
+    ],
+  });
+
+  assert.equal(consumed.consumed.text, "hi");
+  assert.equal(consumed.consumed.reasoning, "why");
+  assert.deepEqual(consumed.consumed.toolCalls, [{ id: "tool" }]);
+  assert.equal(consumed.consumed.ended, true);
+});
+
+test("turn.generate includes optional model call plan when model_profile exists", () => {
+  const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
+    id: "generate_model_plan_test",
+    chat: sampleChat,
+    prompt_blocks: promptBlocks,
+    model: "phase3-model",
+    model_profile: { provider: "fake-local", model: "phase3-model", mode: "chat", stream: false },
+  });
+
+  const requestFrame = output.frames.find((item) => item.type === "request_built");
+  assert.equal(output.model_call_plan.live, false);
+  assert.equal(output.model_call_plan.envelope.destination_host, "fake-local");
+  assert.equal(output.model_call_plan.envelope.request.model, "phase3-model");
+  assert.equal(requestFrame.model_call_plan.envelope.request.model, "phase3-model");
 });
 
 test("turn.generate exposes prompt-critical diagnostics frame", () => {
