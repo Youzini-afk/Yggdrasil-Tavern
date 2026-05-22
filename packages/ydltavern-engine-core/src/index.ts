@@ -112,6 +112,26 @@ export type {
 } from './text-completion-providers.js';
 export * from './token-budget.js';
 export * from './tokenizer.js';
+export {
+  TOKENIZER,
+  ENCODE_TOKENIZERS,
+  TOKENIZER_URLS,
+  getTokenizerBestMatch,
+  guesstimate,
+  planCountTokensOpenAI,
+  tokenCountCacheKey,
+  TokenCountCache,
+  getFriendlyTokenizerName,
+} from './tokenizers-st.js';
+export type {
+  TokenizerId,
+  TokenizerEndpoints,
+  BestMatchApi,
+  BestMatchInput,
+  CountTokensOpenAIInput,
+  CountTokensOpenAIPlan,
+  TokenCountCacheKeyInput,
+} from './tokenizers-st.js';
 export * from './world-info.js';
 export {
   WORLD_INFO_POSITION,
