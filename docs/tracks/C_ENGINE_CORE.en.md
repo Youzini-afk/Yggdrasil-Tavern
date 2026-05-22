@@ -53,16 +53,18 @@ YdlTavern only handles: translate ST preset + Turn model into "which provider, w
 
 ## Current status
 
-`packages/ydltavern-engine-core` now has a PromptManager / generation-prompt fixture-aligned subset:
+`packages/ydltavern-engine-core` now has ST-faithful PromptManager + ChatCompletion + chat/text completion adapters + instruct mode + tokenizer registry:
 
-- sampler alias normalization and OpenAI request shape builder;
-- `compilePromptCollection()` supports ST-like `prompts` / `prompt_order`, enabled state, triggers, markers, custom prompts, and main/jailbreak override diagnostics;
-- `buildPromptCriticalBlocks()` can fill worldInfoBefore/worldInfoAfter/persona/character/scenario/chatHistory/jailbreak through PromptManager markers;
-- `buildPrompt()` still owns the current messages/text output and preserves block metadata.
+- `prompt-manager-st.ts` — `Prompt`/`PromptCollection`/`Message`/`MessageCollection`/`ChatCompletion` classes; `preparePromptsForChatCompletion`, `populationInjectionPrompts`, `populateChatHistory`, `populateDialogueExamples`, `squashSystemMessages`; `INJECTION_POSITION` (RELATIVE/ABSOLUTE), `NAMES_BEHAVIOR`, `EXTENSION_PROMPT_TYPES`, `EXTENSION_PROMPT_ROLES`; 12 default prompts (main → worldInfoBefore → personaDescription → charDescription → charPersonality → scenario → enhanceDefinitions → nsfw → worldInfoAfter → dialogueExamples → chatHistory → jailbreak); `injection_trigger` filtering; main/jailbreak override with `{{original}}`; group nudge; squash with named/excluded id rules; ChatCompletion `tokenBudget = context - response`.
+- `chat-completion-providers.ts` — `buildChatRequest` covering 25 sources with provider-specific overrides (O1/GPT-5 max_completion_tokens + system→user + tool stripping, Claude assistant_prefill on continue, Gemini stop≤5×16chars, Cohere top_p clamp, OpenRouter middleout/quantizations, DeepSeek reasoning_effort auto→omit, Grok-3-mini penalties strip, Workers AI top_k cap 50, etc.); `applyStreamChunk` state machine for OpenAI/Claude/Gemini/Mistral/OpenRouter/DeepSeek delta merge with reasoning + tool_calls + multi-swipe.
+- `text-completion-providers.ts` — `resolveTextGenServer` (mancer/togetherai/infermaticai/dreamgen/openrouter/featherless fixed bases); 15 sources (ooba, mancer, vllm, aphrodite, tabby, koboldcpp, togetherai, llamacpp, ollama, infermaticai, dreamgen, openrouter, featherless, huggingface, generic); ooba/llamacpp/ollama/vllm/aphrodite/mancer-specific samplers; llamacpp/ollama aliasing; HuggingFace top_p clamp; mancer epsilon/eta_cutoff/1000; `applyTextStreamChunk`; Horde polling (MIN_LENGTH=16, MAX_RETRIES=480).
+- `instruct.ts` — full `InstructTemplate` schema; `formatInstructModeChat` with prefix/suffix selection (first/last variants, system_same_as_user, names_behavior); `formatInstructModeStoryString`, `formatInstructModeExamples`, `getInstructStoppingSequences` (sequences_as_stop_strings + dedupe + wrap newline prefix); built-in templates ChatML, Alpaca, Vicuna, Mistral, Llama 3.
+- `tokenizers-st.ts` — `TOKENIZER` enum (NONE/GPT2/OPENAI/LLAMA/NERD/NERD2/MISTRAL/YI/CLAUDE/LLAMA3/GEMMA/JAMBA/QWEN2/COMMAND_R/NEMO/DEEPSEEK/COMMAND_A + API_TEXTGENERATIONWEBUI/API_KOBOLD/BEST_MATCH); `ENCODE_TOKENIZERS` set; `TOKENIZER_URLS` endpoint table; `getTokenizerBestMatch` heuristics across novel/kobold/textgen/openai/openrouter/cohere/electronhub/chutes/workers_ai/perplexity/groq; `guesstimate` (UTF-8 byte length / 3.35); `planCountTokensOpenAI`; `TokenCountCache` LRU.
+- Still includes pre-existing sampler alias normalization, token budgeting, golden harnesses, stream frame normalization, and model-boundary plans.
 
-`packages/ydltavern-engine` passes PromptManager diagnostics, WI advanced diagnostics, nextState, and frames through `preset.compile` and `turn.generate`; generation is still deterministic fake behavior with no network and no secrets.
+`packages/ydltavern-engine` passes PromptManager diagnostics, WI advanced diagnostics, nextState, and frames through `preset.compile` and `turn.generate`; 20 new deep-port JSON-RPC capabilities added. Generation is still deterministic fake behavior with no network and no secrets.
 
-This is still `partial`. Text-completion request shapes, approx tokenizer/token budgeting, golden harnesses, stream frame normalization, and model-boundary plans are now present. Provider-specific streaming, real tokenizers, a full byte-level ST PromptManager golden harness, and live model calls are not complete yet.
+Still pending: real tokenizer binaries via wasm, byte-level golden harnesses, live model calls.
 
 ## Out of scope
 

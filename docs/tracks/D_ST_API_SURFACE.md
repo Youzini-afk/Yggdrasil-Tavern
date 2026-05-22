@@ -47,15 +47,16 @@ YdlTavern 自己的 UI 也消费同一份 contract。这是关键——核心团
 
 ## 当前状态
 
-Phase D contract MVP 已落地到 `packages/ydltavern-st-compat`：
+Phase D contract MVP 和深度移植已落地到 `packages/ydltavern-st-compat`：
 
 - live `chat[]` Proxy 读写会更新内部 Turn store；
-- `getContext()` 返回稳定 context，包含常用字段、`eventSource`、`event_types`；
-- `addOneMessage`、`saveChat`、`saveSettingsDebounced`、`Generate`、`substituteParams` 有最小真实行为；
+- `getContext()` 返回完整 ST context shape（`context-st.ts`），包含 state（chat/characters/groups/characterId/groupId/chatId/name1/name2/mainApi/onlineStatus/maxContext/chatMetadata/menuType/extensionSettings/powerUserSettings/tags/tagMap）、bridges（eventSource/extensionPrompts/variables/swipe/toolManager）、functions（getCurrentChatId/reloadCurrentChat/saveChat/saveSettingsDebounced/saveMetadata/updateChatMetadata/addOneMessage/deleteLastMessage/generate/generateRaw/substituteParams/setExtensionPrompt/getExtensionPrompt/getRequestHeaders/getTokenCountAsync/isMobile/etc）、legacy aliases（event_types/eventTypes, main_api/mainApi, online_status/onlineStatus）、symbols（ignore/unset）、deprecated stubs；
+- `ExtensionPromptStore`（`context-st.ts`）支持 `set`/`render`/`maxDepth`/`removeDepthPrompts` + async filter callback，对应 ST 的 `setExtensionPrompt`/`getExtensionPrompt` 语义；
+- `addOneMessage`、`saveChat`、`saveSettingsDebounced`、`Generate`、`substituteParams` 有真实行为；
 - fake generation 会派发 generation lifecycle 事件并追加 assistant message；
-- 单元测试覆盖 push/edit/delete/splice、事件派发、fake generation、基础宏替换。
+- 单元测试覆盖 push/edit/delete/splice、事件派发、fake generation、完整宏引擎和 STScript 运行时。
 
-这仍是 `partial`，不是字节级 ST 对齐；下一步要继续补全 globals、slash/STScript 入口和真实 ST payload 对齐。
+这仍是 `partial`，不是字节级 ST 对齐；下一步要继续补全真实 DOM/network bridges、真实 generate/generateRaw、popups 和 payload 对齐。
 
 ## 不在范围内
 

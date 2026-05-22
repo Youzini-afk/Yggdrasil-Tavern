@@ -56,7 +56,7 @@
 - PNG `chara` 元数据提取测试；
 - importer 保守保留未知字段和 raw payload。
 
-当前已拆分 importer 模块，并新增 preset、persona、theme、quick reply、regex、instruct 导入骨架，以及 character/worldbook/chat/preset JSON exporter。仍是 `partial`：CharX、PNG 写回、真实二进制 roundtrip 和完整字段级对齐还未完成。
+当前已拆分 importer 模块，并新增 preset、persona、theme、quick reply、regex、instruct 导入骨架，以及 character/worldbook/chat/preset JSON exporter。仍是 `partial`：CharX、PNG 写回、真实二进制 roundtrip 和完整字段级对齐还未完成。深度移植阶段聚焦引擎/运行时侧；资产层暂未新增模块，CharX、PNG roundtrip 仍在后续阶段。
 
 ## 不在范围内
 

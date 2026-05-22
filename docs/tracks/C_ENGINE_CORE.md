@@ -53,16 +53,18 @@ YdlTavern 自己只负责：把 ST preset + Turn 模型翻译成“哪个 provid
 
 ## 当前状态
 
-`packages/ydltavern-engine-core` 已有 PromptManager / generation-prompt fixture-aligned subset：
+`packages/ydltavern-engine-core` 已有 ST-faithful PromptManager + ChatCompletion + chat/text completion 适配器 + instruct mode + tokenizer registry：
 
-- sampler alias normalization 与 OpenAI request shape builder；
-- `compilePromptCollection()` 支持 ST-like `prompts` / `prompt_order`、enabled、trigger、marker、custom prompt、main/jailbreak override diagnostics；
-- `buildPromptCriticalBlocks()` 可通过 PromptManager marker 填充 worldInfoBefore/worldInfoAfter/persona/character/scenario/chatHistory/jailbreak；
-- `buildPrompt()` 仍负责当前 messages/text 输出，保留 block metadata。
+- `prompt-manager-st.ts` —— `Prompt`/`PromptCollection`/`Message`/`MessageCollection`/`ChatCompletion` classes；`preparePromptsForChatCompletion`、`populationInjectionPrompts`、`populateChatHistory`、`populateDialogueExamples`、`squashSystemMessages`；`INJECTION_POSITION` (RELATIVE/ABSOLUTE)、`NAMES_BEHAVIOR`、`EXTENSION_PROMPT_TYPES`、`EXTENSION_PROMPT_ROLES`；12 default prompts (main → worldInfoBefore → personaDescription → charDescription → charPersonality → scenario → enhanceDefinitions → nsfw → worldInfoAfter → dialogueExamples → chatHistory → jailbreak)；injection_trigger filtering；main/jailbreak override with `{{original}}`；group nudge；squash with named/excluded id rules；ChatCompletion `tokenBudget = context - response`。
+- `chat-completion-providers.ts` —— `buildChatRequest` 覆盖 25 个 sources，含 provider-specific overrides（O1/GPT-5 max_completion_tokens + system→user + tool stripping、Claude assistant_prefill on continue、Gemini stop≤5×16chars、Cohere top_p clamp、OpenRouter middleout/quantizations、DeepSeek reasoning_effort auto→omit、Grok-3-mini penalties strip、Workers AI top_k cap 50 等）；`applyStreamChunk` 状态机覆盖 OpenAI/Claude/Gemini/Mistral/OpenRouter/DeepSeek delta merge + reasoning + tool_calls + multi-swipe。
+- `text-completion-providers.ts` —— `resolveTextGenServer` (mancer/togetherai/infermaticai/dreamgen/openrouter/featherless fixed bases)；15 个 sources（ooba, mancer, vllm, aphrodite, tabby, koboldcpp, togetherai, llamacpp, ollama, infermaticai, dreamgen, openrouter, featherless, huggingface, generic）；ooba/llamacpp/ollama/vllm/aphrodite/mancer-specific samplers；llamacpp/ollama aliasing；HuggingFace top_p clamp；mancer epsilon/eta_cutoff/1000；`applyTextStreamChunk`；Horde polling (MIN_LENGTH=16, MAX_RETRIES=480)。
+- `instruct.ts` —— full `InstructTemplate` schema；`formatInstructModeChat` with prefix/suffix selection (first/last variants, system_same_as_user, names_behavior)；`formatInstructModeStoryString`、`formatInstructModeExamples`、`getInstructStoppingSequences` (sequences_as_stop_strings + dedupe + wrap newline prefix)；built-in templates ChatML, Alpaca, Vicuna, Mistral, Llama 3。
+- `tokenizers-st.ts` —— `TOKENIZER` enum (NONE/GPT2/OPENAI/LLAMA/NERD/NERD2/MISTRAL/YI/CLAUDE/LLAMA3/GEMMA/JAMBA/QWEN2/COMMAND_R/NEMO/DEEPSEEK/COMMAND_A + API_TEXTGENERATIONWEBUI/API_KOBOLD/BEST_MATCH)；`ENCODE_TOKENIZERS` set；`TOKENIZER_URLS` endpoint table；`getTokenizerBestMatch` heuristics across novel/kobold/textgen/openai/openrouter/cohere/electronhub/chutes/workers_ai/perplexity/groq；`guesstimate` (UTF-8 byte length / 3.35)；`planCountTokensOpenAI`；`TokenCountCache` LRU。
+- 仍包含原有 sampler alias normalization、token budget、golden harness、stream frame normalization 与 model boundary plan。
 
-`packages/ydltavern-engine` 的 `preset.compile` 和 `turn.generate` 会透传 PromptManager diagnostics、WI advanced diagnostics、nextState 和 frames；仍是 deterministic fake generation，不出网、不用 secret。
+`packages/ydltavern-engine` 的 `preset.compile` 和 `turn.generate` 会透传 PromptManager diagnostics、WI advanced diagnostics、nextState 和 frames；新增 20 个 deep-port JSON-RPC capability。仍是 deterministic fake generation，不出网、不用 secret。
 
-这仍是 `partial`。当前已加入 text completion request shapes、approx tokenizer/token budget、golden harness、stream frame normalization 与 model boundary plan。provider-specific streaming、真实 tokenizer、完整 ST PromptManager 字节级 golden harness 和真实模型调用仍未完成。
+仍待完成：真实 tokenizer binaries via wasm、字节级 golden harness、真实模型调用。
 
 ## 不在范围内
 

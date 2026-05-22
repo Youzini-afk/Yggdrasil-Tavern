@@ -51,7 +51,18 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 
 ## 当前状态
 
-`@ydltavern/extensions` 已有 ST-style loader skeleton：manifest parse、bundle discovery、loading_order 排序、compat adapter、permission gate、hook registry 与 non-executing load plan。`ydltavern-engine` 暴露 loader discover/plan/compat/hooks capability。仍是 `partial`：不会执行 extension JS，不读真实文件/zip/git，也没有真实 sandbox。
+`@ydltavern/extensions` 已有 ST-style loader 深度移植（`loader-st.ts`）：
+
+- `STExtensionManifest` schema（display_name/loading_order/requires/optional/dependencies/minimum_client_version/js/css/author/version/homePage/hooks/i18n/auto_update/generate_interceptor）；
+- `parseSTManifest` with required/type validation + unknown-field warnings；
+- `isActivationEligible` checking disabled/extras/dependencies/minimum_client_version；
+- `sortByActivationOrder` (loading_order asc, display_name asc)；
+- `buildLoadPlan` emitting add_locale/add_script/add_style/register_interceptor/call_hook/mark_active steps in order；
+- `STDisabledExtensionsStore`；
+- `planActivateAll` with progressive dependency tracking。
+- Plan-only —— 不执行 extension JS，不读真实文件/zip/git，也没有真实 sandbox。
+
+`ydltavern-engine` 暴露 `extension.loader.parse_manifest` 和 `extension.loader.plan_activate_all` capability。仍是 `partial`：不会执行 extension JS，不读真实文件/zip/git，也没有真实 sandbox。
 
 ## 不在范围内
 

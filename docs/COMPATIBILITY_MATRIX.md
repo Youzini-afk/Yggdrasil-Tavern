@@ -20,27 +20,27 @@
 - `deferred` —— 内部决定不做
 - `blocked` —— 等其他轨道
 
-当前阶段：主要能力面第一轮开发完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，但除明确说明外还不是字节级对齐。
+当前阶段：深度移植完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是字节级对齐。
 
 ## 总览
 
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
 |---|---:|---:|---|---|---|
-| event_types | 104 | 常量 + 核心事件派发 | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| 内置 slash commands | 153 | core commands + STScript parser/evaluator skeleton | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| 宏 / macros | 80+ | core/env/time subset + trace | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| text completion sources | 17 | generic/textgen/kobold/ollama request shape subset | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| event_types | 104 | 常量 + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
+| 内置 slash commands | 153 | STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry; commands implemented = the ST core subset emitted as registry metadata | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| 宏 / macros | 80+ | registry-based engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers（含 alias） | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| world info trigger types | 32 | keyword/regex/constant + deterministic filters | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info entry schema 字段 | 50+ | core + routing/group/probability/timed fields | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info 评估流水线步骤 | 39 | scan/routing/deterministic filters/seeded group/probability/timed state subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
-| 角色卡 V1 字段 | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| 角色卡 V2 字段 | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| 角色卡 V3 字段 | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema 字段 | 75 | fixture request shape + prompt_order + token budget/golden harness subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
-| prompt manager 标识符 | 13 typed | prompt_order/marker/effective collection subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
-| 内置扩展 | 14 | token-counter/regex/quick-reply/memory/vectors wrapper subset | partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
+| world info trigger types | 32 | keyword/regex/constant + 4 selectiveLogic modes + decorators + recursion gates + sticky/cooldown/delay | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info entry schema 字段 | 50+ | full schema fields including character_filter, triggers, group, sticky/cooldown/delay, scanDepth, decorators, etc. | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info 评估流水线步骤 | 39 | scan source assembly + decorator → activation precedence → selectiveLogic → recursion + delay/sticky/cooldown + budget + 8-bucket routing with AN patch + atDepth (depth, role) merge | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
+| 角色卡 V1 字段 | 16 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| 角色卡 V2 字段 | 33 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| 角色卡 V3 字段 | 14 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
+| OpenAI preset schema 字段 | 75 | PromptManager preparePrompts + ChatCompletion budget + populationInjection + populateChatHistory + populateDialogueExamples + squashSystemMessages | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| prompt manager 标识符 | 13 typed | 12 default prompts + RELATIVE/ABSOLUTE injection_position + injection_depth/order + injection_trigger + forbid_overrides + main/jailbreak override with {{original}} | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
+| 内置扩展 | 14 | regex (full engine) + memory (settings + triggers + format) + vectors (settings + chunkText + injection plan) + quick-reply (auto-execute hook map) + token-counter + caption + tts + translate + expressions + attachments DataBank + connection-manager profiles + stable-diffusion trigger processor (plan-only for non-pure-logic ones) | partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | 群聊轮换策略 | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -55,29 +55,29 @@
 |---|---|---|---|
 | `@ydltavern/types` | 全部 | Turn 模型、ST event/slash/macro/connector/sampler/world-info/prompt-manager 常量 | stubbed 基础 |
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
-| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`Generate`、宏、slash registry、STScript parser/evaluator skeleton | partial |
-| `@ydltavern/engine-core` | C + I | chat/text request builders、token budget、PromptManager、World Info advanced、golden harness、stream frames、model boundary plan | partial |
-| `@ydltavern/surface` | G | Tavern-like product shell：chat main、settings/assets/extensions/dev drawers，仍为 surface bundle | partial |
-| `@ydltavern/extensions` | F + H | 内置扩展 wrapper、extension registry、ST-style manifest loader plan、permission gate、hook registry | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、完整 `getContext()` shape（`context-st.ts`）、`eventSource`、`Generate`、宏引擎（`macros-st.ts`：完整 ST registry + 递归展开 + PickState）、STScript 运行时（`stscript-st.ts`：scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution）、slash registry | partial |
+| `@ydltavern/engine-core` | C + I | chat/text request builders（`chat-completion-providers.ts` 25 sources + `text-completion-providers.ts` 15 sources）、stream chunk 状态机（`chat-completion-providers.ts`）、token budget、PromptManager（`prompt-manager-st.ts`：12 default prompts + RELATIVE/ABSOLUTE injection + injection_trigger + main/jailbreak override + squash + ChatCompletion tokenBudget）、World Info（`world-info-st.ts`：8 bucket routing + 4 selectiveLogic + regex + matchKeys + decorators + activation precedence + timed effects sticky/cooldown/delay + routeActivatedEntries）、instruct mode（`instruct.ts`：full InstructTemplate schema + formatInstructModeChat + stoppingSequences + built-in templates）、tokenizer registry（`tokenizers-st.ts`：20 variants + bestMatch heuristics + guesstimate + TokenCountCache）、golden harness、stream frames、model boundary plan | partial |
+| `@ydltavern/surface` | G | Tavern-like product shell + 5 诊断 inspector（PromptManager / World Info / STScript / Extensions / Connector）接入 DevDiagnosticsPanel，仍为 surface bundle | partial |
+| `@ydltavern/extensions` | F + H | regex（`extensions-st.ts`：完整引擎 + depth gating + capture groups + RegexProvider LRU）、memory（settings + triggers + format）、vectors（18 sources + chunkText + injection plan）、quick-reply（9 auto-execute hooks）、token-counter、caption（4 sources + plan）、TTS（27 providers + plan）、translate（9 providers + plan）、expressions（classify + sprite cache）、attachments（3 scopes + DataBank）、connection-manager（18 profile fields + snapshot/apply）、stable-diffusion（trigger processor + 10 backends）、extension loader（`loader-st.ts`：manifest parse + validation + warnings + activation eligibility + sort + buildLoadPlan 6 step kinds + planActivateAll + STDisabledExtensionsStore） | partial |
 
 ## 内置扩展覆盖度（F 轨道）
 
 | extension | LoC | listens | emits | slash | API | 实现状态 |
 |---|---:|---:|---:|---:|---:|---|
 | assets | 598 | 1 | 0 | 0 | 3 | inventoried |
-| attachments | 410 | 3 | 0 | 8 | 0 | inventoried |
-| caption | 813 | 2 | 2 | 1 | 2 | inventoried |
-| connection-manager | 1158 | 0 | 13 | 6 | 0 | inventoried |
-| expressions | 2576 | 3 | 0 | 7 | 4 | inventoried |
+| attachments | 410 | 3 | 0 | 8 | 0 | partial — 3 scopes + 14 slash commands + DataBankStore CRUD |
+| caption | 813 | 2 | 2 | 1 | 2 | partial — 4 sources + planCaption |
+| connection-manager | 1158 | 0 | 13 | 6 | 0 | partial — 18 profile fields + snapshot/apply |
+| expressions | 2576 | 3 | 0 | 7 | 4 | partial — classify endpoint + sprite cache |
 | gallery | 853 | 3 | 0 | 2 | 2 | inventoried |
-| memory | 1131 | 1 | 0 | 1 | 0 | inventoried |
-| quick-reply | 321 | 9 | 0 | 0 | 1 | inventoried |
-| regex | 2157 | 6 | 0 | 4 | 0 | inventoried |
-| stable-diffusion | 5998 | 3 | 4 | 4 | 67 | inventoried |
-| token-counter | 118 | 0 | 0 | 1 | 0 | inventoried |
-| translate | 804 | 5 | 0 | 1 | 8 | inventoried |
-| tts | 1622 | 6 | 3 | 1 | 0 | inventoried |
-| vectors | 2358 | 9 | 1 | 9 | 9 | inventoried |
+| memory | 1131 | 1 | 0 | 1 | 0 | partial — full settings + shouldSummarize triggers + formatMemoryValue |
+| quick-reply | 321 | 9 | 0 | 0 | 1 | partial — 9 auto-execute hook events + autoExecuteCandidates |
+| regex | 2157 | 6 | 0 | 4 | 0 | partial — full engine: REGEX_PLACEMENT + getRegexedString + depth gating + capture groups + RegexProvider LRU |
+| stable-diffusion | 5998 | 3 | 4 | 4 | 67 | partial — trigger processor with character/scenery patterns + 10 backends (plan-only) |
+| token-counter | 118 | 0 | 0 | 1 | 0 | partial — tokenCounterPlan |
+| translate | 804 | 5 | 0 | 1 | 8 | partial — 9 providers + shouldTranslateMessage auto_mode |
+| tts | 1622 | 6 | 3 | 1 | 0 | partial — 27 providers + selectTtsSegments + planTtsNarration |
+| vectors | 2358 | 9 | 1 | 9 | 9 | partial — 18 sources + chunkText + planVectorsInjection |
 | **共计** | 20925 | 51 | 23 | 45 | 96 | — |
 
 ## 兼容范围之外

@@ -48,18 +48,21 @@ output: next speaker selection exactly matches ST with the same seed
 
 ## Current status
 
-`packages/ydltavern-engine-core` now has a World Info advanced fixture-aligned subset:
+`packages/ydltavern-engine-core` now has the deep-ported World Info module (`world-info-st.ts`):
 
-- keyword / regex / constant activation, primary / secondary logic, case-sensitive, whole-word, recursive scan;
-- before/after/ANTop/ANBottom/atDepth/EMTop/EMBottom/outlet routing with AN patch, depth entries, outlets, and routing trace;
-- deterministic filters for generation triggers, character filter, decorators, scan-data flags, min activations, delayUntilRecursion / excludeRecursion;
-- seeded probability, inclusion group, groupOverride, groupWeight, useGroupScoring;
-- sticky/cooldown/delay runtime state and multi-generation sequence diagnostics;
-- persona, character description / personality / scenario, author note, post-history, and instruct blocks.
+- `WORLD_INFO_POSITION` 8 buckets; `WI_ANCHOR_POSITION`; `EXTENSION_PROMPT_ROLE`;
+- `SELECTIVE_LOGIC` 4 modes (AND_ANY/NOT_ALL/NOT_ANY/AND_ALL);
+- `parseRegexFromString` accepting `/.../gimsuy`, rejecting unescaped `/`; `escapeRegex`;
+- `matchKeys` (regex bypasses case/wholeWord; single-token wholeWord uses `(?:^|\W)(needle)(?:$|\W)` boundary regex; multi-word uses includes);
+- `selectiveLogicMatches`;
+- `parseDecorators` (`@@activate` / `@@dont_activate`, `@@@` escape); `decideActivation` (precedence: activate > dont_activate > external > constant > sticky > keyword);
+- timed effects state machine (sticky/cooldown/delay) with `chat_metadata.timedWorldInfo` shape;
+- `routeActivatedEntries` with sort-desc-then-unshift bucket assembly + AN patch + atDepth merge by (depth,role) + outlets by name;
+- still includes pre-existing keyword/regex/constant activation, primary/secondary logic, case-sensitive, whole-word, recursive scan, seeded probability, inclusion group, groupOverride, groupWeight, useGroupScoring, persona, character blocks, author note, post-history, and instruct blocks.
 
-`packages/ydltavern-engine` passes these results through `world_info.evaluate`, `preset.compile`, and `turn.generate`. `@ydltavern/surface` displays PromptManager order, marker fills, WI routing/group/probability/timed trace.
+`packages/ydltavern-engine` passes these results through `world_info.evaluate`, `world_info.route`, `world_info.match_keys`, `preset.compile`, and `turn.generate`. `@ydltavern/surface` displays PromptManager order, marker fills, WI routing/group/probability/timed trace.
 
-This is still `partial`. Vector WI, full persona lock, group rotation, tokenizer budgeting, byte-level ST extension-prompt routing, and byte-level instruct template alignment are not complete yet.
+This is still `partial`. Still pending: full ST persona lock, group chat rotation, byte-level alignment.
 
 ## Out of scope
 

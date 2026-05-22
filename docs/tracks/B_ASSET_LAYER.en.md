@@ -56,7 +56,7 @@ Each importer is paired with an alignment fixture:
 - PNG `chara` metadata extraction test;
 - importers conservatively preserve unknown fields and raw payloads.
 
-This is not the full asset layer yet: exporters, CharX, preset/persona/theme/quick reply/regex/instruct remain to be implemented.
+Importer modules have been split out with new preset, persona, theme, quick reply, regex, and instruct import skeletons, plus character/worldbook/chat/preset JSON exporters. This is still `partial`: CharX, PNG write-back, real binary roundtrip, and full field-level alignment are not complete yet. The deep-port pass focused on the engine/runtime side; the asset layer did not gain new modules in this stage. CharX and PNG roundtrip remain for later stages.
 
 ## Out of scope
 

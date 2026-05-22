@@ -116,4 +116,4 @@ YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预
 
 ## 当前状态
 
-YdlTavern 的主要开发面已经完成一轮系统推进：资产导入/导出、ST 兼容运行时、STScript skeleton、引擎核心、内置扩展 wrapper、扩展 loader plan、模型调用边界 plan、产品 surface shell 都已落到可测试代码。当前状态仍是 `partial`：许多能力是 fixture-aligned、plan-only 或 product-shell skeleton；字节级兼容、真实扩展 JS 执行、真实模型调用和发布壳还在后续阶段。
+YdlTavern 的主要开发面已完成一轮系统推进和一轮深度移植：资产导入/导出、ST 兼容运行时、STScript 运行时、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry）、内置扩展逻辑、扩展 loader plan、模型调用边界 plan、产品 surface shell 和 5 个诊断 inspector 都已落到可测试代码。深度移植模块（`prompt-manager-st.ts`、`world-info-st.ts`、`chat-completion-providers.ts`、`text-completion-providers.ts`、`instruct.ts`、`tokenizers-st.ts`、`macros-st.ts`、`stscript-st.ts`、`context-st.ts`、`extensions-st.ts`、`extensions-st-providers.ts`、`loader-st.ts`、`deep-port.ts`）从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实网络、真实模型调用、真实 tokenizer binaries、真实扩展 JS 执行和字节级 golden harness 还在后续阶段。

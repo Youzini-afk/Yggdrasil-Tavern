@@ -51,7 +51,18 @@ Depends on Yggdrasil's git installation capability:
 
 ## Current status
 
-`@ydltavern/extensions` now has an ST-style loader skeleton: manifest parse, bundle discovery, loading_order sort, compatibility adapter, permission gate, hook registry, and non-executing load plans. `ydltavern-engine` exposes loader discover/plan/compat/hooks capabilities. This is still `partial`: extension JavaScript is not executed, real files/zip/git are not read, and there is no real sandbox yet.
+`@ydltavern/extensions` now has a deep-ported ST-style loader (`loader-st.ts`):
+
+- `STExtensionManifest` schema (display_name/loading_order/requires/optional/dependencies/minimum_client_version/js/css/author/version/homePage/hooks/i18n/auto_update/generate_interceptor);
+- `parseSTManifest` with required/type validation + unknown-field warnings;
+- `isActivationEligible` checking disabled/extras/dependencies/minimum_client_version;
+- `sortByActivationOrder` (loading_order asc, display_name asc);
+- `buildLoadPlan` emitting add_locale/add_script/add_style/register_interceptor/call_hook/mark_active steps in order;
+- `STDisabledExtensionsStore`;
+- `planActivateAll` with progressive dependency tracking.
+- Plan-only — no extension JS is executed, no real files/zip/git are read, and there is no real sandbox yet.
+
+`ydltavern-engine` exposes `extension.loader.parse_manifest` and `extension.loader.plan_activate_all` capabilities. This is still `partial`: extension JavaScript is not executed, real files/zip/git are not read, and there is no real sandbox yet.
 
 ## Out of scope
 

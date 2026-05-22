@@ -48,18 +48,21 @@ output: 下一个 speaker 选择跟 ST 同种子下完全一致
 
 ## 当前状态
 
-`packages/ydltavern-engine-core` 已有 World Info advanced fixture-aligned subset：
+`packages/ydltavern-engine-core` 已有 World Info 深度移植（`world-info-st.ts`）：
 
-- keyword / regex / constant、primary / secondary logic、case-sensitive、whole-word、recursive scan；
-- before/after/ANTop/ANBottom/atDepth/EMTop/EMBottom/outlet routing，包含 AN patch、depth entries、outlets、routing trace；
-- generation trigger、character filter、decorators、scan data flags、min activations、delayUntilRecursion / excludeRecursion 的 deterministic filters；
-- seeded probability、inclusion group、groupOverride、groupWeight、useGroupScoring；
-- sticky/cooldown/delay runtime state 与 multi-generation sequence diagnostics；
-- persona、character description / personality / scenario、author note、post-history、instruct blocks。
+- `WORLD_INFO_POSITION` 8 buckets；`WI_ANCHOR_POSITION`；`EXTENSION_PROMPT_ROLE`；
+- `SELECTIVE_LOGIC` 4 modes (AND_ANY/NOT_ALL/NOT_ANY/AND_ALL)；
+- `parseRegexFromString` accepting `/.../gimsuy`，rejecting unescaped `/`；`escapeRegex`；
+- `matchKeys` (regex bypasses case/wholeWord; single-token wholeWord uses `(?:^|\W)(needle)(?:$|\W)` boundary regex; multi-word uses includes)；
+- `selectiveLogicMatches`；
+- `parseDecorators` (`@@activate` / `@@dont_activate`, `@@@` escape)；`decideActivation` (precedence: activate > dont_activate > external > constant > sticky > keyword)；
+- timed effects state machine (sticky/cooldown/delay) with `chat_metadata.timedWorldInfo` shape；
+- `routeActivatedEntries` with sort-desc-then-unshift bucket assembly + AN patch + atDepth merge by (depth,role) + outlets by name；
+- 仍包含原有 keyword/regex/constant、primary/secondary logic、case-sensitive、whole-word、recursive scan、seeded probability、inclusion group、groupOverride、groupWeight、useGroupScoring、persona、character blocks、author note、post-history、instruct blocks。
 
-`packages/ydltavern-engine` 的 `world_info.evaluate`、`preset.compile`、`turn.generate` 会透传这些结果。`@ydltavern/surface` 会展示 PromptManager order、marker fills、WI routing/group/probability/timed trace。
+`packages/ydltavern-engine` 的 `world_info.evaluate`、`world_info.route`、`world_info.match_keys`、`preset.compile`、`turn.generate` 会透传这些结果。`@ydltavern/surface` 会展示 PromptManager order、marker fills、WI routing/group/probability/timed trace。
 
-这仍是 `partial`。vector WI、完整 persona lock、群聊轮换、tokenizer budget、ST extension prompt 字节级路由和 instruct template 字节级对齐还未完成。
+这仍是 `partial`。仍待完成：完整 ST persona lock、群聊轮换、字节级对齐。
 
 ## 不在范围内
 

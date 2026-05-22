@@ -47,15 +47,16 @@ Every track D item in `COMPATIBILITY_MATRIX.en.md` corresponds to a fixture.
 
 ## Current status
 
-The Phase D contract MVP has landed in `packages/ydltavern-st-compat`:
+The Phase D contract MVP and deep-port have landed in `packages/ydltavern-st-compat`:
 
 - live `chat[]` Proxy writes update an internal Turn store;
-- `getContext()` returns a stable context with common fields, `eventSource`, and `event_types`;
-- `addOneMessage`, `saveChat`, `saveSettingsDebounced`, `Generate`, and `substituteParams` have minimal real behavior;
+- `getContext()` returns the full ST context shape (`context-st.ts`), including state (chat/characters/groups/characterId/groupId/chatId/name1/name2/mainApi/onlineStatus/maxContext/chatMetadata/menuType/extensionSettings/powerUserSettings/tags/tagMap), bridges (eventSource/extensionPrompts/variables/swipe/toolManager), functions (getCurrentChatId/reloadCurrentChat/saveChat/saveSettingsDebounced/saveMetadata/updateChatMetadata/addOneMessage/deleteLastMessage/generate/generateRaw/substituteParams/setExtensionPrompt/getExtensionPrompt/getRequestHeaders/getTokenCountAsync/isMobile/etc), legacy aliases (event_types/eventTypes, main_api/mainApi, online_status/onlineStatus), symbols (ignore/unset), deprecated stubs;
+- `ExtensionPromptStore` (`context-st.ts`) supports `set`/`render`/`maxDepth`/`removeDepthPrompts` + async filter callback, matching ST's `setExtensionPrompt`/`getExtensionPrompt` semantics;
+- `addOneMessage`, `saveChat`, `saveSettingsDebounced`, `Generate`, and `substituteParams` have real behavior;
 - fake generation dispatches generation lifecycle events and appends an assistant message;
-- unit tests cover push/edit/delete/splice, event dispatch, fake generation, and basic macro replacement.
+- unit tests cover push/edit/delete/splice, event dispatch, fake generation, full macro engine, and STScript runtime.
 
-This is still `partial`, not byte-level ST alignment. Next work is to expand globals, slash/STScript entry points, and real ST payload alignment.
+This is still `partial`, not byte-level ST alignment. Next work is to expand real DOM/network bridges, real generate/generateRaw, popups, and real ST payload alignment.
 
 ## Out of scope
 

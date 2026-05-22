@@ -56,11 +56,12 @@ YdlTavern surface goals (hosted by a Yggdrasil shell + ordinary i5):
 
 ## Current status
 
-`@ydltavern/surface` remains a Yggdrasil-hosted surface bundle, not an independent app. `TavernPlaySurface` currently provides a thin slice:
+`@ydltavern/surface` remains a Yggdrasil-hosted surface bundle, not an independent app. `TavernPlaySurface` currently provides:
 
 - sending, editing, fake generation, and event log through the live ST contract;
 - engine request preview;
 - importer preview;
+- 5 new diagnostic inspectors: PromptManagerInspector, WorldInfoInspector, STScriptInspector, ExtensionsInspector, ConnectorInspector, wired into DevDiagnosticsPanel, with CSS scoped under `.ydltavern-surface`;
 - PromptManager / WI advanced diagnostics: effective order, marker fills, routing trace, AN patch, atDepth/outlet, group/probability/timed trace;
 - slash diagnostics: command input, execution result, variables, registered commands, and diagnostics.
 

@@ -42,14 +42,16 @@ Side effects of ST commands such as `/echo`, `/inject`, and `/listinjects` must 
 
 ## Current status
 
-`packages/ydltavern-st-compat` now has the minimum E-track core:
+`packages/ydltavern-st-compat` now has the deep-ported E-track modules:
 
+- `macros-st.ts` — `substituteSTMacrosDeep` with PRE_PROCESSORS normalizing `<USER>`/`<BOT>`/`<GROUP>`/`<CHARIFNOTGROUP>`/legacy `{{time_UTC±N}}`; comment macros `{{// ...}}`; full env macro registry (user/char/description/personality/scenario/persona/group/groupNotMuted/charPrompt/charInstruction/charDepthPrompt/charCreatorNotes/mesExamples/charFirstMessage/charVersion/model/original/isMobile + aliases); time macros (time/date/weekday/isotime/isodate/datetimeformat/idleDuration/timeDiff/time::UTC±N); variable macros (getvar/setvar/addvar/incvar/decvar/hasvar/deletevar + global versions); state (lastGenerationType/hasExtension); instruct prefixes/suffixes; chat (lastMessage/lastUserMessage/etc); core (newline/space/noop/trim/random/pick/roll); recursive expansion with frozen env; `PickState` for stable per-chat picks.
+- `stscript-st.ts` — `PARSER_FLAG.STRICT_ESCAPING`/`REPLACE_GETVAR`; `ParserFlags` with clone; `ARGUMENT_TYPE` enum; `SlashCommandParserError`/`SlashCommandExecutionError`/`SlashCommandAbortError`; `SlashCommandScope` with parent chain, pipe fallback, getVariable numeric coercion + JSON index, setVariable nearest-owner mutation, letVariable throw on duplicate; `AbortController_`/`BreakController` (shared between closure and getCopy); `SlashCommandClosure` with executor list, abort/break/debug controllers, executeNow flag, `executeDirect` returning `{ pipe, isBreak, isAborted, isQuietlyAborted, abortReason }`; `lintPipeValue` normalizing types per ST `#lintPipe`; pipe injection rules (single `|` injects, `||` skips); `compareValues` for if/while (eq/neq/in/nin/gt/gte/lt/lte/not); `GlobalVariables`; `SlashCommandRegistry` with alias resolution.
+- `createSTContext()` exposes `registerSlashCommand`, `executeSlashCommands`, `slashCommands`, `slashDiagnostics`, and variables.
 - expanded `substituteParams` for user/char, character fields, persona, time/date, dynamic overrides, and trace;
 - slash registry / parser / executor;
-- built-in `/gen`, `/continue`, `/swipe`, `/setvar`, `/getvar`, `/if`, and `/run` minimum behavior;
-- `createSTContext()` exposes `registerSlashCommand`, `executeSlashCommands`, `slashCommands`, `slashDiagnostics`, and variables.
+- built-in `/gen`, `/continue`, `/swipe`, `/setvar`, `/getvar`, `/if`, and `/run` minimum behavior.
 
-This is still `partial`. STScript parser/evaluator skeleton, pipes, scopes, closures, `/let`, `/var`, `/while`, `/break`, and registry metadata are now present. Deep Quick Reply runtime integration, autocomplete/debugger, all 153+ commands, and byte-level STScript behavior are not complete yet.
+This is still `partial`. The full STScript runtime (scope chain, closures, pipe injection, abort/break, compareValues, registry + alias resolution) and full macro engine are now in place. Still pending: full 153+ command implementations, autocomplete/debugger, byte-level STScript behavior alignment.
 
 ## Out of scope
 

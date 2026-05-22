@@ -56,11 +56,12 @@ YdlTavern surface 目标（由 Yggdrasil 壳承载 + 普通 i5）：
 
 ## 当前状态
 
-`@ydltavern/surface` 仍是 Yggdrasil-hosted surface bundle，不是独立 app。`TavernPlaySurface` 当前提供薄纵切片：
+`@ydltavern/surface` 仍是 Yggdrasil-hosted surface bundle，不是独立 app。`TavernPlaySurface` 当前提供：
 
 - live ST contract 的发送、编辑、fake generate、event log；
 - engine request preview；
 - importer preview；
+- 5 个新诊断 inspector：PromptManagerInspector、WorldInfoInspector、STScriptInspector、ExtensionsInspector、ConnectorInspector，接入 DevDiagnosticsPanel，CSS scoped under `.ydltavern-surface`；
 - PromptManager / WI advanced diagnostics：effective order、marker fills、routing trace、AN patch、atDepth/outlet、group/probability/timed trace；
 - slash diagnostics：输入命令、执行结果、变量、registered commands、diagnostics。
 
