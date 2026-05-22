@@ -99,6 +99,113 @@ test('prompt-critical blocks inject WI and fields before buildPrompt assembles m
   assert.equal(prompt.diagnostics.warnings.includes('Unknown prompt block identifier: instruct'), true);
 });
 
+test('prompt-critical follows PromptManager marker order and reports mapping diagnostics', () => {
+  const critical = buildPromptCriticalBlocks({
+    persona: 'Persona marker text',
+    character: {
+      description: 'Description marker text',
+      personality: 'Personality marker text',
+      scenario: 'Scenario marker text',
+    },
+    authorNote: 'Author note delta',
+    postHistory: 'Post-history delta',
+    promptManager: {
+      prompts: [
+        { identifier: 'personaDescription', content: 'PM persona placeholder', marker: true, role: 'user' },
+        { identifier: 'charDescription', content: 'PM char placeholder', marker: true, injection_position: 'before', injection_depth: 3 },
+        { identifier: 'scenario', content: 'PM scenario placeholder', marker: true },
+      ],
+      prompt_order: [
+        { identifier: 'scenario', order: 1 },
+        { identifier: 'personaDescription', order: 2 },
+        { identifier: 'charDescription', order: 3 },
+      ],
+    },
+  });
+
+  assert.deepEqual(critical.blocks.map((block) => block.identifier), [
+    'scenario',
+    'personaDescription',
+    'charDescription',
+    'authorNote',
+    'postHistory',
+  ]);
+  assert.equal(critical.blocks[0]?.content, 'Scenario marker text');
+  assert.equal(critical.blocks[1]?.role, 'user');
+  assert.equal(critical.blocks[2]?.injection_position, 'before');
+  assert.equal(critical.blocks[2]?.injection_depth, 3);
+  assert.deepEqual(
+    critical.diagnostics.markerMapping
+      .filter((mapping) => mapping.source !== 'internal')
+      .map((mapping) => [mapping.blockIdentifier, mapping.promptIdentifier, mapping.field]),
+    [
+      ['scenario', 'scenario', 'scenario'],
+      ['personaDescription', 'personaDescription', 'personaDescription'],
+      ['charDescription', 'charDescription', 'charDescription'],
+    ],
+  );
+  assert.equal(critical.diagnostics.promptManager.disabledSkipped.length, 0);
+  assert.equal(critical.diagnostics.knownDeltas.some((delta) => delta.includes('authorNote')), true);
+  assert.equal(critical.diagnostics.knownDeltas.some((delta) => delta.includes('postHistory')), true);
+});
+
+test('prompt-critical skips disabled PromptManager markers except disabled main anchor', () => {
+  const critical = buildPromptCriticalBlocks({
+    persona: 'Persona should be disabled',
+    character: { description: 'Description survives' },
+    prompt_manager: {
+      prompts: [
+        { identifier: 'main', content: 'Main anchor content' },
+        { identifier: 'personaDescription', content: 'Persona placeholder', marker: true },
+        { identifier: 'charDescription', content: 'Description placeholder', marker: true },
+      ],
+      prompt_order: [
+        { identifier: 'main', enabled: false, order: 1 },
+        { identifier: 'personaDescription', enabled: false, order: 2 },
+        { identifier: 'charDescription', enabled: true, order: 3 },
+      ],
+    },
+  });
+
+  assert.deepEqual(critical.blocks.map((block) => block.identifier), ['charDescription']);
+  assert.equal(critical.blocks[0]?.content, 'Description survives');
+  assert.deepEqual(critical.diagnostics.promptManager.disabledAnchors, ['main']);
+  assert.deepEqual(critical.diagnostics.promptManager.disabledSkipped, ['personaDescription']);
+});
+
+test('prompt-critical passes through custom prompts and fills marker prompts', () => {
+  const critical = buildPromptCriticalBlocks({
+    persona: 'Filled persona for {{user}}',
+    userName: 'Archivist',
+    promptManager: {
+      prompts: [
+        { identifier: 'customPrompt', content: 'Custom passthrough for {{user}}', role: 'assistant' },
+        { identifier: 'personaDescription', content: 'Persona placeholder', marker: true },
+        { identifier: 'customMarker', content: 'Custom marker passthrough', marker: true },
+      ],
+      prompt_order: ['customPrompt', 'personaDescription', 'customMarker'],
+    },
+  });
+
+  assert.deepEqual(critical.blocks.map((block) => block.identifier), [
+    'customPrompt',
+    'personaDescription',
+    'customMarker',
+  ]);
+  assert.equal(critical.blocks[0]?.content, 'Custom passthrough for {{user}}');
+  assert.equal(critical.blocks[0]?.role, 'assistant');
+  assert.equal(critical.blocks[1]?.content, 'Filled persona for Archivist');
+  assert.equal(critical.blocks[2]?.content, 'Custom marker passthrough');
+  assert.equal(
+    critical.diagnostics.markerMapping.find((mapping) => mapping.blockIdentifier === 'personaDescription')?.field,
+    'personaDescription',
+  );
+  assert.equal(
+    critical.diagnostics.markerMapping.find((mapping) => mapping.blockIdentifier === 'customMarker')?.field,
+    undefined,
+  );
+});
+
 async function readJsonFixture(name) {
   const fixture = await readFile(new URL(name, fixturesUrl), 'utf8');
   return JSON.parse(fixture);

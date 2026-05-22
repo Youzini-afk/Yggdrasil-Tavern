@@ -13,6 +13,9 @@ export interface PromptBlock {
   readonly enabled?: boolean;
   readonly position?: number;
   readonly order?: number;
+  readonly injection_position?: string | number;
+  readonly injection_depth?: number;
+  readonly injection_order?: number;
 }
 
 export interface PromptMessage {
