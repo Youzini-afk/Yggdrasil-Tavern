@@ -2,11 +2,11 @@
 
 > [English](./UI_FORK_GUIDE.en.md) · [中文](./UI_FORK_GUIDE.md)
 
-This guide documents how `@ydltavern/surface` forks the SillyTavern UI / layout after Round 5 V-track, and where it intentionally diverges. YdlTavern aims for a familiar Tavern interaction model hosted as Yggdrasil surfaces, not a copy of ST's jQuery monolith.
+This guide documents how `@ydltavern/surface` forks the SillyTavern UI / layout after Round 6 W-track, and where it intentionally diverges. YdlTavern aims for a familiar Tavern interaction model hosted as Yggdrasil surfaces, not a copy of ST's jQuery monolith.
 
 ## Overview
 
-The UI fork covers ST's main shell, drawers, messages, composer, background, and mobile layout. Parity work includes 9 top-bar icon drawers, a centered `Sheld` main column, left/right drawer rails, ST `.mes` message DOM structure, send form, streaming stop button, `#bg1` background layer, ST classic theme JSON import/export, and 1000px / 768px mobile breakpoints.
+The UI fork covers ST's main shell, drawers, messages, composer, background, and mobile layout. Parity work includes 9 top-bar icon drawers, a centered `Sheld` main column, left/right drawer rails, ST `.mes` message DOM structure, send form, streaming stop button, `#bg1` background layer, ST classic theme JSON import/export, TavernProvider-backed drawer state, and 1000px / 768px mobile breakpoints.
 
 Intentional divergence: React/TypeScript components, Yggdrasil iframe SurfaceHost, `--tavern-*` token names, permission-gated real extension loading, and no jQuery / Bootstrap runtime dependency.
 
@@ -49,7 +49,7 @@ Yggdrasil `clients/web` / Desktop / App shells still own iframe SurfaceHost, nav
 
 ## 9 drawer surfaces
 
-Round 5 V5 filled 9 ST-aligned drawers with real forms/lists:
+After Round 6, all 9 ST-aligned drawers are real forms/lists that read and write the same `TavernProvider`:
 
 1. **AI Response Configuration**: presets, sampler matrix, banned tokens, logit bias, streaming.
 2. **API Connections**: 19 providers, profile management, status indicator.
@@ -61,7 +61,23 @@ Round 5 V5 filled 9 ST-aligned drawers with real forms/lists:
 8. **Persona**: multi-persona list, edit form, settings toggles.
 9. **Characters**: library search, group chat hint, create / import / edit / duplicate / export / delete.
 
-Note: some V5 form change handlers are still TODO and must be wired to `TavernProvider` live state later; do not describe the current state as complete business persistence.
+State source: sampler, connection, formatting, background display, characters, personas, world books, backgrounds, and selection state all live in `TavernProvider` and persist through schema-versioned localStorage. Drawers no longer use temporary placeholder constants or deferred handlers; provider-backed settings and library entries restore from their own keys after refresh.
+
+## Mount adapters
+
+`@ydltavern/surface` exports 9 mount adapters for Yggdrasil `SurfaceHost` to call after dynamic import:
+
+1. `mountTavernPlaySurface`
+2. `mountTavernSettingsSurface`
+3. `mountTavernExtensionsSurface`
+4. `mountTavernCharactersSurface`
+5. `mountTavernWorldInfoSurface`
+6. `mountTavernPersonaSurface`
+7. `mountTavernAIResponseConfigSurface`
+8. `mountTavernUserSettingsSurface`
+9. `mountTavernBackgroundsSurface`
+
+Each adapter renders its React surface and returns an unmount function. The `export_name` / `entry.export` fields in `manifest.yaml` and `surface.manifest.json` point at these adapters rather than bare React components. The Vite build emits browser-ready `dist/bundle.mjs`, so an iframe can import it directly.
 
 ## Message bubble parity
 
@@ -107,7 +123,7 @@ YdlTavern adds accessibility hardening beyond ST parity:
 
 - Token naming: `--tavern-*`, instead of copying ST `--SmartTheme*` directly.
 - Component model: JSX / React components; ST uses jQuery + HTML templates.
-- Bundle shape: plain TS / React surface bundle; no jQuery, no Bootstrap.
+- Bundle shape: Vite browser-ready ESM surface bundle; no jQuery, no Bootstrap.
 - Hosting: mounted through Yggdrasil iframe SurfaceHost; ST is a monolithic SPA.
 - Extension safety: real extension loading requires the `realExtensionLoad` permission gate; ST loads extensions unconditionally.
 

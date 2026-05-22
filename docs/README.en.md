@@ -18,7 +18,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 
 ## Roadmap
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.en.md) — post-Round 4 follow-up work queue
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.en.md) — current follow-up work queue
 
 ## Guides
 
@@ -27,6 +27,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) — use OpenAI Realtime / Gemini Live stub through Yggdrasil WebSocket outbound
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.en.md) — opt into loading real SillyTavern ESM extensions in the QuickJS sandbox
 - [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.en.md) — SillyTavern UI/layout fork, 9 drawers, themes, messages, composer, and mobile parity
+- [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.en.md) — how Yggdrasil clients/web resolves, iframe-mounts, and RPC-bridges the YdlTavern surface bundle
 
 ## ST source inventory (mechanical scan, ground truth)
 
@@ -64,5 +65,6 @@ Parallel work by domain, not linear milestones. See [`tracks/README.md`](tracks/
 | Configure Realtime WebSocket models | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) |
 | Load real ST extensions | [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.en.md) |
 | Understand the UI fork / ST parity | [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.en.md) |
+| Mount the YdlTavern surface bundle locally | [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.en.md) |
 | Find a specific ST API/event/command | the matching `inventory/*.raw.md` |
 | Learn what a track is about | [`tracks/README.md`](tracks/README.en.md) → specific track doc |

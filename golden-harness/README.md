@@ -211,7 +211,7 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 | Category | ST Function | Scenario Count | Current Status |
 |----------|------------|----------------|-----------|
 | instruct | `formatInstructModeChat` | 2 | ✅ Perfect — 2/2 byte-identical, see `diff/instruct-*.json` |
-| chat | `sendOpenAIRequest` | 4 | ⚠️ Cosmetic-only — 0/4 perfect, 4 cosmetic, 0 structural, see `diff/chat-*.json` |
+| chat | `sendOpenAIRequest` | 4 | ✅ Perfect — 4/4 byte-identical, see `diff/chat-*.json` |
 | macro | `evaluateMacros` | 4 | ✅ Perfect — 4/4 byte-identical, see `diff/macro-*.json` |
 | world-info | `checkWorldInfo` | 4 | ✅ Perfect — 4/4 byte-identical, see `diff/world-info-*.json` |
 | tokenizer | YdlTavern `countTokens` | 6 | ✅ Perfect self-baseline — 6/6 match current runtime output |
@@ -220,25 +220,25 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 
 **20/20 scenarios produce fixtures/diffs.** Determinism verified (byte-identical on repeated runs).
 
-Round 4 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
-16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors. See
+Round 6 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
+20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors. See
 `diff/_summary.json` for the exact current breakdown.
 
-All Round 3 structural/unverifiable diffs are now closed. Next steps: reduce the
-remaining chat cosmetic-only differences to byte-identical output and keep
-expanding scenario coverage.
+All Round 3 structural/unverifiable diffs and Round 4 chat cosmetic-only diffs
+are now closed. Next steps: keep expanding scenario coverage so the current
+20/20 perfect set is not mistaken for full-domain ST compatibility.
 
 ### Detailed Status
 
 - **instruct/** (2/2): Both ChatML and Llama3 templates produce byte-identical formatted output via ST's real `formatInstructModeChat`.
-- **chat/** (4/4): All four chat scenarios capture the full request body via fetch interception. All four are cosmetic-only; no structural deltas remain.
+- **chat/** (4/4): All four chat scenarios capture the full request body via fetch interception. All four are byte-identical after provider body field ordering alignment.
 - **macro/** (4/4): Full `evaluateMacros` executes under frozen moment/Date and seeded RNG. All four macro scenarios are byte-identical.
 - **world-info/** (4/4): `checkWorldInfo` executes against scenario WI entries with deterministic budget/RNG controls. All four WI scenarios are byte-identical.
 - **tokenizer/** (6/6): `countTokens(text, { modelHint })` self-baseline is byte-identical against current runtime output.
 
 ## Known Limitations (v0)
 
-1. **Chat is not byte-perfect**: all four chat scenarios are cosmetic-only, not byte-identical. Do not document chat completion request parity as implemented until all four scenarios are perfect.
+1. **Coverage is scenario-level, not full-domain**: current chat, WI, macro, instruct, and tokenizer fixtures are perfect for the checked scenarios only. Do not document every ST provider or edge case as fully byte-perfect until additional fixtures cover them.
 
 2. **Event handler errors in WI can still be non-representative**: the WI module emits events that trigger event handlers. Some handlers can still see reduced harness state compared with a full ST browser session, even though current WI comparison output is perfect.
 

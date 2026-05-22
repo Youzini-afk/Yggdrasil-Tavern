@@ -2,8 +2,8 @@
   "harness_version": "1.0",
   "scenario": "chat/openai-tools",
   "description": "OpenAI chat completion with tool calling enabled",
-  "classification": "cosmetic",
-  "matches": false,
+  "classification": "perfect",
+  "matches": true,
   "expected": {
     "type": "normal",
     "messages": [
@@ -47,13 +47,13 @@
       }
     ],
     "model": "gpt-4-turbo",
-    "chat_completion_source": "openai",
-    "stream": false,
     "temperature": 1,
     "frequency_penalty": 0,
     "presence_penalty": 0,
     "top_p": 1,
     "max_tokens": 300,
+    "stream": false,
+    "chat_completion_source": "openai",
     "user_name": "User",
     "char_name": "Assistant",
     "group_names": [],
@@ -64,9 +64,7 @@
     "request_image_aspect_ratio": "",
     "custom_prompt_post_processing": ""
   },
-  "delta": [
-    "key ordering or whitespace only"
-  ],
+  "delta": [],
   "diagnostics": {
     "stripped": [],
     "notes": []

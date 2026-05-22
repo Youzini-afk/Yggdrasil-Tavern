@@ -7,14 +7,43 @@
    Scope: every rule lives under `.ydltavern-surface`. Hosts wrap their
    surface mount with that class; the package never assigns to `:root`,
    `body`, or unscoped tag selectors so it can co-exist with host styles.
-   Fonts are NOT bundled — hosts load them at the page/app level. The
-    fallback chains render acceptably on their own.
+   Fonts are bundled with the surface package as woff2 files in dist/fonts/.
+   Self-hosted Noto Sans + Noto Sans Mono (SIL OFL 1.1, AGPL-compatible).
+   Falls back to Inter / system fonts if font load fails.
     ========================================================================== */
 
 /* === V6: Mobile overrides (ST-aligned) === */
 /* Imported at top so mobile rules cascade under desktop rules in the same stylesheet.
    copy-assets.mjs automatically copies mobile.css alongside surface.css to dist/styles/. */
 @import './mobile.css';
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('../fonts/NotoSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('../fonts/NotoSans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('../fonts/NotoSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Mono';
+  src: url('../fonts/NotoSansMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
 
 .ydltavern-surface {
   --color-bg: #0b0d12;

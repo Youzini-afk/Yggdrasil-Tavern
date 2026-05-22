@@ -20,12 +20,11 @@
     }
   ],
   "fonts": {
-    "expected": [
-      { "family": "Fraunces", "weights": [400, 500, 700], "italics": true, "fallback": "Iowan Old Style, Georgia, serif" },
-      { "family": "Inter", "weights": [400, 500, 600, 700], "fallback": "ui-sans-serif, system-ui" },
-      { "family": "JetBrains Mono", "weights": [400, 500], "fallback": "SF Mono, Menlo, monospace" }
+    "bundled": [
+      { "family": "Noto Sans", "weights": [400, 500, 700], "paths": ["./dist/fonts/NotoSans-Regular.woff2", "./dist/fonts/NotoSans-Medium.woff2", "./dist/fonts/NotoSans-Bold.woff2"], "fallback": "Inter, ui-sans-serif, system-ui" },
+      { "family": "Noto Sans Mono", "weights": [400], "paths": ["./dist/fonts/NotoSansMono-Regular.woff2"], "fallback": "JetBrains Mono, SF Mono, Menlo, monospace" }
     ],
-    "note": "Fonts are NOT bundled. Hosts should load them at the page/app level. Fallback chains render acceptably without."
+    "note": "surface.css declares self-hosted Noto Sans / Noto Sans Mono via dist/fonts/. If the woff2 files are not present in a development build, CSS falls back to Inter / system fonts."
   },
   "surfaces": [
     {

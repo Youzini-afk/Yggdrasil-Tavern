@@ -2,17 +2,28 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 4 U-track and Round 5 V-track are complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, conditional chat tools emission, World Info budget/probability alignment, macro-engine deep implementation migration, SillyTavern UI parity shell, 9 drawers, ST theme JSON import/export, mobile responsive layout, and durable doc updates have landed. This file no longer carries U1-U6 or V1-V7 temporary tasks; it records forward-looking work only.
+Round 4 U-track, Round 5 V-track, and Round 6 W-track are complete: sandbox ESM loader, browser stubs, extended ST API bridge, BME smoke, World Info budget/probability alignment, macro-engine deep implementation migration, SillyTavern UI parity shell, 9 provider-backed drawers, ST theme JSON import/export, browser-ready surface bundle, 9 mount adapters, the clients/web E2E demo path, the self-hosted font strategy, and durable doc updates have landed. This file no longer carries W items; it records forward-looking work only.
 
-## Surface UI follow-up
+## Performance baseline benchmark
 
-- **Wire V5 form change handlers**: connect every drawer form handler marked TODO V7 in V5 to `TavernProvider`, instead of updating only local UI or stubs.
-- **SamplerForm → TavernProvider**: write sampler matrix, preset, banned tokens, logit bias, streaming, and related change events into unified settings state.
-- **ConnectionForm / PersonaForm → TavernProvider**: connect provider profiles, status, persona list, persona edit form, and toggles to provider state.
-- **Drawers → live Yggdrasil capabilities**: read the World Info list from `kernel.surface.contribution.list` / future worldbook capabilities; connect the character list to importers; connect extensions, backgrounds, and API profiles to real host data.
-- **clients/web end-to-end hosting**: mount all 9 surface contributions in a real Yggdrasil `clients/web` host, covering iframe SurfaceHost, manifest discovery, slot routing, and drawer-specific entries.
-- **Visual regression testing**: add screenshot baselines for ST classic themes, 9 drawers, message bubble, composer, and mobile breakpoints.
-- **Real font loading**: Noto Sans currently relies on system fonts / host preloading; define an explicit host-level font-loading or bundling strategy.
+- **Subprocess JSON-RPC**: measure cold/warm latency, payload size, serialization cost, and error paths for `ydltavern-engine` capability calls.
+- **SSE streaming**: measure time-to-first-token, chunk cadence, cancel latency, and host outbound audit overhead for `model.live_call.stream`.
+- **Prompt construction**: measure PromptManager, World Info, macro expansion, token counting, and instruct wrapping costs under typical context lengths.
+- **Golden fixture reuse**: pin benchmark inputs as reproducible fixtures so performance numbers do not drift with demo data.
+
+## Phase B pain-point resolution
+
+- **Multi-agent orchestration**: define how YdlTavern maps ST-style chat flow onto Yggdrasil agent/session collaboration without putting agent logic into the UI.
+- **MCP protocol surface**: define how MCP tools/resources/prompts are exposed to YdlTavern through the Yggdrasil capability boundary.
+- **Vector RAG**: move the memory/vectors extension from plan-only paths to audited vector retrieval while keeping storage and outbound policy host-managed.
+- **ToolManager full registration**: complete registration, permissions, audit, and UI visibility for ST ToolManager / slash / extension commands.
+
+## Surface hosting and marketplace
+
+- **Production bundle hosting**: implement a package static route on the Yggdrasil host so installed package `bundle.mjs`, styles, and fonts are exposed as same-origin URLs.
+- **Real font woff2 sourcing**: if the current build still has only font-face path declarations and no real files, add `NotoSans-Regular.woff2`, `NotoSans-Medium.woff2`, `NotoSans-Bold.woff2`, and `NotoSansMono-Regular.woff2`.
+- **Cross-origin allowlist**: design surface bundle allowlists, integrity pins, version pins, and audit metadata for community marketplaces; same-origin remains the default.
+- **Multiple mounted surfaces**: expand the current single outlet to manage multiple iframe surfaces while preserving sandbox and lifecycle isolation.
 
 ## Real extension loading follow-up
 
@@ -25,8 +36,7 @@ Round 4 U-track and Round 5 V-track are complete: sandbox ESM loader, browser st
 
 ## Golden harness follow-up
 
-- Reduce the four chat cosmetic-only diffs to byte-identical output.
-- Keep adding WI, macro, instruct, tokenizer, and chat fixtures so the current 16/20 perfect count is not mistaken for full-domain ST compatibility.
+- Keep adding WI, macro, instruct, tokenizer, and chat fixtures so the current 20/20 perfect count is not mistaken for full-domain ST compatibility.
 - Keep `_summary.json` as the source for documented numbers.
 
 ## Extension ecosystem follow-up

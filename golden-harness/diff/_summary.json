@@ -1,15 +1,15 @@
 {
   "total": 20,
-  "perfect": 16,
-  "cosmetic": 4,
+  "perfect": 20,
+  "cosmetic": 0,
   "structural": 0,
   "unverifiable": 0,
   "error": 0,
   "by_category": {
     "chat": {
       "total": 4,
-      "perfect": 0,
-      "cosmetic": 4,
+      "perfect": 4,
+      "cosmetic": 0,
       "structural": 0,
       "unverifiable": 0,
       "error": 0

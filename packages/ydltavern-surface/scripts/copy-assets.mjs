@@ -11,6 +11,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = dirname(here);
 const srcDir = join(root, 'src', 'styles');
 const destDir = join(root, 'dist', 'styles');
+const fontsSrc = join(root, 'public', 'fonts');
+const fontsDst = join(root, 'dist', 'fonts');
 const bundlePath = join(root, 'dist', 'bundle.mjs');
 
 await mkdir(destDir, { recursive: true });
@@ -27,6 +29,24 @@ for (const entry of entries) {
 }
 
 process.stdout.write(`[surface] copied ${copied} stylesheet(s) to dist/styles/\n`);
+
+try {
+  await mkdir(fontsDst, { recursive: true });
+  const fontEntries = await readdir(fontsSrc, { withFileTypes: true }).catch(() => []);
+  const fontFiles = fontEntries
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.woff2'))
+    .map((entry) => entry.name);
+  if (fontFiles.length === 0) {
+    process.stderr.write('[surface] no woff2 fonts in public/fonts/; relying on font-face fallback chain\n');
+  } else {
+    for (const file of fontFiles) {
+      await copyFile(join(fontsSrc, file), join(fontsDst, file));
+    }
+    process.stdout.write(`[surface] copied ${fontFiles.length} font file(s) to dist/fonts/\n`);
+  }
+} catch (err) {
+  process.stderr.write(`[surface] font copy step skipped: ${err.message}\n`);
+}
 
 try {
   await access(bundlePath);

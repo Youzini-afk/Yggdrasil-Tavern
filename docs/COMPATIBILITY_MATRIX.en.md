@@ -24,7 +24,7 @@ Implementation status:
 - `partial-sandboxed` — execution works inside a constrained sandbox; DOM/network/etc. remain incomplete
 - `partial-opt-in` — a real path exists only when the host/profile/env explicitly enable it
 
-Current stage: deep-port complete, with Round 3 T-track tightening, Round 4 U-track closure, and Round 5 V-track UI parity complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 errors.
+Current stage: deep-port complete, with Round 3 T-track tightening, Round 4 U-track closure, Round 5 V-track UI parity, and Round 6 W-track convergence complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but no full-domain byte-level alignment is claimed unless explicitly stated. The current golden diff covers 20/20 scenarios: 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors.
 
 ## Round 3 T-track summary (May 2026)
 
@@ -42,8 +42,8 @@ See `golden-harness/diff/_summary.json` for the canonical breakdown.
 
 After U1-U5 and the U6 documentation pass:
 
-- Golden harness: 20 scenarios, 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 error.
-- Chat scenarios: 4/4 cosmetic-only; the previous tools/tool_choice structural delta is closed.
+- Golden harness at Round 4 close: 20 scenarios, 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 error.
+- Chat scenarios at Round 4 close: 4/4 cosmetic-only; the previous tools/tool_choice structural delta was closed.
 - World Info scenarios: 4/4 byte-perfect after token-approximation budget alignment and seeded probability controls.
 - Macro scenarios: 4/4 byte-perfect after moving the deep ST-compatible macro implementation into engine-core and making st-compat re-export it.
 - Instruct scenarios: 2/2 byte-perfect; tokenizer scenarios: 6/6 byte-perfect self-baseline.
@@ -61,6 +61,17 @@ After V1-V7 UI parity work:
 - Mobile: 1000px primary and 768px secondary breakpoints; drawers become full-screen sheets with larger touch targets, safe-area spacing, reduced-motion, and forced-colors handling.
 - Surface manifest: `manifest.yaml` and `surface.manifest.json` now expose 9 contributions (3 original + 6 drawer-specific entries).
 
+## Round 6 W-track summary (May 2026)
+
+After W1-W7 fork completion work:
+
+- Golden harness: 20 scenarios, 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 error.
+- Chat scenarios: 4/4 implemented and golden-harness verified after provider body field ordering was aligned.
+- TavernProvider: full settings slices, library collections, CRUD/message operations, schema-versioned localStorage persistence, and v1→v2 migration now back all 9 drawers.
+- Surface bundle: Vite emits browser-ready `dist/bundle.mjs`; 9 mount adapters are exported and referenced by manifests.
+- Surface assets: `copy-assets.mjs` copies CSS and fonts; `surface.css` declares self-hosted Noto Sans / Noto Sans Mono with system fallback.
+- E2E integration: Yggdrasil `clients/web` can resolve the YdlTavern demo bundle and mount it in the sandboxed SurfaceHost development path.
+
 ## Overview
 
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
@@ -68,7 +79,7 @@ After V1-V7 UI parity work:
 | event_types | 104 | constants + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
 | built-in slash commands | 153 | 70 commands implemented across batches A-G; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 70/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | macros / macros | 80+ | registry-based deep engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState; golden harness currently has 4/4 perfect (env/nested/random/time are all byte-identical) | implemented for current golden macro scenarios — `golden-harness/diff/macro-*.json` | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides; golden harness currently has 0/4 perfect, 4/4 cosmetic, and 0 structural (the OpenAI shape has no structural delta but is still not byte-perfect) | partial (cosmetic-only deltas remain; no structural diffs) — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides; golden harness currently has 4/4 perfect, 0 cosmetic, and 0 structural | implemented for current golden chat scenarios — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers (including aliases) | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | world info trigger types | 32 | keyword/regex/constant + 4 selectiveLogic modes + decorators + recursion gates + sticky/cooldown/delay | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -85,7 +96,7 @@ After V1-V7 UI parity work:
 | built-in extensions | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | extension JS execution | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in; synthetic micro-BME is always-on, real BME is opt-in via `YGG_BME_TEST_PATH` | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | real model calls | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`; `model.live_realtime` bridge to `kernel.outbound.websocket.*` (OpenAI Realtime real; Gemini Live best-effort stub); requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout | implemented for Round 5 V-track UI parity scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout, all drawers wired to TavernProvider state | implemented for Round 6 W-track UI state scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | group chat rotation strategies | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -100,6 +111,8 @@ After V1-V7 UI parity work:
 | Settings panel / drawers | 9 ST top-drawer entries | TopBar + DrawerShell + 9 drawers; 8 on the left, Characters on the right; `useDrawers` mutual exclusion | implemented |
 | Mobile responsive | ST 1000px mobile breakpoint + 768px tighter breakpoint | `mobile.css`: 1000px primary, 768px secondary, full-screen sheets, touch targets, safe-area, iOS 16px textarea | implemented |
 | Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper mirror `.mes` structure | implemented |
+| Settings forms / drawers | ST drawer forms backed by shared state | Sampler, connection, formatting, persona, characters, world books, backgrounds, and user settings all read/write TavernProvider; schema-versioned localStorage persists state | implemented |
+| Surface bundle | Browser-loadable ESM surface package | tsc emits `dist/index.js`; Vite emits browser-ready `dist/bundle.mjs`; CSS and font assets are copied into `dist/styles/` and `dist/fonts/` | implemented |
 
 The numbers are approximate. The inventory files and `@ydltavern/types` constants are the source of truth. `stubbed` means the API surface exists but behavior is not fully aligned; `partial` means tested code paths exist but no byte-level compatibility is claimed yet.
 
@@ -111,7 +124,7 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 | `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat, preset, persona, theme, quick reply, regex, instruct import/export skeleton + fixtures | partial |
 | `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, full `getContext()` shape (`context-st.ts`), `eventSource`, `Generate`, macro re-exports (the deep implementation lives in engine-core), STScript runtime (`stscript-st.ts`: scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution), slash registry + 70 batches A-G commands | partial |
 | `@ydltavern/engine-core` | C + I | chat/text request builders, stream chunk state machine, token budget, PromptManager, World Info (token-approximation budget + seeded probability), instruct mode, deep macro engine, tokenizer registry + `countTokens(text, options)` real adapters (OpenAI/GPT2/Llama/Llama3/Claude/HF-source) + HF runtime fetcher + guesstimate, golden harness fixtures, stream frames, model-boundary plans | partial |
-| `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` virtualized chat list + dark/light/parchment themes + Connection/Sampler/Persona/Theme settings tabs + loader-st ExtensionsDrawer + QuickReplyBar + mobile responsive + diagnostic inspectors | partial-shell-with-virtualization-and-themes |
+| `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` virtualized chat list + 9 wired drawers + TavernProvider settings/library state + browser-ready `dist/bundle.mjs` + 9 mount adapters + CSS/font asset copy + mobile responsive + diagnostic inspectors | implemented for Round 6 surface scope |
 | `@ydltavern/extensions` | F + H | regex real engine, memory/vectors/quick-reply/token-counter executable logic, provider/IO-heavy extensions as plan/approximation, extension loader (manifest parse + validation + activation plan), QuickJS sandbox runtime/bridge/ESM loader/permissions/audit/browser stubs; `realExtensionLoad` opt-in supports synthetic micro-BME and env-gated real BME smoke | partial-sandboxed / partial-opt-in |
 | `@ydltavern/engine` | C | deep-port capabilities plus `model.live_call` / `model.live_call.stream` through Yggdrasil outbound execute/stream and `model.live_realtime` through outbound websocket; manifest declares provider hosts, WEBSOCKET methods, and `secret_refs` | partial-opt-in |
 

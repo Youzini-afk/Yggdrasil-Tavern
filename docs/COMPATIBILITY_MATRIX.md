@@ -24,7 +24,7 @@
 - `partial-sandboxed` —— 能在受限 sandbox 中执行，DOM/网络等能力仍不完整
 - `partial-opt-in` —— 需要 host/profile/env 显式启用的真实路径
 
-当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure 与 Round 5 V-track UI parity 已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：16 perfect、4 cosmetic、0 structural、0 unverifiable、0 error。
+当前阶段：深度移植完成，Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity 与 Round 6 W-track 收敛已完成。ST 源码仍是 ground truth；B/C/D/E/F/G/H/I 均已有可运行代码路径，PromptManager / World Info / STScript / 宏引擎 / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader 已有一对一算法移植，但除明确说明外还不是全域字节级对齐。当前 golden diff 覆盖 20/20 scenarios：20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error。
 
 ## Round 3 T-track summary (May 2026)
 
@@ -42,8 +42,8 @@ See `golden-harness/diff/_summary.json` for the canonical breakdown.
 
 After U1-U5 and the U6 documentation pass:
 
-- Golden harness: 20 scenarios, 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 error.
-- Chat scenarios: 4/4 cosmetic-only; the previous tools/tool_choice structural delta is closed.
+- Golden harness at Round 4 close: 20 scenarios, 16 perfect, 4 cosmetic, 0 structural, 0 unverifiable, 0 error.
+- Chat scenarios at Round 4 close: 4/4 cosmetic-only; the previous tools/tool_choice structural delta was closed.
 - World Info scenarios: 4/4 byte-perfect after token-approximation budget alignment and seeded probability controls.
 - Macro scenarios: 4/4 byte-perfect after moving the deep ST-compatible macro implementation into engine-core and making st-compat re-export it.
 - Instruct scenarios: 2/2 byte-perfect; tokenizer scenarios: 6/6 byte-perfect self-baseline.
@@ -61,6 +61,17 @@ After V1-V7 UI parity work:
 - Mobile: 1000px primary and 768px secondary breakpoints; drawers become full-screen sheets with larger touch targets, safe-area spacing, reduced-motion, and forced-colors handling.
 - Surface manifest: `manifest.yaml` and `surface.manifest.json` now expose 9 contributions (3 original + 6 drawer-specific entries).
 
+## Round 6 W-track summary (May 2026)
+
+After W1-W7 fork completion work:
+
+- Golden harness: 20 scenarios, 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 error.
+- Chat scenarios: 4/4 implemented and golden-harness verified after provider body field ordering was aligned.
+- TavernProvider: full settings slices, library collections, CRUD/message operations, schema-versioned localStorage persistence, and v1→v2 migration now back all 9 drawers.
+- Surface bundle: Vite emits browser-ready `dist/bundle.mjs`; 9 mount adapters are exported and referenced by manifests.
+- Surface assets: `copy-assets.mjs` copies CSS and fonts; `surface.css` declares self-hosted Noto Sans / Noto Sans Mono with system fallback.
+- E2E integration: Yggdrasil `clients/web` can resolve the YdlTavern demo bundle and mount it in the sandboxed SurfaceHost development path.
+
 ## 总览
 
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
@@ -68,7 +79,7 @@ After V1-V7 UI parity work:
 | event_types | 104 | 常量 + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
 | 内置 slash commands | 153 | 70 commands implemented across batches A-G; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 70/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | 宏 / macros | 80+ | registry-based deep engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState；golden harness 当前 4/4 perfect（env/nested/random/time 全部字节级对齐） | implemented for current golden macro scenarios — `golden-harness/diff/macro-*.json` | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
-| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides；golden harness 当前 0/4 perfect、4/4 cosmetic、0 structural（OpenAI shape 无结构差异，但仍非 byte-perfect） | partial (cosmetic-only deltas remain; no structural diffs) — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides；golden harness 当前 4/4 perfect、0 cosmetic、0 structural | implemented for current golden chat scenarios — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers（含 alias） | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | world info trigger types | 32 | keyword/regex/constant + 4 selectiveLogic modes + decorators + recursion gates + sticky/cooldown/delay | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -85,7 +96,7 @@ After V1-V7 UI parity work:
 | 内置扩展 | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | 扩展 JS 执行 | ST extension JS | QuickJS sandbox + ESM relative import loader + virtual ST host modules + audited browser stubs + extended ST API bridge; no network/fetch/XHR; real extension loading requires `realExtensionLoad` opt-in；synthetic micro-BME always-on，real BME via `YGG_BME_TEST_PATH` opt-in | partial-sandboxed / partial-opt-in | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
 | 真实模型调用 | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`；`model.live_realtime` bridge to `kernel.outbound.websocket.*`（OpenAI Realtime real；Gemini Live best-effort stub）；requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout | implemented for Round 5 V-track UI parity scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
+| Product UI | qualitative | SillyTavern parity shell: 9/9 drawers, 50vw Sheld, ST `.mes` message DOM, SendForm/StreamingIndicator/BackgroundLayer, 1000px + 768px responsive layout, all drawers wired to TavernProvider state | implemented for Round 6 W-track UI state scope | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | 群聊轮换策略 | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -100,6 +111,8 @@ After V1-V7 UI parity work:
 | Settings panel / drawers | 9 个 ST 顶部抽屉入口 | TopBar + DrawerShell + 9 drawers；左侧 8 个，右侧 Characters；`useDrawers` mutual exclusion | implemented |
 | Mobile responsive | ST 1000px mobile breakpoint + 768px tighter breakpoint | `mobile.css`：1000px primary、768px secondary、full-screen sheets、touch target、safe-area、iOS 16px textarea | implemented |
 | Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper 复刻 `.mes` 结构 | implemented |
+| Settings forms / drawers | ST drawer forms backed by shared state | Sampler, connection, formatting, persona, characters, world books, backgrounds, user settings all read/write TavernProvider; schema-versioned localStorage persists state | implemented |
+| Surface bundle | Browser-loadable ESM surface package | tsc emits `dist/index.js`; Vite emits browser-ready `dist/bundle.mjs`; CSS and font assets copied into `dist/styles/` and `dist/fonts/` | implemented |
 
 数字大致计数。准确数字以 inventory 和 `@ydltavern/types` 常量为准。`stubbed` 表示 API 表面存在但行为未完整对齐；`partial` 表示已有可测试代码路径但还没宣称字节级兼容。
 
@@ -111,7 +124,7 @@ After V1-V7 UI parity work:
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
 | `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、完整 `getContext()` shape（`context-st.ts`）、`eventSource`、`Generate`、宏 re-export（深实现位于 engine-core）、STScript 运行时（`stscript-st.ts`：scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution）、slash registry + batches A-G 70 commands | partial |
 | `@ydltavern/engine-core` | C + I | chat/text request builders、stream chunk 状态机、token budget、PromptManager、World Info（token-approximation budget + seeded probability）、instruct mode、deep macro engine、tokenizer registry + `countTokens(text, options)` real adapters（OpenAI/GPT2/Llama/Llama3/Claude/HF-source）+ HF runtime fetcher + guesstimate、golden harness fixtures、stream frames、model boundary plan | partial |
-| `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` 虚拟聊天列表 + dark/light/parchment themes + Connection/Sampler/Persona/Theme 设置 tabs + loader-st ExtensionsDrawer + QuickReplyBar + mobile responsive + diagnostic inspectors | partial-shell-with-virtualization-and-themes |
+| `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` 虚拟聊天列表 + 9 wired drawers + TavernProvider settings/library state + browser-ready `dist/bundle.mjs` + 9 mount adapters + CSS/font asset copy + mobile responsive + diagnostic inspectors | implemented for Round 6 surface scope |
 | `@ydltavern/extensions` | F + H | regex real engine、memory/vectors/quick-reply/token-counter executable logic、provider/IO-heavy extensions as plan/approximation、extension loader（manifest parse + validation + activation plan）、QuickJS sandbox runtime/bridge/ESM loader/permissions/audit/browser stubs；`realExtensionLoad` opt-in supports synthetic micro-BME and env-gated real BME smoke | partial-sandboxed / partial-opt-in |
 | `@ydltavern/engine` | C | deep-port capabilities plus `model.live_call` / `model.live_call.stream` through Yggdrasil outbound execute/stream and `model.live_realtime` through outbound websocket; manifest declares provider hosts, WEBSOCKET methods, and `secret_refs` | partial-opt-in |
 

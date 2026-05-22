@@ -18,7 +18,7 @@
 
 ## 路线图
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— Round 4 后的下一步工作队列
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列
 
 ## Guides
 
@@ -27,6 +27,7 @@
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) —— 通过 Yggdrasil WebSocket outbound 使用 OpenAI Realtime / Gemini Live stub
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) —— 在 QuickJS sandbox 中 opt-in 加载真实 SillyTavern ESM 扩展
 - [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) —— SillyTavern UI/layout fork、9 抽屉、主题、消息、composer 与移动端 parity
+- [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) —— Yggdrasil clients/web 如何解析、iframe 挂载并通过 RPC bridge 运行 YdlTavern surface bundle
 
 ## ST 源码 inventory（机械扫描，ground truth）
 
@@ -64,5 +65,6 @@
 | 配置 Realtime WebSocket 模型 | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) |
 | 加载真实 ST 扩展 | [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) |
 | 理解 UI fork / ST parity | [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) |
+| 本地挂载 YdlTavern surface bundle | [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) |
 | 找 ST 源码里某个 API/事件/命令 | 对应的 `inventory/*.raw.md` |
 | 看某条轨道做什么 | [`tracks/README.md`](tracks/README.md) → 具体轨道文档 |
