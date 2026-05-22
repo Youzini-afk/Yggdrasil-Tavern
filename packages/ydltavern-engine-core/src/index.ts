@@ -22,6 +22,25 @@ export * from './prompt.js';
 export * from './prompt-critical.js';
 export * from './prompt-manager.js';
 export {
+  formatInstructModeChat,
+  formatInstructModeStoryString,
+  formatInstructModeExamples,
+  getInstructStoppingSequences,
+  INSTRUCT_NAMES_BEHAVIOR,
+  CHATML_TEMPLATE,
+  ALPACA_TEMPLATE,
+  VICUNA_TEMPLATE,
+  MISTRAL_TEMPLATE,
+  LLAMA3_TEMPLATE,
+  BUILT_IN_TEMPLATES,
+} from './instruct.js';
+export type {
+  InstructRole,
+  InstructNamesBehavior,
+  InstructTemplate,
+  FormatChatMessageInput,
+} from './instruct.js';
+export {
   Prompt,
   PromptCollection,
   Message,
