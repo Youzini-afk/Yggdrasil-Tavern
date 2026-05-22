@@ -3030,3 +3030,402 @@
 .ydltavern-surface .tavern-chat-main {
   background: var(--tavern-bg-primary, var(--color-bg));
 }
+
+/* ==========================================================================
+   ST-aligned shell (V2)
+   ========================================================================== */
+
+.ydltavern-surface .tavern-shell {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr min(var(--tavern-sheld-width), 100vw) 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'topbar topbar topbar'
+    'left-rail sheld right-rail';
+}
+
+.ydltavern-surface .top-settings-holder {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--tavern-blur-tint-color);
+  backdrop-filter: blur(var(--tavern-blur-strength));
+  -webkit-backdrop-filter: blur(var(--tavern-blur-strength));
+  box-shadow: 0 2px 20px 0 rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ydltavern-surface .drawer-icon {
+  width: var(--tavern-top-bar-icon-size);
+  height: var(--tavern-top-bar-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--tavern-em-color);
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: calc(var(--tavern-main-font-size) * 1.1);
+  transition: color var(--tavern-animation-duration), background var(--tavern-animation-duration), opacity var(--tavern-animation-duration);
+  opacity: 0.7;
+}
+
+.ydltavern-surface .drawer-icon:hover {
+  color: var(--tavern-body-color);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ydltavern-surface .drawer-icon.open {
+  color: var(--tavern-golden);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ydltavern-surface .drawer-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.ydltavern-surface .drawer-rail-left {
+  grid-area: left-rail;
+}
+
+.ydltavern-surface .drawer-rail-right {
+  grid-area: right-rail;
+}
+
+.ydltavern-surface .sheld {
+  grid-area: sheld;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  background: var(--tavern-chat-tint-color);
+  backdrop-filter: blur(var(--tavern-blur-strength));
+  -webkit-backdrop-filter: blur(var(--tavern-blur-strength));
+}
+
+.ydltavern-surface .drawer-content {
+  position: fixed;
+  top: calc(var(--tavern-top-bar-icon-size) + 24px);
+  height: calc(100vh - var(--tavern-top-bar-icon-size) - 32px);
+  width: min(380px, 90vw);
+  background: var(--tavern-blur-tint-color);
+  backdrop-filter: blur(var(--tavern-blur-strength));
+  -webkit-backdrop-filter: blur(var(--tavern-blur-strength));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px;
+  overflow-y: auto;
+  z-index: 80;
+  transform: translateX(-110%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--tavern-animation-duration-2x),
+    opacity var(--tavern-animation-duration-2x);
+}
+
+.ydltavern-surface .drawer-content.drawer-left {
+  left: 16px;
+}
+
+.ydltavern-surface .drawer-content.drawer-right {
+  right: 16px;
+  transform: translateX(110%);
+}
+
+.ydltavern-surface .drawer-content.openDrawer {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ydltavern-surface .drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ydltavern-surface .drawer-title {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--tavern-body-color);
+  margin: 0;
+}
+
+.ydltavern-surface .drawer-close {
+  background: transparent;
+  border: 0;
+  color: var(--tavern-em-color);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.ydltavern-surface .drawer-close:hover {
+  color: var(--tavern-body-color);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ydltavern-surface .drawer-body {
+  color: var(--tavern-body-color);
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.ydltavern-surface .drawer-placeholder p {
+  margin: 0 0 8px 0;
+}
+
+.ydltavern-surface .drawer-coming-soon {
+  font-size: 0.85em;
+  color: var(--tavern-em-color);
+  font-style: italic;
+}
+
+.ydltavern-surface .drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 0;
+  z-index: 70;
+  cursor: pointer;
+}
+
+/* === Mobile (1000px breakpoint, matches ST) === */
+@media (max-width: 1000px) {
+  .ydltavern-surface .tavern-shell {
+    grid-template-columns: 100vw;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: 'topbar' 'sheld';
+  }
+
+  .ydltavern-surface .drawer-rail {
+    display: contents;
+  }
+
+  .ydltavern-surface .drawer-content {
+    top: 0;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    transform: translateX(-110%);
+    z-index: 200;
+  }
+
+  .ydltavern-surface .drawer-content.drawer-right {
+    transform: translateX(110%);
+  }
+
+  .ydltavern-surface .drawer-content.openDrawer {
+    transform: translateX(0);
+  }
+
+  .ydltavern-surface .drawer-icon {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* === ST-aligned composer (V4) === */
+.ydltavern-surface .send_form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--tavern-blur-tint-color);
+  backdrop-filter: blur(var(--tavern-blur-strength));
+  -webkit-backdrop-filter: blur(var(--tavern-blur-strength));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ydltavern-surface .send_form_row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.ydltavern-surface .composer_toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.ydltavern-surface .composer_button {
+  width: var(--tavern-bottom-form-icon-size);
+  height: var(--tavern-bottom-form-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--tavern-em-color);
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: calc(var(--tavern-main-font-size) * 1.05);
+  opacity: 0.7;
+  transition: color var(--tavern-animation-duration), opacity var(--tavern-animation-duration), background var(--tavern-animation-duration);
+}
+
+.ydltavern-surface .composer_button:hover:not(:disabled) {
+  color: var(--tavern-body-color);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ydltavern-surface .composer_button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ydltavern-surface .send_textarea {
+  flex: 1;
+  min-height: calc(var(--tavern-main-font-size) * 2.4);
+  max-height: 50vh;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--tavern-body-color);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: var(--tavern-main-font-size);
+  line-height: 1.4;
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--tavern-animation-duration);
+}
+
+.ydltavern-surface .send_textarea:focus {
+  border-color: var(--tavern-active);
+}
+
+.ydltavern-surface .send_textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ydltavern-surface .send_but {
+  width: var(--tavern-bottom-form-icon-size);
+  height: var(--tavern-bottom-form-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tavern-active);
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: calc(var(--tavern-main-font-size) * 1.05);
+  transition: opacity var(--tavern-animation-duration), background var(--tavern-animation-duration);
+}
+
+.ydltavern-surface .send_but:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ydltavern-surface .send_but:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--tavern-em-color);
+}
+
+/* === Streaming indicator === */
+.ydltavern-surface .streaming_indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 0.85em;
+  color: var(--tavern-em-color);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.ydltavern-surface .streaming_dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.ydltavern-surface .streaming_dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tavern-active);
+  animation: streaming_pulse var(--tavern-animation-duration-3x) ease-in-out infinite;
+}
+
+.ydltavern-surface .streaming_dot:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.ydltavern-surface .streaming_dot:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+@keyframes streaming_pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ydltavern-surface .streaming_stop {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--tavern-warning);
+  color: white;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.ydltavern-surface .streaming_stop:hover {
+  opacity: 0.9;
+}
+
+/* === Background layer (V4) === */
+.ydltavern-surface .background_layer,
+#bg1 {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--tavern-chat-tint-color);
+}
+
+.ydltavern-surface .background_overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}

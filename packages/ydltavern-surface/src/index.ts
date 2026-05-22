@@ -66,6 +66,27 @@ export type { SubMessageViewProps } from './components/SubMessageView.js';
 export { STDiagnosticsPanel } from './components/STDiagnosticsPanel.js';
 export type { STDiagnosticsPanelProps } from './components/STDiagnosticsPanel.js';
 
+// ---- Shell primitives (V2) ------------------------------------------------
+
+export { useDrawers } from './components/shell/useDrawers.js';
+export type { DrawerId, DrawerState } from './components/shell/useDrawers.js';
+export { TopBar } from './components/shell/TopBar.js';
+export { DrawerShell } from './components/shell/DrawerShell.js';
+export type { DrawerShellProps } from './components/shell/DrawerShell.js';
+export { Sheld } from './components/shell/Sheld.js';
+
+export {
+  AIConfigDrawer,
+  APIConnectionsDrawer,
+  AdvancedFormattingDrawer,
+  WorldInfoDrawer,
+  UserSettingsDrawer,
+  BackgroundsDrawer,
+  ExtensionsDrawer,
+  PersonaDrawer,
+  CharactersDrawer,
+} from './components/shell/drawers/index.js';
+
 export { EngineCorePreviewPanel } from './components/EngineCorePreviewPanel.js';
 export type { EngineCorePreviewPanelProps } from './components/EngineCorePreviewPanel.js';
 

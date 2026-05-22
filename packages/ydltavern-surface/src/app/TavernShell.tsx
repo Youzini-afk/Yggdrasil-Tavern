@@ -2,24 +2,27 @@ import { normalizeQuickReplySets } from '@ydltavern/extensions';
 import type { STExtensionRecord } from '@ydltavern/extensions';
 import { ChatList } from '../components/product/ChatList.js';
 import { MessageComposer } from '../components/product/MessageComposer.js';
-import { GenerationControls } from '../components/product/GenerationControls.js';
-import { SettingsPanel } from '../components/product/SettingsPanel.js';
-import { AssetsPanel } from '../components/product/AssetsPanel.js';
-import { ExtensionsPanel } from '../components/product/ExtensionsPanel.js';
-import { DevDiagnosticsPanel } from '../components/product/DevDiagnosticsPanel.js';
 import { QuickReplyBar } from '../components/product/QuickReplyBar.js';
 import { ThemedRoot } from '../components/product/themes/ThemedRoot.js';
-import { useTavern, type TavernDrawer } from './TavernProvider.js';
-
-const DRAWERS: readonly { readonly id: TavernDrawer; readonly label: string }[] = [
-  { id: 'settings', label: 'Settings' },
-  { id: 'assets', label: 'Assets' },
-  { id: 'extensions', label: 'Extensions' },
-  { id: 'dev', label: 'Dev' },
-];
+import { useTavern } from './TavernProvider.js';
+import { TopBar } from '../components/shell/TopBar.js';
+import { Sheld } from '../components/shell/Sheld.js';
+import { useDrawers } from '../components/shell/useDrawers.js';
+import {
+  AIConfigDrawer,
+  APIConnectionsDrawer,
+  AdvancedFormattingDrawer,
+  WorldInfoDrawer,
+  UserSettingsDrawer,
+  BackgroundsDrawer,
+  ExtensionsDrawer,
+  PersonaDrawer,
+  CharactersDrawer,
+} from '../components/shell/drawers/index.js';
 
 export function TavernShell(): JSX.Element {
   const tavern = useTavern();
+  const drawers = useDrawers();
 
   // Build quick reply sets from demo/extension data
   const qrSets = useQuickReplySets(tavern.extensionRecords);
@@ -32,117 +35,40 @@ export function TavernShell(): JSX.Element {
 
   return (
     <ThemedRoot theme={tavern.theme}>
-      <div className="tavern-product-shell">
-        <header className="tavern-product-topbar">
-          <MobileHamburger />
-          <div className="tavern-brand-block">
-            <span>YdlTavern</span>
-            <strong>{tavern.liveChat.meta.title ?? 'Untitled chat'}</strong>
-          </div>
-          <nav className="tavern-topnav" aria-label="Tavern sections">
-            <button className="topnav-button is-active" type="button">Chat</button>
-            <button className="topnav-button" type="button">Characters</button>
-            <button className="topnav-button" type="button">World Info</button>
-            <button className="topnav-button" type="button">Presets</button>
-          </nav>
-          <div className="tavern-status-pills">
-            <span>{tavern.liveChat.turns.length} turns</span>
-            <span>{tavern.runtime.getContext().onlineStatus}</span>
-          </div>
-        </header>
+      <div className="ydltavern-surface tavern-shell" data-drawer-open={drawers.openId ?? 'none'}>
+        <TopBar drawers={drawers} />
 
-        <div className="tavern-product-layout">
-          <aside className="tavern-left-rail">
-            <MobileCharacterChip />
-            <div className="tablet-up">
-              <div className="character-card-mini">
-                <div className="character-avatar">YT</div>
-                <h2>{tavern.runtime.getContext().name2}</h2>
-                <p>ST-compatible context. Character, persona, preset, and worldbook state attach here.</p>
-              </div>
-              <GenerationControls />
-            </div>
-          </aside>
-
-          <main className="tavern-chat-main">
-            <ChatList />
-            <QuickReplyBar sets={qrSets} onTrigger={handleQuickReply} />
-            <MessageComposer />
-          </main>
-
-          <aside className={`tavern-right-drawer${tavern.mobileDrawerOpen ? ' is-open' : ''}`}>
-            <MobileDrawerClose />
-            <div className="drawer-tabs">
-              {DRAWERS.map((drawer) => (
-                <button
-                  key={drawer.id}
-                  type="button"
-                  className={drawer.id === tavern.activeDrawer ? 'drawer-tab is-active' : 'drawer-tab'}
-                  onClick={() => tavern.setActiveDrawer(drawer.id)}
-                >
-                  {drawer.label}
-                </button>
-              ))}
-            </div>
-            <DrawerPanel />
-          </aside>
+        <div className="drawer-rail drawer-rail-left">
+          <AIConfigDrawer drawers={drawers} />
+          <APIConnectionsDrawer drawers={drawers} />
+          <AdvancedFormattingDrawer drawers={drawers} />
+          <WorldInfoDrawer drawers={drawers} />
+          <UserSettingsDrawer drawers={drawers} />
+          <BackgroundsDrawer drawers={drawers} />
+          <ExtensionsDrawer drawers={drawers} />
+          <PersonaDrawer drawers={drawers} />
         </div>
+
+        <Sheld>
+          <ChatList />
+          <QuickReplyBar sets={qrSets} onTrigger={handleQuickReply} />
+          <MessageComposer />
+        </Sheld>
+
+        <div className="drawer-rail drawer-rail-right">
+          <CharactersDrawer drawers={drawers} />
+        </div>
+
+        {drawers.openId && (
+          <button
+            type="button"
+            className="drawer-backdrop"
+            onClick={drawers.close}
+            aria-label="Close drawer"
+          />
+        )}
       </div>
     </ThemedRoot>
-  );
-}
-
-function DrawerPanel(): JSX.Element {
-  const { activeDrawer, extensionRecords, extensionActivationContext } = useTavern();
-  if (activeDrawer === 'assets') return <AssetsPanel />;
-  if (activeDrawer === 'extensions') return (
-    <ExtensionsPanel
-      records={extensionRecords}
-      activationContext={extensionActivationContext}
-    />
-  );
-  if (activeDrawer === 'dev') return <DevDiagnosticsPanel />;
-  return <SettingsPanel />;
-}
-
-function MobileHamburger(): JSX.Element {
-  const { mobileDrawerOpen, setMobileDrawerOpen } = useTavern();
-  return (
-    <button
-      type="button"
-      className="mobile-hamburger"
-      aria-label="Toggle drawer"
-      aria-expanded={mobileDrawerOpen}
-      onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
-    >
-      <span />
-      <span />
-      <span />
-    </button>
-  );
-}
-
-function MobileDrawerClose(): JSX.Element {
-  const { setMobileDrawerOpen } = useTavern();
-  return (
-    <button
-      type="button"
-      className="mobile-drawer-close"
-      aria-label="Close drawer"
-      onClick={() => setMobileDrawerOpen(false)}
-    >
-      {'\u2715'}
-    </button>
-  );
-}
-
-function MobileCharacterChip(): JSX.Element {
-  const tavern = useTavern();
-  return (
-    <div className="mobile-character-chip">
-      <span className="character-chip-avatar">YT</span>
-      <span className="character-chip-name">{tavern.runtime.getContext().name2}</span>
-    </div>
   );
 }
 
