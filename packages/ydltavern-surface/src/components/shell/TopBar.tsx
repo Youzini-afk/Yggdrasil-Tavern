@@ -19,19 +19,22 @@ const ICONS: { id: DrawerId; icon: string; label: string }[] = [
 
 export function TopBar({ drawers }: { drawers: DrawerState }) {
   return (
-    <div className="top-settings-holder" role="toolbar" aria-label="Tavern top bar">
-      {ICONS.map((entry) => (
-        <button
-          key={entry.id}
-          type="button"
-          className={`drawer-icon ${drawers.openId === entry.id ? 'open' : ''}`}
-          onClick={() => drawers.toggle(entry.id)}
-          aria-label={entry.label}
-          aria-pressed={drawers.openId === entry.id}
-        >
-          <i className={`fa-solid ${entry.icon}`} aria-hidden="true" />
-        </button>
-      ))}
-    </div>
+    <>
+      <div className="top-settings-holder" role="toolbar" aria-label="Tavern top bar">
+        {ICONS.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            className={`drawer-icon ${drawers.openId === entry.id ? 'open' : ''}`}
+            onClick={() => drawers.toggle(entry.id)}
+            aria-label={entry.label}
+            aria-pressed={drawers.openId === entry.id}
+          >
+            <i className={`fa-solid ${entry.icon}`} aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+      <div id="extensionsMenu" data-extension-territory />
+    </>
   );
 }

@@ -56,12 +56,14 @@ export function SendForm(props: SendFormProps) {
       {props.isGenerating && <StreamingIndicator onStop={props.onStop} />}
 
       <div className="send_form_row">
-        <ComposerToolbar
-          onOptions={props.onOptions}
-          onContinue={props.onContinue}
-          onImpersonate={props.onImpersonate}
-          isGenerating={props.isGenerating}
-        />
+        <div id="leftSendForm" data-extension-territory>
+          <ComposerToolbar
+            onOptions={props.onOptions}
+            onContinue={props.onContinue}
+            onImpersonate={props.onImpersonate}
+            isGenerating={props.isGenerating}
+          />
+        </div>
 
         <textarea
           ref={textareaRef}
@@ -76,15 +78,17 @@ export function SendForm(props: SendFormProps) {
           aria-label="Message input"
         />
 
-        <button
-          type="submit"
-          id="send_but"
-          className="send_but mes_button"
-          disabled={!text.trim() || props.disabled || props.isGenerating}
-          aria-label="Send message"
-        >
-          <i className="fa-solid fa-paper-plane" aria-hidden="true" />
-        </button>
+        <div id="rightSendForm" data-extension-territory>
+          <button
+            type="submit"
+            id="send_but"
+            className="send_but mes_button"
+            disabled={!text.trim() || props.disabled || props.isGenerating}
+            aria-label="Send message"
+          >
+            <i className="fa-solid fa-paper-plane" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </form>
   );

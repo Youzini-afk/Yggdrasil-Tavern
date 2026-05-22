@@ -26,6 +26,8 @@ export function ExtensionsDrawer({ drawers }: { drawers: DrawerState }) {
           activationContext={tavern.extensionActivationContext}
         />
       </section>
+      <div id="extensions_settings" data-extension-territory />
+      <div id="extensions_settings2" data-extension-territory />
     </DrawerShell>
   );
 }

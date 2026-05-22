@@ -69,6 +69,8 @@ export function MessageActions(props: MessageActionsProps) {
       <button className="mes_button mes_edit" type="button" onClick={props.onEdit} aria-label="Edit" title="Edit">
         <i className="fa-solid fa-pencil" />
       </button>
+
+      <span className="mes_buttons_extra" data-extension-mount-slot />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { formatMessage, _runPostRender, type FormatRenderCtx } from '../../../formatting';
 import { MessageAvatar } from './MessageAvatar';
 import { MessageActions } from './MessageActions';
 import { MessageEditToolbar } from './MessageEditToolbar';
@@ -46,6 +47,34 @@ export interface MessageBubbleProps {
 export function MessageBubble(props: MessageBubbleProps) {
   const { message, editing } = props;
   const hasBookmark = Boolean(message.bookmarkLink);
+  const mesTextRef = useRef<HTMLDivElement>(null);
+
+  const formatCtx: FormatRenderCtx = useMemo(() => ({
+    messageId: message.mesId,
+    isUser: message.isUser,
+    isSystem: message.isSystem,
+    isReasoning: false,
+    characterName: message.chName,
+  }), [message.mesId, message.isUser, message.isSystem, message.chName]);
+
+  const formattedHtml = useMemo(
+    () => formatMessage(message.text ?? '', formatCtx),
+    [message.text, formatCtx],
+  );
+
+  useEffect(() => {
+    if (!mesTextRef.current || editing) return undefined;
+    const cleanups = _runPostRender(mesTextRef.current, formatCtx);
+    return () => {
+      for (const cleanup of cleanups) {
+        try {
+          cleanup();
+        } catch {
+          // ignore extension cleanup failures
+        }
+      }
+    };
+  }, [editing, formattedHtml, formatCtx]);
 
   return (
     <div
@@ -119,7 +148,13 @@ export function MessageBubble(props: MessageBubbleProps) {
           />
         )}
 
-        {!editing && <div className="mes_text">{message.text}</div>}
+        {!editing && (
+          <div
+            className="mes_text"
+            ref={mesTextRef}
+            dangerouslySetInnerHTML={{ __html: formattedHtml }}
+          />
+        )}
 
         {editing && (
           <textarea

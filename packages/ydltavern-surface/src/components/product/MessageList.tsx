@@ -86,7 +86,7 @@ export function MessageList(): JSX.Element {
   }, [editingId, tavern, turns]);
 
   return (
-    <div className="ydltavern-message-list">
+    <div id="chat" className="ydltavern-message-list">
       <Virtuoso
         className="ydltavern-message-list-virtuoso"
         totalCount={turns.length}

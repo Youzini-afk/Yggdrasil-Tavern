@@ -71,6 +71,8 @@ export function TavernShell(): JSX.Element {
           />
         </Sheld>
 
+        <div id="movingDivs" data-extension-territory />
+
         <div className="drawer-rail drawer-rail-right">
           <CharactersDrawer drawers={drawers} />
         </div>

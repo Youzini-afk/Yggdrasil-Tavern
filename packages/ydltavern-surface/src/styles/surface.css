@@ -588,6 +588,12 @@
   transition: all var(--tavern-animation-duration-2x, 300ms);
 }
 
+.ydltavern-surface .mes_buttons_extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .ydltavern-surface .mes_button {
   cursor: pointer;
   transition: opacity var(--tavern-animation-duration-2x, 300ms) ease-in-out;
@@ -2468,6 +2474,11 @@
   overflow: hidden;
 }
 
+.ydltavern-surface #chat {
+  flex: 1;
+  min-height: 0;
+}
+
 .ydltavern-surface .ydltavern-message-list-virtuoso {
   height: 100%;
 }
@@ -3128,6 +3139,21 @@
   z-index: 100;
 }
 
+.ydltavern-surface #extensionsMenu {
+  position: absolute;
+}
+
+.ydltavern-surface #movingDivs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+}
+
+.ydltavern-surface #movingDivs > * {
+  pointer-events: auto;
+}
+
 .ydltavern-surface .drawer-icon {
   width: var(--tavern-top-bar-icon-size);
   height: var(--tavern-top-bar-icon-size);
@@ -3291,6 +3317,22 @@
   display: flex;
   align-items: flex-end;
   gap: 6px;
+}
+
+.ydltavern-surface #leftSendForm,
+.ydltavern-surface #rightSendForm {
+  display: flex;
+  align-items: flex-end;
+}
+
+.ydltavern-surface #extensions_settings,
+.ydltavern-surface #extensions_settings2 {
+  display: block;
+  margin-top: 1rem;
+}
+
+.ydltavern-surface [data-extension-territory] {
+  min-width: 0;
 }
 
 .ydltavern-surface .composer_toolbar {
