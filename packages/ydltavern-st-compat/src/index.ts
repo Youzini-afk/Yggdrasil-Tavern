@@ -13,3 +13,35 @@ export { createSTScriptState, evaluateSTScript, parseSTScript, tokenizeSTScriptA
 export type { CreateSTScriptStateOptions, STScriptArgument, STScriptClosure, STScriptClosureArgument, STScriptCommandExecution, STScriptCommandNode, STScriptCommandResult, STScriptEvaluateOptions, STScriptEvaluationResult, STScriptNamedArgument, STScriptPipeline, STScriptProgram, STScriptRuntimeHost, STScriptState, STScriptStatement, STScriptTextArgument, STScriptTextNode } from './stscript/index.js';
 export { createTurnStore } from './turn-store.js';
 export type { STChatMessagePatch, STChatProxyMessage, TurnStore } from './turn-store.js';
+export {
+  PARSER_FLAG,
+  ParserFlags,
+  ARGUMENT_TYPE,
+  SlashCommandParserError,
+  SlashCommandExecutionError,
+  SlashCommandAbortError,
+  SlashCommandScope,
+  AbortController_,
+  BreakController,
+  SlashCommandClosure,
+  lintPipeValue,
+  shouldInjectPipe,
+  consumePipeSeparator,
+  resetPipeState,
+  compareValues,
+  GlobalVariables,
+  SlashCommandRegistry,
+} from './stscript-st.js';
+export type {
+  ParserFlag,
+  ArgumentType,
+  ScopeValue,
+  ScopeIndexOptions,
+  ClosureResult,
+  ClosureExecutorStep,
+  PipeInjectionState,
+  CompareRule,
+  NamedArgumentDef,
+  UnnamedArgumentDef,
+  SlashCommandDef,
+} from './stscript-st.js';
