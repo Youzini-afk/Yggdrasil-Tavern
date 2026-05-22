@@ -1,5 +1,6 @@
 import type { TokenizerAdapter, GuesstimateAdapter } from './types.js';
 import { OpenAITokenizerAdapter } from './openai-adapter.js';
+import { LlamaTokenizerAdapter } from './llama-adapter.js';
 import { TOKENIZER, type TokenizerId, guesstimate } from '../tokenizers-st.js';
 
 export function createGuesstimateAdapter(id: TokenizerId): GuesstimateAdapter {
@@ -16,6 +17,8 @@ export function createGuesstimateAdapter(id: TokenizerId): GuesstimateAdapter {
 const adapters = new Map<TokenizerId, () => TokenizerAdapter>([
   [TOKENIZER.OPENAI, () => new OpenAITokenizerAdapter(TOKENIZER.OPENAI)],
   [TOKENIZER.GPT2, () => new OpenAITokenizerAdapter(TOKENIZER.GPT2)],
+  [TOKENIZER.LLAMA, () => new LlamaTokenizerAdapter(TOKENIZER.LLAMA)],
+  [TOKENIZER.LLAMA3, () => new LlamaTokenizerAdapter(TOKENIZER.LLAMA3)],
 ]);
 
 export async function getTokenizer(

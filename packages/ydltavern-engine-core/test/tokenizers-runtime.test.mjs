@@ -6,6 +6,7 @@ import {
   guesstimate,
   selectEncodingForModel,
   OpenAITokenizerAdapter,
+  LlamaTokenizerAdapter,
   getTokenizer,
   createGuesstimateAdapter,
 } from '../dist/index.js';
@@ -141,6 +142,142 @@ test('OpenAITokenizerAdapter lazy loading: module not loaded until first call', 
 });
 
 // ---------------------------------------------------------------------------
+// LlamaTokenizerAdapter — LLAMA (Llama 1/2)
+
+test('LlamaTokenizerAdapter id=LLAMA loads llama-tokenizer-js', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  await adapter.load();
+  assert.equal(adapter.id, TOKENIZER.LLAMA);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA count("hello world") = 3 (BOS + 2 content)', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  const count = await adapter.count('hello world');
+  // llama-tokenizer-js default: addBos=true → [1, 22172, 3186] = 3 tokens
+  assert.equal(count, 3);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA encode returns BOS + content tokens', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  const tokens = await adapter.encode('hello world');
+  assert.deepEqual([...tokens], [1, 22172, 3186]);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA decode round-trips', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  const text = 'hello world';
+  const tokens = await adapter.encode(text);
+  const decoded = await adapter.decode(tokens);
+  assert.equal(decoded, text);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA addBos=false omits BOS token', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA, { addBos: false });
+  const tokens = await adapter.encode('hello world');
+  // Without BOS: [22172, 3186] = 2 tokens, no BOS=1 prefix
+  assert.equal(tokens.length, 2);
+  assert.notEqual(tokens[0], 1); // First token is NOT BOS
+});
+
+test('LlamaTokenizerAdapter id=LLAMA addBos=false count is 1 less', async () => {
+  const adapterWithBos = new LlamaTokenizerAdapter(TOKENIZER.LLAMA, { addBos: true });
+  const adapterNoBos = new LlamaTokenizerAdapter(TOKENIZER.LLAMA, { addBos: false });
+  const countWithBos = await adapterWithBos.count('hello world');
+  const countNoBos = await adapterNoBos.count('hello world');
+  assert.equal(countWithBos, 3);
+  assert.equal(countNoBos, 2);
+  assert.equal(countWithBos - countNoBos, 1);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA addEos option is ignored (not supported by package)', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA, { addEos: true });
+  const count = await adapter.count('hello world');
+  // EOS is not supported by llama-tokenizer-js; count same as default
+  assert.equal(count, 3);
+});
+
+// ---------------------------------------------------------------------------
+// LlamaTokenizerAdapter — LLAMA3 (Llama 3/3.1/3.2/3.3)
+
+test('LlamaTokenizerAdapter id=LLAMA3 loads llama3-tokenizer-js', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3);
+  await adapter.load();
+  assert.equal(adapter.id, TOKENIZER.LLAMA3);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA3 count("hello world") = 4 (BOS+content+EOS)', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3);
+  const count = await adapter.count('hello world');
+  // llama3-tokenizer-js default: bos=true, eos=true → [128000, 15339, 1917, 128001] = 4 tokens
+  assert.equal(count, 4);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA3 encode returns BOS + content + EOS', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3);
+  const tokens = await adapter.encode('hello world');
+  assert.deepEqual([...tokens], [128000, 15339, 1917, 128001]);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA3 addBos=false, addEos=false omits special tokens', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3, { addBos: false, addEos: false });
+  const tokens = await adapter.encode('hello world');
+  // Without BOS/EOS: [15339, 1917] = 2 tokens
+  assert.deepEqual([...tokens], [15339, 1917]);
+  assert.equal(tokens.length, 2);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA3 addBos=false, addEos=true includes EOS but not BOS', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3, { addBos: false, addEos: true });
+  const tokens = await adapter.encode('hello world');
+  // No BOS, with EOS: [15339, 1917, 128001] = 3 tokens
+  assert.deepEqual([...tokens], [15339, 1917, 128001]);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA3 addBos=true, addEos=false includes BOS but not EOS', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3, { addBos: true, addEos: false });
+  const tokens = await adapter.encode('hello world');
+  // BOS, no EOS: [128000, 15339, 1917] = 3 tokens
+  assert.deepEqual([...tokens], [128000, 15339, 1917]);
+});
+
+test('LlamaTokenizerAdapter id=LLAMA3 count differs from LLAMA for same text', async () => {
+  const llama = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  const llama3 = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3);
+  // Different vocab sizes → different token counts
+  const countLlama = await llama.count('hello world');
+  const countLlama3 = await llama3.count('hello world');
+  // Llama2: 3 (BOS + 2 content), Llama3: 4 (BOS + 2 content + EOS)
+  assert.notEqual(countLlama, countLlama3);
+});
+
+// ---------------------------------------------------------------------------
+// LlamaTokenizerAdapter — independent caches
+
+test('LLAMA and LLAMA3 use independent caches', async () => {
+  const llama = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  const llama3 = new LlamaTokenizerAdapter(TOKENIZER.LLAMA3);
+
+  // Load only LLAMA
+  await llama.load();
+  // LLAMA3 should not be loaded yet — but we can't inspect internals directly.
+  // Instead verify both produce distinct results after loading independently.
+  const llamaTokens = await llama.encode('test');
+  const llama3Tokens = await llama3.encode('test');
+  // LLAMA: BOS(1) + content; LLAMA3: BOS(128000) + content + EOS(128001)
+  assert.notDeepEqual([...llamaTokens], [...llama3Tokens]);
+});
+
+// ---------------------------------------------------------------------------
+// LlamaTokenizerAdapter — lazy loading
+
+test('LlamaTokenizerAdapter lazy loading: tokenizer not loaded until first call', async () => {
+  const adapter = new LlamaTokenizerAdapter(TOKENIZER.LLAMA);
+  // Before load(), encoding triggers load internally
+  const count = await adapter.count('hello');
+  assert.ok(count > 0);
+});
+
+// ---------------------------------------------------------------------------
 // getTokenizer
 
 test('getTokenizer(OPENAI) returns OpenAITokenizerAdapter', async () => {
@@ -155,9 +292,18 @@ test('getTokenizer(GPT2) returns OpenAITokenizerAdapter', async () => {
   assert.equal(adapter.id, TOKENIZER.GPT2);
 });
 
-test('getTokenizer(LLAMA) returns guesstimate adapter (fallback)', async () => {
+test('getTokenizer(LLAMA) returns LlamaTokenizerAdapter (not guesstimate)', async () => {
   const adapter = await getTokenizer(TOKENIZER.LLAMA);
-  assert.equal(adapter.fallback, true);
+  assert.ok(adapter instanceof LlamaTokenizerAdapter);
+  assert.equal(adapter.id, TOKENIZER.LLAMA);
+  assert.equal(adapter.fallback, undefined);
+});
+
+test('getTokenizer(LLAMA3) returns LlamaTokenizerAdapter (not guesstimate)', async () => {
+  const adapter = await getTokenizer(TOKENIZER.LLAMA3);
+  assert.ok(adapter instanceof LlamaTokenizerAdapter);
+  assert.equal(adapter.id, TOKENIZER.LLAMA3);
+  assert.equal(adapter.fallback, undefined);
 });
 
 test('getTokenizer(CLAUDE) returns guesstimate adapter (fallback)', async () => {

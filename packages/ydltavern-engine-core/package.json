@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@ydltavern/types": "file:../ydltavern-types",
-    "gpt-tokenizer": "^3.4.0"
+    "gpt-tokenizer": "^3.4.0",
+    "llama-tokenizer-js": "^1.2.2",
+    "llama3-tokenizer-js": "^1.2.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
