@@ -11,6 +11,18 @@
 
 // ---- Leaf components ------------------------------------------------------
 
+export { TavernProvider, useTavern } from './app/TavernProvider.js';
+export type { TavernDrawer, TavernProviderProps, TavernRuntimeState } from './app/TavernProvider.js';
+export { TavernShell } from './app/TavernShell.js';
+export { MessageList } from './components/product/MessageList.js';
+export { MessageComposer } from './components/product/MessageComposer.js';
+export { GenerationControls } from './components/product/GenerationControls.js';
+export { SwipeControls } from './components/product/SwipeControls.js';
+export { SettingsPanel } from './components/product/SettingsPanel.js';
+export { AssetsPanel } from './components/product/AssetsPanel.js';
+export { ExtensionsPanel } from './components/product/ExtensionsPanel.js';
+export { DevDiagnosticsPanel } from './components/product/DevDiagnosticsPanel.js';
+
 export { TurnView } from './components/TurnView.js';
 export type { TurnViewProps } from './components/TurnView.js';
 

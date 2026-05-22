@@ -77,6 +77,170 @@
   font-size: 0.86em;
 }
 
+/* ---------- Product shell -------------------------------------------------- */
+
+.ydltavern-surface .tavern-product-shell {
+  min-height: 780px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-bg-sunken);
+}
+
+.ydltavern-surface .tavern-product-topbar {
+  display: grid;
+  grid-template-columns: 220px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-raised);
+}
+
+.ydltavern-surface .tavern-brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ydltavern-surface .tavern-brand-block span,
+.ydltavern-surface .tavern-status-pills,
+.ydltavern-surface .drawer-tab,
+.ydltavern-surface .topnav-button {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.ydltavern-surface .tavern-brand-block span { color: var(--color-amber); text-transform: uppercase; letter-spacing: 0.14em; }
+.ydltavern-surface .tavern-brand-block strong { color: var(--color-text); font-size: 15px; }
+
+.ydltavern-surface .tavern-topnav,
+.ydltavern-surface .tavern-status-pills,
+.ydltavern-surface .drawer-tabs,
+.ydltavern-surface .composer-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ydltavern-surface .topnav-button,
+.ydltavern-surface .drawer-tab,
+.ydltavern-surface .product-control-card button,
+.ydltavern-surface .composer-actions button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  color: var(--color-text-soft);
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.ydltavern-surface .topnav-button.is-active,
+.ydltavern-surface .drawer-tab.is-active,
+.ydltavern-surface .composer-actions button:last-child {
+  border-color: var(--color-cyan-edge);
+  color: var(--color-cyan-soft);
+  background: var(--color-cyan-bg);
+}
+
+.ydltavern-surface .tavern-status-pills span {
+  padding: 5px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+}
+
+.ydltavern-surface .tavern-product-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 330px;
+  min-height: 720px;
+}
+
+.ydltavern-surface .tavern-left-rail,
+.ydltavern-surface .tavern-right-drawer {
+  padding: 16px;
+  background: var(--color-bg-raised);
+}
+
+.ydltavern-surface .tavern-left-rail { border-right: 1px solid var(--color-border); }
+.ydltavern-surface .tavern-right-drawer { border-left: 1px solid var(--color-border); overflow: auto; }
+.ydltavern-surface .tavern-chat-main { display: flex; flex-direction: column; min-width: 0; }
+
+.ydltavern-surface .character-card-mini,
+.ydltavern-surface .product-control-card,
+.ydltavern-surface .drawer-panel,
+.ydltavern-surface .permission-card,
+.ydltavern-surface .drop-zone {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+  padding: 14px;
+}
+
+.ydltavern-surface .character-avatar {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--color-amber-bg);
+  border: 1px solid var(--color-amber-edge);
+  color: var(--color-amber-soft);
+  font-weight: 700;
+}
+
+.ydltavern-surface .product-control-card { margin-top: 14px; display: grid; gap: 8px; }
+.ydltavern-surface .product-control-card h3,
+.ydltavern-surface .drawer-panel h2 { margin: 0 0 10px; }
+.ydltavern-surface .product-control-card p,
+.ydltavern-surface .panel-row span,
+.ydltavern-surface .permission-card p { color: var(--color-text-muted); font-size: 13px; line-height: 1.5; }
+
+.ydltavern-surface .product-message-list {
+  flex: 1;
+  overflow: auto;
+  padding: 22px;
+}
+
+.ydltavern-surface .product-composer {
+  border-top: 1px solid var(--color-border);
+  padding: 14px;
+  background: var(--color-bg-raised);
+}
+
+.ydltavern-surface .product-composer textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-sunken);
+  color: var(--color-text);
+  padding: 12px;
+  font: inherit;
+}
+
+.ydltavern-surface .composer-actions { justify-content: flex-end; margin-top: 10px; }
+.ydltavern-surface .drawer-tabs { margin-bottom: 12px; flex-wrap: wrap; }
+.ydltavern-surface .panel-list { display: grid; gap: 9px; }
+.ydltavern-surface .panel-row { display: grid; gap: 3px; padding: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-raised); }
+.ydltavern-surface .panel-row-with-badge { grid-template-columns: 1fr auto; align-items: center; }
+.ydltavern-surface .panel-row-with-badge em { color: var(--color-emerald); font-style: normal; font-size: 11px; }
+.ydltavern-surface .drop-zone { border-style: dashed; color: var(--color-text-muted); margin-bottom: 12px; }
+.ydltavern-surface .compact-card { margin-top: 14px; }
+
+@media (max-width: 980px) {
+  .ydltavern-surface .tavern-product-topbar,
+  .ydltavern-surface .tavern-product-layout {
+    grid-template-columns: 1fr;
+  }
+  .ydltavern-surface .tavern-left-rail,
+  .ydltavern-surface .tavern-right-drawer {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+  }
+}
+
 /* ---------- Surface containers --------------------------------------------
    Layout container shared by all bundled surfaces. Hosts may override
    max-width / padding through the optional `className` prop or by writing
