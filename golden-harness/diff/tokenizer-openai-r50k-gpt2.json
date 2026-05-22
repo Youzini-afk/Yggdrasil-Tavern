@@ -1,0 +1,24 @@
+{
+  "harness_version": "1.0",
+  "scenario": "tokenizer/openai-r50k-gpt2",
+  "description": "GPT-2/r50k_base family via gpt2 model hint. Expected exact local BPE count.",
+  "classification": "perfect",
+  "matches": true,
+  "expected": {
+    "text_length": 11,
+    "tokenizer_id": "GPT2",
+    "count": 2,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "GPT2",
+    "matches_expected": true
+  },
+  "actual": {
+    "text_length": 11,
+    "tokenizer_id": "GPT2",
+    "count": 2,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "GPT2",
+    "matches_expected": true
+  },
+  "delta": []
+}

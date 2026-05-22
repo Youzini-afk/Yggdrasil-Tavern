@@ -1,0 +1,16 @@
+{
+  "harness_version": "1.0",
+  "scenario": "instruct/llama3",
+  "description": "Llama 3 instruct mode template formatting",
+  "classification": "structural",
+  "matches": false,
+  "expected": "<|start_header_id|>user<|end_header_id|>\n\nI need your help with something important.<|eot_id|>",
+  "actual": "<|start_header_id|>user<|end_header_id|>\n\nAtlas: I need your help with something important.<|eot_id|>",
+  "delta": [
+    {
+      "path": "$",
+      "expected": "<|start_header_id|>user<|end_header_id|>\n\nI need your help with something important.<|eot_id|>",
+      "actual": "<|start_header_id|>user<|end_header_id|>\n\nAtlas: I need your help with something important.<|eot_id|>"
+    }
+  ]
+}

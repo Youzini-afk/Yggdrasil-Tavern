@@ -1,0 +1,134 @@
+{
+  "harness_version": "1.0",
+  "scenario": "chat/claude-prefill",
+  "description": "Claude API request with assistant prefill message",
+  "classification": "structural",
+  "matches": false,
+  "expected": {
+    "type": "normal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a creative writer."
+      },
+      {
+        "role": "user",
+        "content": "Write a haiku about programming."
+      },
+      {
+        "role": "assistant",
+        "content": "Here is a haiku about programming:"
+      }
+    ],
+    "model": "gpt-4-turbo",
+    "temperature": 1,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "top_p": 1,
+    "max_tokens": 300,
+    "stream": false,
+    "chat_completion_source": "openai",
+    "user_name": "User",
+    "char_name": "Assistant",
+    "group_names": [],
+    "include_reasoning": true,
+    "enable_web_search": false,
+    "request_images": false,
+    "request_image_resolution": "",
+    "request_image_aspect_ratio": "",
+    "custom_prompt_post_processing": ""
+  },
+  "actual": {
+    "type": "normal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a creative writer."
+      },
+      {
+        "role": "user",
+        "content": "Write a haiku about programming."
+      },
+      {
+        "role": "assistant",
+        "content": "Here is a haiku about programming:"
+      }
+    ],
+    "model": "claude-3-5-sonnet-20241022",
+    "chat_completion_source": "claude",
+    "stream": false,
+    "temperature": 0.9,
+    "top_p": 1,
+    "max_tokens": 128
+  },
+  "delta": [
+    {
+      "path": "$.char_name",
+      "expected": "Assistant"
+    },
+    {
+      "path": "$.chat_completion_source",
+      "expected": "openai",
+      "actual": "claude"
+    },
+    {
+      "path": "$.custom_prompt_post_processing",
+      "expected": ""
+    },
+    {
+      "path": "$.enable_web_search",
+      "expected": false
+    },
+    {
+      "path": "$.frequency_penalty",
+      "expected": 0
+    },
+    {
+      "path": "$.group_names",
+      "expected": []
+    },
+    {
+      "path": "$.include_reasoning",
+      "expected": true
+    },
+    {
+      "path": "$.max_tokens",
+      "expected": 300,
+      "actual": 128
+    },
+    {
+      "path": "$.model",
+      "expected": "gpt-4-turbo",
+      "actual": "claude-3-5-sonnet-20241022"
+    },
+    {
+      "path": "$.presence_penalty",
+      "expected": 0
+    },
+    {
+      "path": "$.request_image_aspect_ratio",
+      "expected": ""
+    },
+    {
+      "path": "$.request_image_resolution",
+      "expected": ""
+    },
+    {
+      "path": "$.request_images",
+      "expected": false
+    },
+    {
+      "path": "$.temperature",
+      "expected": 1,
+      "actual": 0.9
+    },
+    {
+      "path": "$.user_name",
+      "expected": "User"
+    }
+  ],
+  "diagnostics": {
+    "stripped": [],
+    "notes": []
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "harness_version": "1.0",
+  "scenario": "world-info/recursion-chain",
+  "description": "World info recursion chain: Entry A triggers Entry B via content match",
+  "classification": "unverifiable",
+  "matches": false,
+  "reason": "st_shim_returned_empty",
+  "expected": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
+  },
+  "actual": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info recursion chain: Entry A triggers Entry B via content match"
+  },
+  "delta": [],
+  "diagnostics": {
+    "scanDepth": 2,
+    "scanTextChars": 38,
+    "iterations": 1,
+    "budgetType": "characters",
+    "budgetLimit": 50,
+    "usedBudget": 0,
+    "warnings": [],
+    "unsupported": [
+      "ST token-level budget alignment is approximated, not tokenizer exact.",
+      "Vector lore is not implemented in engine-core P1."
+    ],
+    "uninserted": [],
+    "activationTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "activated": false,
+        "code": "budget_exceeded",
+        "reason": "budget exceeded",
+        "iteration": 0,
+        "matchedKeys": [
+          "sword"
+        ],
+        "matchedSecondaryKeys": []
+      },
+      {
+        "entryId": "1",
+        "source": "golden-harness",
+        "activated": false,
+        "code": "key_mismatch",
+        "reason": "primary keys did not match",
+        "iteration": 0,
+        "matchedKeys": [],
+        "matchedSecondaryKeys": []
+      }
+    ],
+    "routingTrace": []
+  }
+}

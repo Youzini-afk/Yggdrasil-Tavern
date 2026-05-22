@@ -1,0 +1,53 @@
+{
+  "harness_version": "1.0",
+  "scenario": "world-info/secondary-and-any",
+  "description": "World info with secondary keywords and AND/ANY logic",
+  "classification": "unverifiable",
+  "matches": false,
+  "reason": "st_shim_returned_empty",
+  "expected": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info with secondary keywords and AND/ANY logic"
+  },
+  "actual": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info with secondary keywords and AND/ANY logic"
+  },
+  "delta": [],
+  "diagnostics": {
+    "scanDepth": 2,
+    "scanTextChars": 71,
+    "iterations": 1,
+    "budgetType": "characters",
+    "budgetLimit": 25,
+    "usedBudget": 0,
+    "warnings": [],
+    "unsupported": [
+      "ST token-level budget alignment is approximated, not tokenizer exact.",
+      "Vector lore is not implemented in engine-core P1."
+    ],
+    "uninserted": [],
+    "activationTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "activated": false,
+        "code": "budget_exceeded",
+        "reason": "budget exceeded",
+        "iteration": 0,
+        "matchedKeys": [
+          "dragon"
+        ],
+        "matchedSecondaryKeys": [
+          "fire",
+          "scales"
+        ]
+      }
+    ],
+    "routingTrace": []
+  }
+}

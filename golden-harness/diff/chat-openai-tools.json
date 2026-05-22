@@ -1,0 +1,171 @@
+{
+  "harness_version": "1.0",
+  "scenario": "chat/openai-tools",
+  "description": "OpenAI chat completion with tool calling enabled",
+  "classification": "structural",
+  "matches": false,
+  "expected": {
+    "type": "normal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant with access to tools."
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in Tokyo?"
+      }
+    ],
+    "model": "gpt-4-turbo",
+    "temperature": 1,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "top_p": 1,
+    "max_tokens": 300,
+    "stream": false,
+    "chat_completion_source": "openai",
+    "user_name": "User",
+    "char_name": "Assistant",
+    "group_names": [],
+    "include_reasoning": true,
+    "enable_web_search": false,
+    "request_images": false,
+    "request_image_resolution": "",
+    "request_image_aspect_ratio": "",
+    "custom_prompt_post_processing": ""
+  },
+  "actual": {
+    "type": "normal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant with access to tools."
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in Tokyo?"
+      }
+    ],
+    "model": "gpt-4o-mini",
+    "chat_completion_source": "openai",
+    "stream": false,
+    "temperature": 0.7,
+    "top_p": 1,
+    "max_tokens": 512,
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Get current weather for a location",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {
+                "type": "string",
+                "description": "City name"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  },
+  "delta": [
+    {
+      "path": "$.char_name",
+      "expected": "Assistant"
+    },
+    {
+      "path": "$.custom_prompt_post_processing",
+      "expected": ""
+    },
+    {
+      "path": "$.enable_web_search",
+      "expected": false
+    },
+    {
+      "path": "$.frequency_penalty",
+      "expected": 0
+    },
+    {
+      "path": "$.group_names",
+      "expected": []
+    },
+    {
+      "path": "$.include_reasoning",
+      "expected": true
+    },
+    {
+      "path": "$.max_tokens",
+      "expected": 300,
+      "actual": 512
+    },
+    {
+      "path": "$.model",
+      "expected": "gpt-4-turbo",
+      "actual": "gpt-4o-mini"
+    },
+    {
+      "path": "$.presence_penalty",
+      "expected": 0
+    },
+    {
+      "path": "$.request_image_aspect_ratio",
+      "expected": ""
+    },
+    {
+      "path": "$.request_image_resolution",
+      "expected": ""
+    },
+    {
+      "path": "$.request_images",
+      "expected": false
+    },
+    {
+      "path": "$.temperature",
+      "expected": 1,
+      "actual": 0.7
+    },
+    {
+      "path": "$.tool_choice",
+      "actual": "auto"
+    },
+    {
+      "path": "$.tools",
+      "actual": [
+        {
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "description": "Get current weather for a location",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "description": "City name"
+                }
+              },
+              "required": [
+                "location"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "$.user_name",
+      "expected": "User"
+    }
+  ],
+  "diagnostics": {
+    "stripped": [],
+    "notes": []
+  }
+}

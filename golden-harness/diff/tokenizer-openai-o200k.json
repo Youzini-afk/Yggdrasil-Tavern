@@ -1,0 +1,24 @@
+{
+  "harness_version": "1.0",
+  "scenario": "tokenizer/openai-o200k",
+  "description": "OpenAI o200k_base family via gpt-4o model hint. Expected exact local BPE count.",
+  "classification": "perfect",
+  "matches": true,
+  "expected": {
+    "text_length": 16,
+    "tokenizer_id": "OPENAI",
+    "count": 5,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "OPENAI",
+    "matches_expected": true
+  },
+  "actual": {
+    "text_length": 16,
+    "tokenizer_id": "OPENAI",
+    "count": 5,
+    "accuracy": "exact",
+    "expected_tokenizer_id": "OPENAI",
+    "matches_expected": true
+  },
+  "delta": []
+}

@@ -1,0 +1,12 @@
+{
+  "harness_version": "1.0",
+  "scenario": "macro/nested-recursive",
+  "description": "Nested and recursive macro substitution",
+  "classification": "unverifiable",
+  "matches": false,
+  "reason": "st_macro_fallback_partial",
+  "expected": "Alice says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+  "actual": "Alice says: {{// This is a comment that should be removed}}Hello! {{trim}}\n{{newline}}End.",
+  "delta": [],
+  "fixture_error": "Cannot read properties of undefined (reading 'content')"
+}

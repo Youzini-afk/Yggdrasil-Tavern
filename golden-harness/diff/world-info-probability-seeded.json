@@ -1,0 +1,52 @@
+{
+  "harness_version": "1.0",
+  "scenario": "world-info/probability-seeded",
+  "description": "World info entry with probability < 100, using seeded RNG for determinism",
+  "classification": "unverifiable",
+  "matches": false,
+  "reason": "st_shim_returned_empty",
+  "expected": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
+  },
+  "actual": {
+    "worldInfoBefore": "",
+    "worldInfoAfter": "",
+    "activatedEntries": [],
+    "scenario": "World info entry with probability < 100, using seeded RNG for determinism"
+  },
+  "delta": [],
+  "diagnostics": {
+    "scanDepth": 2,
+    "scanTextChars": 35,
+    "iterations": 1,
+    "budgetType": "characters",
+    "budgetLimit": 25,
+    "usedBudget": 0,
+    "warnings": [],
+    "unsupported": [
+      "ST token-level budget alignment is approximated, not tokenizer exact.",
+      "Vector lore is not implemented in engine-core P1."
+    ],
+    "uninserted": [],
+    "activationTrace": [
+      {
+        "entryId": "0",
+        "source": "golden-harness",
+        "activated": false,
+        "code": "probability_failed",
+        "reason": "probability roll 98.3134 > 50",
+        "iteration": 0,
+        "matchedKeys": [],
+        "matchedSecondaryKeys": [],
+        "probability": 50,
+        "roll": 98.31337704228382,
+        "randomIndex": 0,
+        "randomValue": 0.9831337704228382
+      }
+    ],
+    "routingTrace": []
+  }
+}

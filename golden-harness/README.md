@@ -87,9 +87,54 @@ npm run compare
 node compare.mjs --scenario scenarios/instruct/chatml.json
 ```
 
-Diff reports are written to `diff/<category>-<name>.json`.
+`compare.mjs` runs the YdlTavern deep-port modules against the same scenario JSON
+that produced each fixture, then writes one report per scenario to
+`diff/<category>-<name>.json` plus an aggregate `diff/_summary.json`.
 
-Exit code 0 if all match, 1 if any diff.
+The comparator intentionally exits 0 after writing reports, even when structural
+diffs are found. Treat `diff/_summary.json` as the pass/fail source of truth for
+compatibility work.
+
+### Diff Classification
+
+Each diff report uses one of these classifications:
+
+| Classification | Meaning |
+|----------------|---------|
+| `perfect` | YdlTavern output is byte-identical to the fixture after JSON serialization. |
+| `cosmetic` | The stable JSON object is equal, but original serialization differs by key order or whitespace. |
+| `structural` | Keys, array lengths, scalar values, or nested object shapes differ. Reports include up to 50 `delta` paths. |
+| `unverifiable` | The ST fixture is incomplete or shim-derived, or a fixture/export is missing, so the scenario cannot prove byte-level compatibility. |
+| `error` | The comparator threw before it could produce a meaningful comparison. |
+
+`diff/_summary.json` contains total counts and per-category counts. A category
+should only be documented as implemented when every scenario in that category is
+`perfect`.
+
+### Workflow: Regenerating Fixtures vs Running Diffs
+
+1. Regenerate ST fixtures only when the ST reference commit or scenario inputs
+   change:
+
+   ```bash
+   npm run test
+   ```
+
+2. Build YdlTavern packages used by the comparator:
+
+   ```bash
+   npm run build --prefix ../packages/ydltavern-engine-core
+   ```
+
+3. Run YdlTavern-vs-fixture diffs:
+
+   ```bash
+   node compare.mjs --all
+   cat diff/_summary.json
+   ```
+
+4. Inspect any non-perfect reports under `diff/` and update the compatibility
+   matrix with the exact counts from `_summary.json`.
 
 ### Verify Determinism
 
@@ -139,17 +184,21 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 
 ## Scenario Categories
 
-| Category | ST Function | Scenario Count | v0 Status |
+| Category | ST Function | Scenario Count | Current Status |
 |----------|------------|----------------|-----------|
-| instruct | `formatInstructModeChat` | 2 | ✅ Full — real ST function produces formatted output |
-| chat | `sendOpenAIRequest` | 4 | ✅ Full — fetch interceptor captures assembled request body |
-| macro | `evaluateMacros` | 4 | ⚠️ Partial — fallback env substitution; full engine fails on missing DOM state |
-| world-info | `checkWorldInfo` | 4 | ⚠️ Structural — function runs but finds 0 entries (WI data store not populated) |
-| tokenizer | YdlTavern `countTokens` | 6 | ✅ Self-baseline — local adapter output, not ST ground truth yet |
+| instruct | `formatInstructModeChat` | 2 | ⚠️ Structural in YdlTavern diff — 0/2 perfect, see `diff/instruct-*.json` |
+| chat | `sendOpenAIRequest` | 4 | ⚠️ Structural in YdlTavern diff — 0/4 perfect, see `diff/chat-*.json` |
+| macro | `evaluateMacros` | 4 | ⚠️ Unverifiable — ST fixtures used fallback env substitution |
+| world-info | `checkWorldInfo` | 4 | ⚠️ Unverifiable — ST shim returned empty activation results |
+| tokenizer | YdlTavern `countTokens` | 6 | ✅ Perfect self-baseline — 6/6 match current runtime output |
 
-## v0 Results
+## Fixture Generation Results
 
 **14/14 scenarios produce fixtures.** Determinism verified (byte-identical on repeated runs).
+
+Round 2 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
+6 perfect, 6 structural, 8 unverifiable, 0 errors. See `diff/_summary.json` for
+the exact current breakdown.
 
 ### Detailed Status
 
@@ -157,6 +206,7 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 - **chat/** (4/4): All four chat scenarios capture the full request body via fetch interception. The request shape includes model, temperature, tokens, etc.
 - **macro/** (4/4): Fallback env substitution works. Full `evaluateMacros` fails on `getInstructMacros` (DOM-dependent instruct state). Time/random macros use fallback.
 - **world-info/** (4/4): `checkWorldInfo` runs but finds 0 entries because the WI data store (`worldInfoCache`) is not populated from scenario entries. The function structure is exercised but keyword matching is not.
+- **tokenizer/** (6/6): `countTokens(text, { modelHint })` self-baseline is byte-identical against current runtime output.
 
 ## Known Limitations (v0)
 
