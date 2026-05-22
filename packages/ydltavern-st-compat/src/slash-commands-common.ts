@@ -20,7 +20,7 @@ export interface BatchSlashOptions {
   };
 }
 
-export type BatchSlashRegistry = Pick<SlashCommandRegistry, 'register' | 'has'>;
+export type BatchSlashRegistry = Pick<SlashCommandRegistry, 'register' | 'has' | 'list'>;
 
 export function registerIfMissing(registry: BatchSlashRegistry, def: SlashCommandDef): void {
   if (!registry.has(def.name)) registry.register(def);
