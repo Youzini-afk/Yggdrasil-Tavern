@@ -18,6 +18,9 @@ import { SlashCommandRegistry, type ExecuteSlashCommandsDeepResult } from './sts
 import { registerBatchA } from './slash-commands-batch-a.js';
 import { registerBatchB } from './slash-commands-batch-b.js';
 import { registerBatchC } from './slash-commands-batch-c.js';
+import { registerBatchD } from './slash-commands-batch-d.js';
+import { registerBatchE } from './slash-commands-batch-e.js';
+import { registerBatchF } from './slash-commands-batch-f.js';
 import { registerBatchG } from './slash-commands-batch-g.js';
 
 // ---------------------------------------------------------------------------
@@ -442,6 +445,9 @@ export function createSTContextDeep(options: CreateSTContextDeepOptions): STCont
   registerBatchA(slashCommandRegistry, { ctx });
   registerBatchB(slashCommandRegistry, { ctx });
   registerBatchC(slashCommandRegistry, { ctx });
+  registerBatchD(slashCommandRegistry, { ctx });
+  registerBatchE(slashCommandRegistry, { ctx });
+  registerBatchF(slashCommandRegistry, { ctx });
   registerBatchG(slashCommandRegistry, { ctx });
 
   return ctx;
