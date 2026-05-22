@@ -76,3 +76,8 @@ export type {
   STContextDeep,
   CreateSTContextDeepOptions,
 } from './context-st.js';
+export {
+  mountSTGlobals,
+  type MountSTGlobalsOptions,
+  type MountSTGlobalsResult,
+} from './window-bootstrap.js';

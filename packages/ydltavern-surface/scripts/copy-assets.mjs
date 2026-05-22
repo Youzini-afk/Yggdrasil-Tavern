@@ -13,6 +13,8 @@ const srcDir = join(root, 'src', 'styles');
 const destDir = join(root, 'dist', 'styles');
 const fontsDst = join(root, 'dist', 'fonts');
 const bundlePath = join(root, 'dist', 'bundle.mjs');
+const compatSrc = join(root, 'public', 'st-compat');
+const compatDst = join(root, 'dist', 'st-compat');
 
 const FONT_SOURCES = [
   {
@@ -68,6 +70,27 @@ if (fontsCopied === FONT_SOURCES.length) {
   );
 } else {
   process.stderr.write('[surface] no fonts copied; run `npm install --include=dev` to install @fontsource packages\n');
+}
+
+async function copyDir(src, dst) {
+  await mkdir(dst, { recursive: true });
+  const entries = await readdir(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name);
+    const dstPath = join(dst, entry.name);
+    if (entry.isDirectory()) {
+      await copyDir(srcPath, dstPath);
+    } else if (entry.isFile()) {
+      await copyFile(srcPath, dstPath);
+    }
+  }
+}
+
+try {
+  await copyDir(compatSrc, compatDst);
+  process.stdout.write('[surface] copied st-compat shims to dist/st-compat/\n');
+} catch (err) {
+  process.stderr.write(`[surface] st-compat copy skipped: ${err.message}\n`);
 }
 
 try {

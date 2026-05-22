@@ -158,3 +158,21 @@ export {
 // ---- Fixtures (also exposed via the `./fixtures` subpath) -----------------
 
 export { sampleChat } from './fixtures/sample-chat.js';
+
+// ---- Formatting ------------------------------------------------------------
+
+export {
+  formatMessage,
+  registerPreMarkdownHook,
+  registerPreSanitizeHook,
+  registerPostRenderHook,
+  getConverter,
+  createConverter,
+  sanitizeChatHtml,
+  ensureDOMPurifyHooks,
+  type FormatMessageOptions,
+  type PreMarkdownHook,
+  type PreSanitizeHtmlHook,
+  type PostRenderHook,
+  type FormatRenderCtx,
+} from './formatting/index.js';
