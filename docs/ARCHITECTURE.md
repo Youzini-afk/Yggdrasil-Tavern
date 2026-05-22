@@ -82,9 +82,13 @@ YdlTavern 前端不是一个独立 app。它是 surface bundle：
 
 YdlTavern 不自己接 OpenAI / Anthropic / Gemini。真实模型调用通过 `ydltavern/engine/model.live_call` 和 `ydltavern/engine/model.live_call.stream` 进入 Yggdrasil：YdlTavern engine 用 `buildChatRequest` 组 provider 请求体，经 subprocess SDK `kernelClient` 调用 `kernel.outbound.execute` 或 `kernel.outbound.stream`，再由 host 的 live outbound executor 访问 provider HTTPS。YdlTavern 只传 `secret_ref` 字符串和 manifest 声明，不读取 raw key；审计、脱敏、取消和超时由 Yggdrasil outbound 事件链负责。
 
+### Realtime via Yggdrasil WebSocket outbound
+
+Realtime 模型调用使用单独的 WebSocket 路径：`ydltavern/engine/model.live_realtime` → `kernelClient.openWebSocket` → `kernel.outbound.websocket.open` → provider `wss://...`。OpenAI Realtime 走 `wss://api.openai.com/v1/realtime?model=...`；Gemini Live 目前是 best-effort stub。非流式与 chat completion streaming 仍走上一节的 HTTP/SSE 路径（`kernel.outbound.execute` / `kernel.outbound.stream`）。HTTP、SSE、WebSocket 三条路径共享同一组安全边界：manifest 声明、`secret_ref`、namespace、allowed host、host-side audit/redaction、取消与超时。YdlTavern 不直接打开 WebSocket，也不持有 raw key。
+
 ### Tokenizer runtime
 
-`@ydltavern/engine-core` 的 tokenizer registry 保留 ST 的 `TOKENIZER` / best-match 规则，并在运行时按 family lazy load adapter。OpenAI/GPT-2 使用 `gpt-tokenizer`（cl100k/o200k/p50k/r50k），Llama 1/2 使用 `llama-tokenizer-js`，Llama 3 使用 `llama3-tokenizer-js`，Claude 使用 `@anthropic-ai/tokenizer` 的本地近似，Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A 走 `@huggingface/tokenizers` 且需要调用方提供 tokenizer source。没有真实 source 时回落到 ST 风格 UTF-8/3.35 guesstimate。
+`@ydltavern/engine-core` 的 tokenizer registry 保留 ST 的 `TOKENIZER` / best-match 规则，并在运行时按 family lazy load adapter。OpenAI/GPT-2 使用 `gpt-tokenizer`（cl100k/o200k/p50k/r50k），Llama 1/2 使用 `llama-tokenizer-js`，Llama 3 使用 `llama3-tokenizer-js`，Claude 使用 `@anthropic-ai/tokenizer` 的本地近似，Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A 走 `@huggingface/tokenizers`。HF source 可由调用方直接提供，也可用 `fetchHuggingFaceTokenizer` 通过 `kernel.outbound.execute` 向 Yggdrasil host 请求 `tokenizer.json` 下载；fetcher 支持可选 SHA-256 pinning 和内存 LRU cache。没有真实 source 时回落到 ST 风格 UTF-8/3.35 guesstimate。
 
 ### QuickJS 扩展 sandbox
 
@@ -128,4 +132,4 @@ YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预
 
 ## 当前状态
 
-YdlTavern 的主要开发面已完成一轮系统推进和一轮深度移植：资产导入/导出、ST 兼容运行时、STScript 运行时、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry）、内置扩展逻辑、sandbox-enabled extension loader、live model call boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF-source families，扩展 JS 已能在 QuickJS sandbox v0 受限执行，真实模型调用已能 opt-in 走 Yggdrasil outbound，golden harness 已生成首批 fixtures；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展和更多 fixture 场景仍需继续补齐。
+YdlTavern 的主要开发面已完成一轮系统推进和一轮深度移植：资产导入/导出、ST 兼容运行时、STScript 运行时、约 70 个 slash commands、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher）、内置扩展逻辑、sandbox-enabled extension loader、live model call / realtime boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox v0 受限执行，真实模型调用已能 opt-in 走 Yggdrasil outbound，golden harness `compare.mjs` 已跑通 20 个 scenarios（6 perfect、6 structural、8 unverifiable）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展和更多 fixture 场景仍需继续补齐。

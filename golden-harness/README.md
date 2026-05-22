@@ -70,12 +70,14 @@ Accuracy levels in tokenizer fixture output:
 
 | Accuracy | Meaning | Families |
 |----------|---------|----------|
-| `exact` | Local BPE/tokenizer package is used. | OpenAI/GPT-2 (`gpt-tokenizer`), Llama 1/2, Llama 3, HF tokenizer source when supplied by caller |
+| `exact` | Local BPE/tokenizer package is used. | OpenAI/GPT-2 (`gpt-tokenizer`), Llama 1/2, Llama 3, HF tokenizer source supplied by caller or fetched with the runtime HF fetcher |
 | `approximation` | Local text-only estimate; structured API-specific content is not represented. | Claude (`@anthropic-ai/tokenizer`) |
 | `guesstimate` | ST-compatible UTF-8 byte length / 3.35 fallback because no real local tokenizer source is available. | Mistral/Qwen/Gemma/etc. without caller-supplied HF source |
 
-HF-family tokenizers are not auto-fetched by the harness or runtime; callers must
-provide a `tokenizer.json` source for exact counts.
+HF-family tokenizers can now be loaded from caller-supplied `tokenizer.json` or via
+`fetchHuggingFaceTokenizer`, which asks the Yggdrasil host to download the file
+through `kernel.outbound.execute`. The harness tokenizer scenarios remain a
+self-baseline unless a fixture explicitly wires a real HF source.
 
 ### Compare YdlTavern Output Against Fixtures
 
@@ -90,6 +92,10 @@ node compare.mjs --scenario scenarios/instruct/chatml.json
 `compare.mjs` runs the YdlTavern deep-port modules against the same scenario JSON
 that produced each fixture, then writes one report per scenario to
 `diff/<category>-<name>.json` plus an aggregate `diff/_summary.json`.
+
+Round 2 R1 made this workflow operational against the current deep-port modules.
+Current results are **6/20 perfect** (tokenizer self-baseline), **6/20 structural**
+(chat/instruct), and **8/20 unverifiable** (macro/world-info shim limits).
 
 The comparator intentionally exits 0 after writing reports, even when structural
 diffs are found. Treat `diff/_summary.json` as the pass/fail source of truth for
@@ -199,6 +205,10 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 Round 2 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
 6 perfect, 6 structural, 8 unverifiable, 0 errors. See `diff/_summary.json` for
 the exact current breakdown.
+
+Next steps: improve the ST shim coverage enough to extract real WI activation and
+macro evaluator fixtures, then move those scenarios from `unverifiable` to real
+perfect/structural classifications.
 
 ### Detailed Status
 

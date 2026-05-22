@@ -31,7 +31,7 @@
 | 域 | 分母 | 实现 | 状态 | 来源 inventory | 主要轨道 |
 |---|---:|---:|---|---|---|
 | event_types | 104 | 常量 + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| 内置 slash commands | 153 | 30 commands implemented; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 30/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| 内置 slash commands | 153 | 约 70 commands implemented across batches A-G; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | ~70/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | 宏 / macros | 80+ | registry-based engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState；golden harness 当前 0/4 perfect、4/4 unverifiable（ST fixture 使用 fallback env substitution） | partial — `golden-harness/diff/macro-*.json` | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides；golden harness 当前 0/4 perfect、4/4 structural（ST fixture 默认设置/模型与 scenario 设置存在结构差异） | partial — `golden-harness/diff/chat-*.json` | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
@@ -45,10 +45,10 @@
 | OpenAI preset schema 字段 | 75 | PromptManager preparePrompts + ChatCompletion budget + populationInjection + populateChatHistory + populateDialogueExamples + squashSystemMessages | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager 标识符 | 13 typed | 12 default prompts + RELATIVE/ABSOLUTE injection_position + injection_depth/order + injection_trigger + forbid_overrides + main/jailbreak override with {{original}} | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | tokenizers: OPENAI/GPT2/LLAMA/LLAMA3/CLAUDE | 5 families | real local adapters; Claude is local text approximation；golden harness self-baseline 6/6 perfect | implemented (golden harness verified self-baseline) | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| tokenizers: HF families | 9 families | `@huggingface/tokenizers` path for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A when caller supplies source | partial-source-required | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| tokenizers: HF families | 9 families | `@huggingface/tokenizers` path for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A；`fetchHuggingFaceTokenizer` 可经 Yggdrasil `kernel.outbound.execute` runtime-fetch `tokenizer.json`，支持 SHA-256 pin 与 LRU cache | partial-real | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | 内置扩展 | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | 扩展 JS 执行 | ST extension JS | QuickJS sandbox v0 + host bridge + permissions/audit; no network/fetch/XHR; DOM/style/i18n incomplete | partial-sandboxed | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
-| 真实模型调用 | provider HTTPS | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`; requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| 真实模型调用 | provider HTTPS / WebSocket | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`；`model.live_realtime` bridge to `kernel.outbound.websocket.*`（OpenAI Realtime real；Gemini Live best-effort stub）；requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | Product UI | qualitative | product shell with virtualized chat list, themes, settings tabs, extension drawer, quick reply, mobile responsive | partial-shell-with-virtualization-and-themes | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -64,11 +64,11 @@
 |---|---|---|---|
 | `@ydltavern/types` | 全部 | Turn 模型、ST event/slash/macro/connector/sampler/world-info/prompt-manager 常量 | stubbed 基础 |
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
-| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、完整 `getContext()` shape（`context-st.ts`）、`eventSource`、`Generate`、宏引擎（`macros-st.ts`：完整 ST registry + 递归展开 + PickState）、STScript 运行时（`stscript-st.ts`：scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution）、slash registry | partial |
-| `@ydltavern/engine-core` | C + I | chat/text request builders、stream chunk 状态机、token budget、PromptManager、World Info、instruct mode、tokenizer registry + `countTokens(text, options)` real adapters（OpenAI/GPT2/Llama/Llama3/Claude/HF-source）+ guesstimate、golden harness fixtures、stream frames、model boundary plan | partial |
+| `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、完整 `getContext()` shape（`context-st.ts`）、`eventSource`、`Generate`、宏引擎（`macros-st.ts`：完整 ST registry + 递归展开 + PickState）、STScript 运行时（`stscript-st.ts`：scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution）、slash registry + batches A-G 约 70 commands | partial |
+| `@ydltavern/engine-core` | C + I | chat/text request builders、stream chunk 状态机、token budget、PromptManager、World Info、instruct mode、tokenizer registry + `countTokens(text, options)` real adapters（OpenAI/GPT2/Llama/Llama3/Claude/HF-source）+ HF runtime fetcher + guesstimate、golden harness fixtures、stream frames、model boundary plan | partial |
 | `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` 虚拟聊天列表 + dark/light/parchment themes + Connection/Sampler/Persona/Theme 设置 tabs + loader-st ExtensionsDrawer + QuickReplyBar + mobile responsive + diagnostic inspectors | partial-shell-with-virtualization-and-themes |
 | `@ydltavern/extensions` | F + H | regex real engine、memory/vectors/quick-reply/token-counter executable logic、provider/IO-heavy extensions as plan/approximation、extension loader（manifest parse + validation + activation plan）、QuickJS sandbox runtime/bridge/loader/permissions/audit | partial-sandboxed |
-| `@ydltavern/engine` | C | deep-port capabilities plus `model.live_call` and `model.live_call.stream` through Yggdrasil outbound execute/stream; manifest declares provider hosts and `secret_refs` | partial-opt-in |
+| `@ydltavern/engine` | C | deep-port capabilities plus `model.live_call` / `model.live_call.stream` through Yggdrasil outbound execute/stream and `model.live_realtime` through outbound websocket; manifest declares provider hosts, WEBSOCKET methods, and `secret_refs` | partial-opt-in |
 
 ## 内置扩展覆盖度（F 轨道）
 

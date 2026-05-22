@@ -20,6 +20,7 @@
 
 - [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.md) —— 使用 Node + jsdom golden harness 生成 ST 对齐 fixtures
 - [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) —— 通过 Yggdrasil outbound executor 发起 opt-in 真实模型调用
+- [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) —— 通过 Yggdrasil WebSocket outbound 使用 OpenAI Realtime / Gemini Live stub
 
 ## ST 源码 inventory（机械扫描，ground truth）
 
@@ -54,5 +55,6 @@
 | 理解内部数据模型 | [`architecture/TURN_MODEL.md`](architecture/TURN_MODEL.md) → [`architecture/COMPAT_PROJECTION.md`](architecture/COMPAT_PROJECTION.md) |
 | 生成 ST 对齐 fixture | [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.md) |
 | 配置真实模型调用 | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) |
+| 配置 Realtime WebSocket 模型 | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) |
 | 找 ST 源码里某个 API/事件/命令 | 对应的 `inventory/*.raw.md` |
 | 看某条轨道做什么 | [`tracks/README.md`](tracks/README.md) → 具体轨道文档 |

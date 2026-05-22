@@ -30,6 +30,17 @@ YdlTavern model.live_call.stream
   -> normalized stream frames via callbacks
 ```
 
+WebSocket realtime：
+
+```text
+YdlTavern model.live_realtime
+  -> kernelClient.openWebSocket(...)
+  -> kernel.outbound.websocket.open / send / close
+  -> provider WSS (OpenAI Realtime; Gemini Live best-effort stub)
+```
+
+WebSocket realtime 与 unary / SSE 使用同一套 `secret_ref`、manifest host、namespace、audit/redaction、cancel/timeout enforcement；区别只是 outbound method 为 `WEBSOCKET`，host profile 需要启用 `outbound.websocket.executor: live`。完整细节见 [`REALTIME_MODELS.md`](REALTIME_MODELS.md)。
+
 ## Required Yggdrasil profile
 
 Use a Yggdrasil host profile that enables live outbound execution. The example profile is in the sibling platform repository:
@@ -97,6 +108,7 @@ Adding a provider means updating the manifest and the live-call source mapping t
 
 - `ydltavern/engine/model.live_call`：unary request/response path. Returns status, body shape, extracted text/reasoning/tool calls/usage when available, redaction state, network flag, and executor kind.
 - `ydltavern/engine/model.live_call.stream`：streaming path. Uses `kernel.outbound.stream` with `stream_format: "sse"` and emits normalized frames through callbacks.
+- `ydltavern/engine/model.live_realtime`：WebSocket realtime path. Uses `kernel.outbound.websocket.*`; OpenAI Realtime is real, Gemini Live is currently best-effort stub.
 
 Both capabilities are marked non-deterministic and model-boundary crossing.
 

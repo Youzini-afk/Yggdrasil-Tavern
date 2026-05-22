@@ -29,9 +29,12 @@
 
 - `model.live_call`：用 `buildChatRequest` 生成 provider request body，然后通过 subprocess `kernelClient` 调用 Yggdrasil `kernel.outbound.execute`。
 - `model.live_call.stream`：通过 `kernel.outbound.stream` 读取 SSE chunk，并归一化为 stream frames（delta text、reasoning、tool_calls、final/error/cancelled/timeout）。
-- `manifest.yaml` 声明 provider network hosts（OpenAI、DeepSeek、Anthropic、OpenRouter）和 `secret_refs`。
+- `model.live_realtime`：通过 `kernelClient.openWebSocket` / Yggdrasil `kernel.outbound.websocket.*` 打开 provider WebSocket；OpenAI Realtime 是真实路径，Gemini Live 是 best-effort stub。
+- `manifest.yaml` 声明 provider network hosts（OpenAI、DeepSeek、Anthropic、OpenRouter、Gemini）、WEBSOCKET method（OpenAI/Gemini）和 `secret_refs`。
 - raw key 不进入 YdlTavern；输入只携带 `secret_ref`，由 Yggdrasil host 解析、脱敏、审计。
-- 需要 Yggdrasil live outbound profile（例如 `profiles/forge-with-live-models.example.yaml`）和环境变量（如 `OPENAI_API_KEY`、`DEEPSEEK_API_KEY`）。
+- 需要 Yggdrasil live outbound profile（例如 `profiles/forge-with-live-models.example.yaml`）和环境变量（如 `OPENAI_API_KEY`、`DEEPSEEK_API_KEY`、`GEMINI_API_KEY`）；Realtime 还需要 host profile 启用 `outbound.websocket.executor: live`。
+
+WebSocket 边界与 HTTP/SSE 一样严格：YdlTavern 绝不直接 `new WebSocket(...)` 到 provider，必须经 host `openWebSocket` 边界；host 负责 allowed host、`secret_ref` 解析、审计、脱敏、取消和超时。
 
 这仍是 `partial-opt-in`：默认不直接联网，真实 HTTPS 只在 host profile 启用 live outbound 且 secrets 存在时发生。所有 capability 均声明在 `manifest.yaml`。
 

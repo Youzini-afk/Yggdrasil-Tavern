@@ -62,6 +62,8 @@ output: next speaker selection exactly matches ST with the same seed
 
 `packages/ydltavern-engine` passes these results through `world_info.evaluate`, `world_info.route`, `world_info.match_keys`, `preset.compile`, and `turn.generate`. `@ydltavern/surface` displays PromptManager order, marker fills, WI routing/group/probability/timed trace.
 
+For advanced model I/O, `model.live_realtime` is now online through Yggdrasil WebSocket outbound: OpenAI Realtime uses the real `kernel.outbound.websocket.*` path, while Gemini Live is currently a best-effort stub. This does not change the WI / group-chat alignment status.
+
 This is still `partial`. Still pending: full ST persona lock, group chat rotation, byte-level alignment.
 
 ## Out of scope

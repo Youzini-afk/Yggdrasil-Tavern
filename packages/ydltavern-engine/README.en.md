@@ -29,9 +29,12 @@ Current phase: deep-port complete, with an opt-in live model call path added. In
 
 - `model.live_call`: builds the provider request body with `buildChatRequest`, then calls Yggdrasil `kernel.outbound.execute` through the subprocess `kernelClient`.
 - `model.live_call.stream`: reads SSE chunks through `kernel.outbound.stream` and normalizes them into stream frames (delta text, reasoning, tool_calls, final/error/cancelled/timeout).
-- `manifest.yaml` declares provider network hosts (OpenAI, DeepSeek, Anthropic, OpenRouter) and `secret_refs`.
+- `model.live_realtime`: opens provider WebSockets through `kernelClient.openWebSocket` / Yggdrasil `kernel.outbound.websocket.*`; OpenAI Realtime is the real path, while Gemini Live is a best-effort stub.
+- `manifest.yaml` declares provider network hosts (OpenAI, DeepSeek, Anthropic, OpenRouter, Gemini), WEBSOCKET methods (OpenAI/Gemini), and `secret_refs`.
 - Raw keys never enter YdlTavern; inputs carry only `secret_ref`, resolved/redacted/audited by the Yggdrasil host.
-- Requires a Yggdrasil live outbound profile (for example `profiles/forge-with-live-models.example.yaml`) and environment variables such as `OPENAI_API_KEY` and `DEEPSEEK_API_KEY`.
+- Requires a Yggdrasil live outbound profile (for example `profiles/forge-with-live-models.example.yaml`) and environment variables such as `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, and `GEMINI_API_KEY`; Realtime also requires the host profile to enable `outbound.websocket.executor: live`.
+
+The WebSocket boundary is as strict as HTTP/SSE: YdlTavern never opens a direct provider `new WebSocket(...)`; it must use the host `openWebSocket` boundary. The host owns allowed hosts, `secret_ref` resolution, audit, redaction, cancel, and timeout behavior.
 
 This is still `partial-opt-in`: the package does not directly network by default, and real HTTPS only happens when the host profile enables live outbound and secrets exist. All capabilities are declared in `manifest.yaml`.
 

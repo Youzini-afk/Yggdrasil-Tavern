@@ -20,6 +20,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 
 - [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.en.md) — generate ST-alignment fixtures with the Node + jsdom golden harness
 - [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.en.md) — make opt-in live model calls through the Yggdrasil outbound executor
+- [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) — use OpenAI Realtime / Gemini Live stub through Yggdrasil WebSocket outbound
 
 ## ST source inventory (mechanical scan, ground truth)
 
@@ -54,5 +55,6 @@ Parallel work by domain, not linear milestones. See [`tracks/README.md`](tracks/
 | Understand the internal data model | [`architecture/TURN_MODEL.md`](architecture/TURN_MODEL.en.md) → [`architecture/COMPAT_PROJECTION.md`](architecture/COMPAT_PROJECTION.en.md) |
 | Generate ST-alignment fixtures | [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.en.md) |
 | Configure live model calls | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.en.md) |
+| Configure Realtime WebSocket models | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) |
 | Find a specific ST API/event/command | the matching `inventory/*.raw.md` |
 | Learn what a track is about | [`tracks/README.md`](tracks/README.en.md) → specific track doc |
