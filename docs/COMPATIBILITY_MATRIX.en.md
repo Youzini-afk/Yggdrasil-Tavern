@@ -19,6 +19,10 @@ Implementation status:
 - `implemented` — byte-level aligned, with regression tests
 - `deferred` — intentionally not implemented by internal decision
 - `blocked` — waiting on another track
+- `partial-real` — a real local adapter / execution path exists, but full byte-level coverage is not claimed
+- `partial-source-required` — a real execution path exists, but the caller must supply external tokenizer/source/config
+- `partial-sandboxed` — execution works inside a constrained sandbox; DOM/network/etc. remain incomplete
+- `partial-opt-in` — a real path exists only when the host/profile/env explicitly enable it
 
 Current stage: deep-port complete. ST source remains the ground truth; B/C/D/E/F/G/H/I now have runnable code paths, and PromptManager / World Info / STScript / macro engine / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader have one-to-one algorithm ports, but nothing is claimed as byte-level aligned unless explicitly stated.
 
@@ -27,7 +31,7 @@ Current stage: deep-port complete. ST source remains the ground truth; B/C/D/E/F
 | Domain | Denominator | Implemented | Status | Source inventory | Main track |
 |---|---:|---:|---|---|---|
 | event_types | 104 | constants + 104 ST canonical types | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | D |
-| built-in slash commands | 153 | STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry; commands implemented = the ST core subset emitted as registry metadata | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
+| built-in slash commands | 153 | 30 commands implemented; STScript runtime: scope/closure/pipe/abort/break + parser flags + command registry | 30/153 partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | macros / macros | 80+ | registry-based engine with full ST registry covering core/env/time/state/instruct/chat/variable + recursive expansion + PickState | partial | `inventory/CORE_EVENTS_AND_COMMANDS.raw.md` | E |
 | chat completion sources | 26 | 25 source request shapes ported with provider-specific overrides | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 15 source request shapes ported with backend-specific samplers | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
@@ -40,7 +44,12 @@ Current stage: deep-port complete. ST source remains the ground truth; B/C/D/E/F
 | character card V3 fields | 14 | fixture importer (existing) | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | OpenAI preset schema fields | 75 | PromptManager preparePrompts + ChatCompletion budget + populationInjection + populateChatHistory + populateDialogueExamples + squashSystemMessages | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
 | prompt manager identifiers | 13 typed | 12 default prompts + RELATIVE/ABSOLUTE injection_position + injection_depth/order + injection_trigger + forbid_overrides + main/jailbreak override with {{original}} | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
-| built-in extensions | 14 | regex (full engine) + memory (settings + triggers + format) + vectors (settings + chunkText + injection plan) + quick-reply (auto-execute hook map) + token-counter + caption + tts + translate + expressions + attachments DataBank + connection-manager profiles + stable-diffusion trigger processor (plan-only for non-pure-logic ones) | partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
+| tokenizers: OPENAI/GPT2/LLAMA/LLAMA3/CLAUDE | 5 families | real local adapters; Claude is a local text approximation | partial-real | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| tokenizers: HF families | 9 families | `@huggingface/tokenizers` path for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A when the caller supplies a source | partial-source-required | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| built-in extensions | 14 | 5/14 partial: regex real; memory/vectors/quick-reply/token-counter executable logic; caption/tts/translate/expressions/attachments/connection-manager/stable-diffusion mostly approximation/plan | 5/14 partial | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
+| extension JS execution | ST extension JS | QuickJS sandbox v0 + host bridge + permissions/audit; no network/fetch/XHR; DOM/style/i18n incomplete | partial-sandboxed | `inventory/BUILTIN_EXTENSIONS.raw.md` | H |
+| real model calls | provider HTTPS | `model.live_call` / `.stream` bridge to Yggdrasil `kernel.outbound.execute` / `.stream`; requires live profile + env secrets | partial-opt-in | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
+| Product UI | qualitative | product shell with virtualized chat list, themes, settings tabs, extension drawer, quick reply, mobile responsive | partial-shell-with-virtualization-and-themes | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | G |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | group chat rotation strategies | 4 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -56,9 +65,10 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 | `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
 | `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat, preset, persona, theme, quick reply, regex, instruct import/export skeleton + fixtures | partial |
 | `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, full `getContext()` shape (`context-st.ts`), `eventSource`, `Generate`, macro engine (`macros-st.ts`: full ST registry + recursive expansion + PickState), STScript runtime (`stscript-st.ts`: scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution), slash registry | partial |
-| `@ydltavern/engine-core` | C + I | chat/text request builders (`chat-completion-providers.ts` 25 sources + `text-completion-providers.ts` 15 sources), stream chunk state machine (`chat-completion-providers.ts`), token budget, PromptManager (`prompt-manager-st.ts`: 12 default prompts + RELATIVE/ABSOLUTE injection + injection_trigger + main/jailbreak override + squash + ChatCompletion tokenBudget), World Info (`world-info-st.ts`: 8-bucket routing + 4 selectiveLogic + regex + matchKeys + decorators + activation precedence + timed effects sticky/cooldown/delay + routeActivatedEntries), instruct mode (`instruct.ts`: full InstructTemplate schema + formatInstructModeChat + stoppingSequences + built-in templates), tokenizer registry (`tokenizers-st.ts`: 20 variants + bestMatch heuristics + guesstimate + TokenCountCache), golden harnesses, stream frames, model-boundary plans | partial |
-| `@ydltavern/surface` | G | Tavern-like product shell + 5 diagnostic inspectors (PromptManager / World Info / STScript / Extensions / Connector) wired into DevDiagnosticsPanel, still a surface bundle | partial |
-| `@ydltavern/extensions` | F + H | regex (`extensions-st.ts`: full engine + depth gating + capture groups + RegexProvider LRU), memory (settings + triggers + format), vectors (18 sources + chunkText + injection plan), quick-reply (9 auto-execute hooks), token-counter, caption (4 sources + plan), TTS (27 providers + plan), translate (9 providers + plan), expressions (classify + sprite cache), attachments (3 scopes + DataBank), connection-manager (18 profile fields + snapshot/apply), stable-diffusion (trigger processor + 10 backends), extension loader (`loader-st.ts`: manifest parse + validation + warnings + activation eligibility + sort + buildLoadPlan 6 step kinds + planActivateAll + STDisabledExtensionsStore) | partial |
+| `@ydltavern/engine-core` | C + I | chat/text request builders, stream chunk state machine, token budget, PromptManager, World Info, instruct mode, tokenizer registry + `countTokens(text, options)` real adapters (OpenAI/GPT2/Llama/Llama3/Claude/HF-source) + guesstimate, golden harness fixtures, stream frames, model-boundary plans | partial |
+| `@ydltavern/surface` | G | Tavern-like product UI shell + `react-virtuoso` virtualized chat list + dark/light/parchment themes + Connection/Sampler/Persona/Theme settings tabs + loader-st ExtensionsDrawer + QuickReplyBar + mobile responsive + diagnostic inspectors | partial-shell-with-virtualization-and-themes |
+| `@ydltavern/extensions` | F + H | regex real engine, memory/vectors/quick-reply/token-counter executable logic, provider/IO-heavy extensions as plan/approximation, extension loader (manifest parse + validation + activation plan), QuickJS sandbox runtime/bridge/loader/permissions/audit | partial-sandboxed |
+| `@ydltavern/engine` | C | deep-port capabilities plus `model.live_call` and `model.live_call.stream` through Yggdrasil outbound execute/stream; manifest declares provider hosts and `secret_refs` | partial-opt-in |
 
 ## Built-in extension coverage (track F)
 

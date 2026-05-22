@@ -51,6 +51,8 @@ Depends on Yggdrasil's git installation capability:
 
 ## Current status
 
+Track H now has a sandbox-enabled loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, and audit. Status is `partial-sandboxed`: extension network/fetch/XHR are not supported, DOM/style/i18n injection is incomplete, and real git/zip installation is not in place.
+
 `@ydltavern/extensions` now has a deep-ported ST-style loader (`loader-st.ts`):
 
 - `STExtensionManifest` schema (display_name/loading_order/requires/optional/dependencies/minimum_client_version/js/css/author/version/homePage/hooks/i18n/auto_update/generate_interceptor);
@@ -60,9 +62,9 @@ Depends on Yggdrasil's git installation capability:
 - `buildLoadPlan` emitting add_locale/add_script/add_style/register_interceptor/call_hook/mark_active steps in order;
 - `STDisabledExtensionsStore`;
 - `planActivateAll` with progressive dependency tracking.
-- Plan-only — no extension JS is executed, no real files/zip/git are read, and there is no real sandbox yet.
+- Loader plans can be handed to the QuickJS sandbox for execution; real files/zip/git installation is still not in place.
 
-`ydltavern-engine` exposes `extension.loader.parse_manifest` and `extension.loader.plan_activate_all` capabilities. This is still `partial`: extension JavaScript is not executed, real files/zip/git are not read, and there is no real sandbox yet.
+`ydltavern-engine` exposes `extension.loader.parse_manifest` and `extension.loader.plan_activate_all` capabilities. This is still `partial-sandboxed`: constrained JS can execute, but real files/zip/git are not read, and DOM/network capabilities are incomplete.
 
 ## Out of scope
 

@@ -80,11 +80,23 @@ End users obtain the YdlTavern package family through Yggdrasil's install/load m
 
 ### Model calls
 
-YdlTavern doesn't connect to OpenAI / Anthropic / Gemini directly. It calls them through Yggdrasil's `model-provider-lab` and friends, picking up `secret_ref`, network declarations, outbound audit, and the HTTPS-only outbound executor for free.
+YdlTavern does not connect to OpenAI / Anthropic / Gemini directly. Live model calls enter Yggdrasil through `ydltavern/engine/model.live_call` and `ydltavern/engine/model.live_call.stream`: the YdlTavern engine builds the provider request body with `buildChatRequest`, calls `kernel.outbound.execute` or `kernel.outbound.stream` through the subprocess SDK `kernelClient`, and the host live outbound executor performs provider HTTPS. YdlTavern passes only `secret_ref` strings and manifest declarations, not raw keys; audit, redaction, cancel, and timeout behavior are owned by the Yggdrasil outbound event path.
+
+### Tokenizer runtime
+
+`@ydltavern/engine-core` keeps ST's `TOKENIZER` / best-match rules and lazy-loads runtime adapters per family. OpenAI/GPT-2 uses `gpt-tokenizer` (cl100k/o200k/p50k/r50k), Llama 1/2 uses `llama-tokenizer-js`, Llama 3 uses `llama3-tokenizer-js`, Claude uses the local `@anthropic-ai/tokenizer` approximation, and Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A use `@huggingface/tokenizers` with a caller-supplied tokenizer source. Without a real source the registry falls back to ST-style UTF-8/3.35 guesstimate.
+
+### QuickJS extension sandbox
+
+`@ydltavern/extensions` now has `src/sandbox/`: QuickJS runtime, host bridge, loader, permissions, and audit. ST extension JS runs inside a separate QuickJS context. v0 exposes constrained `getContext`, extension prompt, event, slash, and settings bridges; network/fetch/XHR are blocked by default, and host API calls record sanitized argument shapes. Activation timeouts are enforced, and memory/CPU budgets can be tightened by the host profile; DOM/style/i18n injection remains future work.
 
 ### Frontend surfaces
 
-YdlTavern provides its own Tavern UI: chat, message rendering, world books, presets, extension management, and settings panels. These live in `@ydltavern/surface`, not `clients/desktop` or a standalone SPA. Yggdrasil only places the surfaces inside platform containers such as Home / Play / Forge / Assistant.
+YdlTavern provides its own Tavern UI: chat, message rendering, world books, presets, extension management, and settings panels. These live in `@ydltavern/surface`, not `clients/desktop` or a standalone SPA. Yggdrasil only places the surfaces inside platform containers such as Home / Play / Forge / Assistant. The current surface has moved from diagnostics to a product UI skeleton: `react-virtuoso` virtualized chat list, dark/light/parchment theme system, Connection/Sampler/Persona/Theme settings tabs, ExtensionsDrawer driven by loader-st state, QuickReplyBar, and mobile responsive layout.
+
+### Golden harness
+
+`golden-harness/` is a Node + jsdom fixture generator. It treats SillyTavern source as a read-only sibling (via `YDLTAVERN_ST_PATH`), loads ST ESM modules, and uses shims for DOM, fetch, randomness, and time to extract chat, world-info, macro, instruct, and tokenizer fixtures. Those fixtures are the alignment baseline for YdlTavern deep-port modules. v0 still has shim/fallback limitations and does not imply byte-level coverage across every domain.
 
 ### Extension distribution
 
@@ -116,4 +128,4 @@ No matter how YdlTavern evolves:
 
 ## Status
 
-YdlTavern's main development surface has completed a systematic pass and a deep-port pass: asset import/export, ST compatibility runtime, STScript runtime, engine core (PromptManager, World Info, chat/text completion adapters, instruct mode, tokenizer registry), built-in extension logic, extension loader plans, model-call boundary plans, product surface shell, and 5 diagnostic inspectors are all in tested code. Deep-port modules (`prompt-manager-st.ts`, `world-info-st.ts`, `chat-completion-providers.ts`, `text-completion-providers.ts`, `instruct.ts`, `tokenizers-st.ts`, `macros-st.ts`, `stscript-st.ts`, `context-st.ts`, `extensions-st.ts`, `extensions-st-providers.ts`, `loader-st.ts`, `deep-port.ts`) are ported function-by-function from ST source with file/line references baked in. Current status is still `partial`: real network, real model calls, real tokenizer binaries, real extension JS execution, and byte-level golden harnesses remain for later stages.
+YdlTavern's main development surface has completed a systematic pass and a deep-port pass: asset import/export, ST compatibility runtime, STScript runtime, engine core (PromptManager, World Info, chat/text completion adapters, instruct mode, tokenizer registry), built-in extension logic, sandbox-enabled extension loader, live model call boundary, product surface shell, and diagnostic inspectors are all in tested code. Deep-port modules are ported function-by-function from ST source with file/line references baked in. Current status is still `partial`: real tokenizer coverage now exists for OpenAI/GPT-2/Llama/Llama3/Claude/HF-source families, extension JS can run in QuickJS sandbox v0, live model calls can opt into Yggdrasil outbound, and the golden harness generates the first fixture set. None of this claims full byte-level ST alignment across all domains; provider-specific I/O, DOM-heavy extensions, and more fixture scenarios still need to be filled in.

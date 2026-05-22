@@ -49,6 +49,8 @@
 
 ## 当前状态
 
+当前 F 轨道因为 QuickJS sandbox 已从纯 plan 进入部分可执行状态。`regex` 是真实引擎；`memory`、`vectors`、`quick-reply`、`token-counter` 有可执行纯逻辑；caption/TTS/translate/expressions/attachments/connection-manager/stable-diffusion 仍以 plan 或 provider I/O 近似为主。内置扩展覆盖在兼容矩阵中标为 `5/14 partial`，不宣称全部 ST 内置扩展完整运行。
+
 `@ydltavern/extensions` 已有深度移植的 5+8 个内置扩展逻辑：
 
 - `extensions-st.ts` —— regex：`REGEX_PLACEMENT` (USER_INPUT=1/AI_OUTPUT=2/SLASH_COMMAND=3/WORLD_INFO=5/REASONING=6) + `getRegexedString` with placement filter, depth gating, capture groups $1..$N, `{{match}}→$0`, trimStrings, substituteParams, RegexProvider LRU(1000)；memory：full settings (source extras/main/webllm, prompt/template/position/depth/role/scan/promptWords/promptInterval/promptForceWords/maxMessagesPerRequest/prompt_builder/memoryFrozen/SkipWIAN), `shouldSummarize` triggers, `formatMemoryValue`；vectors：18 sources, chat/files/databank settings, `chunkText` size+overlap, `planVectorsInjection`；quick-reply：9 auto-execute hook events, `autoExecuteCandidates` event flag mapping；token-counter：`tokenCounterPlan`。

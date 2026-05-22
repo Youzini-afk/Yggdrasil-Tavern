@@ -56,6 +56,8 @@ YdlTavern surface goals (hosted by a Yggdrasil shell + ordinary i5):
 
 ## Current status
 
+Track G now has a real product surface skeleton, not only diagnostics: `react-virtuoso` virtualized chat list, dark/light/parchment theme system, Connection/Sampler/Persona/Theme settings tabs, ExtensionsDrawer backed by real loader-st state, QuickReplyBar, and mobile responsive layout are in place. Status remains `partial-shell-with-virtualization-and-themes`: complete ST operation flows, theme-file import, screenshot alignment, and real performance validation are not finished.
+
 `@ydltavern/surface` remains a Yggdrasil-hosted surface bundle, not an independent app. `TavernPlaySurface` currently provides:
 
 - sending, editing, fake generation, and event log through the live ST contract;

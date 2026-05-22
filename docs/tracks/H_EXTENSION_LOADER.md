@@ -51,6 +51,8 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 
 ## 当前状态
 
+当前 H 轨道已有 sandbox-enabled loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时和审计。状态为 `partial-sandboxed`：不支持 extension network/fetch/XHR，DOM/style/i18n 注入不完整，真实 git/zip 安装仍未落地。
+
 `@ydltavern/extensions` 已有 ST-style loader 深度移植（`loader-st.ts`）：
 
 - `STExtensionManifest` schema（display_name/loading_order/requires/optional/dependencies/minimum_client_version/js/css/author/version/homePage/hooks/i18n/auto_update/generate_interceptor）；
@@ -60,9 +62,9 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 - `buildLoadPlan` emitting add_locale/add_script/add_style/register_interceptor/call_hook/mark_active steps in order；
 - `STDisabledExtensionsStore`；
 - `planActivateAll` with progressive dependency tracking。
-- Plan-only —— 不执行 extension JS，不读真实文件/zip/git，也没有真实 sandbox。
+- loader plan 可交给 QuickJS sandbox 执行；真实文件/zip/git 安装仍未落地。
 
-`ydltavern-engine` 暴露 `extension.loader.parse_manifest` 和 `extension.loader.plan_activate_all` capability。仍是 `partial`：不会执行 extension JS，不读真实文件/zip/git，也没有真实 sandbox。
+`ydltavern-engine` 暴露 `extension.loader.parse_manifest` 和 `extension.loader.plan_activate_all` capability。仍是 `partial-sandboxed`：可执行受限 JS，但不读真实文件/zip/git，DOM/网络能力不完整。
 
 ## 不在范围内
 

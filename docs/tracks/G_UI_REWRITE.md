@@ -56,6 +56,8 @@ YdlTavern surface 目标（由 Yggdrasil 壳承载 + 普通 i5）：
 
 ## 当前状态
 
+当前 G 轨道已有真实产品 surface skeleton，而不只是诊断面板：`react-virtuoso` 虚拟聊天列表、dark/light/parchment 主题系统、Connection/Sampler/Persona/Theme 分页设置、带 loader-st 真实状态的 ExtensionsDrawer、QuickReplyBar 和移动响应式布局已经落地。状态仍是 `partial-shell-with-virtualization-and-themes`：完整 ST 操作流、主题文件导入、截图对齐和真实性能验收还没完成。
+
 `@ydltavern/surface` 仍是 Yggdrasil-hosted surface bundle，不是独立 app。`TavernPlaySurface` 当前提供：
 
 - live ST contract 的发送、编辑、fake generate、event log；

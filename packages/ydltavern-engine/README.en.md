@@ -2,7 +2,7 @@
 
 This is the Yggdrasil subprocess capability package for the YdlTavern engine.
 
-Current phase: deep-port complete. In addition to existing `world_info.evaluate`, `preset.compile`, `turn.generate`, `turn.swipe/regenerate/continue`, asset import/export, `script.eval`, extension registry, and `model.plan_call`, 20 deep-port JSON-RPC capabilities have been added:
+Current phase: deep-port complete, with an opt-in live model call path added. In addition to existing `world_info.evaluate`, `preset.compile`, `turn.generate`, `turn.swipe/regenerate/continue`, asset import/export, `script.eval`, extension registry, and `model.plan_call`, 20 deep-port JSON-RPC capabilities have been added:
 
 - `prompt.manager.compile` — PromptManager preparePrompts + ChatCompletion budget + populationInjection + populateChatHistory + populateDialogueExamples + squashSystemMessages
 - `world_info.route` — 8-bucket routing + AN patch + atDepth merge + outlets
@@ -25,7 +25,15 @@ Current phase: deep-port complete. In addition to existing `world_info.evaluate`
 - `extension.connection_profile.apply_plan` — applyConnectionProfilePlan
 - `extension.sd.process_triggers` — stable-diffusion trigger processor with character/scenery patterns
 
-There are still no real model calls, no network, and no raw secrets. All capabilities are declared in `manifest.yaml`.
+## Recent additions
+
+- `model.live_call`: builds the provider request body with `buildChatRequest`, then calls Yggdrasil `kernel.outbound.execute` through the subprocess `kernelClient`.
+- `model.live_call.stream`: reads SSE chunks through `kernel.outbound.stream` and normalizes them into stream frames (delta text, reasoning, tool_calls, final/error/cancelled/timeout).
+- `manifest.yaml` declares provider network hosts (OpenAI, DeepSeek, Anthropic, OpenRouter) and `secret_refs`.
+- Raw keys never enter YdlTavern; inputs carry only `secret_ref`, resolved/redacted/audited by the Yggdrasil host.
+- Requires a Yggdrasil live outbound profile (for example `profiles/forge-with-live-models.example.yaml`) and environment variables such as `OPENAI_API_KEY` and `DEEPSEEK_API_KEY`.
+
+This is still `partial-opt-in`: the package does not directly network by default, and real HTTPS only happens when the host profile enables live outbound and secrets exist. All capabilities are declared in `manifest.yaml`.
 
 ## Usage
 
@@ -36,6 +44,6 @@ There are still no real model calls, no network, and no raw secrets. All capabil
 
 ## Next
 
-Next: byte-level golden harnesses, real tokenizer binaries via wasm, real extension-JS sandboxing, and live model calls through Yggdrasil public protocol. Current fake generation only verifies the contract lifecycle.
+Next: expand golden harness scenarios, add more provider smoke tests, and continue converging fake generation lifecycle with the real live-call path.
 
 - [Track C: Engine Core](../../docs/tracks/C_ENGINE_CORE.en.md)

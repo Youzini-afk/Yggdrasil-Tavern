@@ -49,6 +49,8 @@ Each extension aligns two surfaces:
 
 ## Current status
 
+Track F has moved from pure planning into partial execution because the QuickJS sandbox now exists. `regex` is a real engine; `memory`, `vectors`, `quick-reply`, and `token-counter` have executable pure logic; caption/TTS/translate/expressions/attachments/connection-manager/stable-diffusion remain mostly plan or provider-I/O approximations. Built-in extension coverage is marked as `5/14 partial` in the compatibility matrix; this does not claim that all ST built-ins run completely.
+
 `@ydltavern/extensions` now has deep-ported logic for 5+8 built-in extensions:
 
 - `extensions-st.ts` — regex: `REGEX_PLACEMENT` (USER_INPUT=1/AI_OUTPUT=2/SLASH_COMMAND=3/WORLD_INFO=5/REASONING=6) + `getRegexedString` with placement filter, depth gating, capture groups $1..$N, `{{match}}→$0`, trimStrings, substituteParams, RegexProvider LRU(1000); memory: full settings (source extras/main/webllm, prompt/template/position/depth/role/scan/promptWords/promptInterval/promptForceWords/maxMessagesPerRequest/prompt_builder/memoryFrozen/SkipWIAN), `shouldSummarize` triggers, `formatMemoryValue`; vectors: 18 sources, chat/files/databank settings, `chunkText` size+overlap, `planVectorsInjection`; quick-reply: 9 auto-execute hook events, `autoExecuteCandidates` event flag mapping; token-counter: `tokenCounterPlan`.

@@ -80,11 +80,23 @@ YdlTavern 前端不是一个独立 app。它是 surface bundle：
 
 ### 模型调用
 
-YdlTavern 不自己接 OpenAI / Anthropic / Gemini。它通过 Yggdrasil 的 `model-provider-lab` 等能力包发起调用，享受 Yggdrasil 的 `secret_ref`、网络声明、外发审计、HTTPS-only 出站执行器。
+YdlTavern 不自己接 OpenAI / Anthropic / Gemini。真实模型调用通过 `ydltavern/engine/model.live_call` 和 `ydltavern/engine/model.live_call.stream` 进入 Yggdrasil：YdlTavern engine 用 `buildChatRequest` 组 provider 请求体，经 subprocess SDK `kernelClient` 调用 `kernel.outbound.execute` 或 `kernel.outbound.stream`，再由 host 的 live outbound executor 访问 provider HTTPS。YdlTavern 只传 `secret_ref` 字符串和 manifest 声明，不读取 raw key；审计、脱敏、取消和超时由 Yggdrasil outbound 事件链负责。
+
+### Tokenizer runtime
+
+`@ydltavern/engine-core` 的 tokenizer registry 保留 ST 的 `TOKENIZER` / best-match 规则，并在运行时按 family lazy load adapter。OpenAI/GPT-2 使用 `gpt-tokenizer`（cl100k/o200k/p50k/r50k），Llama 1/2 使用 `llama-tokenizer-js`，Llama 3 使用 `llama3-tokenizer-js`，Claude 使用 `@anthropic-ai/tokenizer` 的本地近似，Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A 走 `@huggingface/tokenizers` 且需要调用方提供 tokenizer source。没有真实 source 时回落到 ST 风格 UTF-8/3.35 guesstimate。
+
+### QuickJS 扩展 sandbox
+
+`@ydltavern/extensions` 新增 `src/sandbox/`：QuickJS runtime、host bridge、loader、permissions 和 audit。ST extension JS 在独立 QuickJS context 内执行，v0 暴露受限 `getContext`、extension prompt、event、slash、settings bridge；默认阻断 network/fetch/XHR，并记录 host API 调用的参数形状。sandbox 有激活超时、内存/CPU 配额由 host profile 继续收紧；DOM/style/i18n 注入仍是后续工作。
 
 ### 前端 surface
 
-YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。
+YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。当前 surface 已从诊断页升级为产品 UI skeleton：`react-virtuoso` 虚拟聊天列表、dark/light/parchment 主题系统、Connection/Sampler/Persona/Theme 分页设置、loader-st 状态驱动的 ExtensionsDrawer、QuickReplyBar 和移动响应式布局。
+
+### Golden harness
+
+`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；v0 有 shim/fallback 限制，不表示所有域已字节级实现。
 
 ### 扩展生态分发
 
@@ -116,4 +128,4 @@ YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预
 
 ## 当前状态
 
-YdlTavern 的主要开发面已完成一轮系统推进和一轮深度移植：资产导入/导出、ST 兼容运行时、STScript 运行时、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry）、内置扩展逻辑、扩展 loader plan、模型调用边界 plan、产品 surface shell 和 5 个诊断 inspector 都已落到可测试代码。深度移植模块（`prompt-manager-st.ts`、`world-info-st.ts`、`chat-completion-providers.ts`、`text-completion-providers.ts`、`instruct.ts`、`tokenizers-st.ts`、`macros-st.ts`、`stscript-st.ts`、`context-st.ts`、`extensions-st.ts`、`extensions-st-providers.ts`、`loader-st.ts`、`deep-port.ts`）从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实网络、真实模型调用、真实 tokenizer binaries、真实扩展 JS 执行和字节级 golden harness 还在后续阶段。
+YdlTavern 的主要开发面已完成一轮系统推进和一轮深度移植：资产导入/导出、ST 兼容运行时、STScript 运行时、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry）、内置扩展逻辑、sandbox-enabled extension loader、live model call boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF-source families，扩展 JS 已能在 QuickJS sandbox v0 受限执行，真实模型调用已能 opt-in 走 Yggdrasil outbound，golden harness 已生成首批 fixtures；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展和更多 fixture 场景仍需继续补齐。

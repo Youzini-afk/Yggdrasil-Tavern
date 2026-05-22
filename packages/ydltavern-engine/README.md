@@ -2,7 +2,7 @@
 
 这是 YdlTavern 引擎的 Yggdrasil 子进程能力包。
 
-当前阶段：深度移植完成。除已有 `world_info.evaluate`、`preset.compile`、`turn.generate`、`turn.swipe/regenerate/continue`、asset import/export、script.eval、extension registry、model.plan_call 之外，新增 20 个深度移植 JSON-RPC capability：
+当前阶段：深度移植完成，并新增 opt-in 真实模型调用通道。除已有 `world_info.evaluate`、`preset.compile`、`turn.generate`、`turn.swipe/regenerate/continue`、asset import/export、script.eval、extension registry、model.plan_call 之外，新增 20 个深度移植 JSON-RPC capability：
 
 - `prompt.manager.compile` —— PromptManager preparePrompts + ChatCompletion budget + populationInjection + populateChatHistory + populateDialogueExamples + squashSystemMessages
 - `world_info.route` —— 8 bucket routing + AN patch + atDepth merge + outlets
@@ -25,7 +25,15 @@
 - `extension.connection_profile.apply_plan` —— applyConnectionProfilePlan
 - `extension.sd.process_triggers` —— stable-diffusion trigger processor with character/scenery patterns
 
-仍无真实模型调用、无网络、无 raw secret。所有 capability 均声明在 `manifest.yaml`。
+## Recent additions
+
+- `model.live_call`：用 `buildChatRequest` 生成 provider request body，然后通过 subprocess `kernelClient` 调用 Yggdrasil `kernel.outbound.execute`。
+- `model.live_call.stream`：通过 `kernel.outbound.stream` 读取 SSE chunk，并归一化为 stream frames（delta text、reasoning、tool_calls、final/error/cancelled/timeout）。
+- `manifest.yaml` 声明 provider network hosts（OpenAI、DeepSeek、Anthropic、OpenRouter）和 `secret_refs`。
+- raw key 不进入 YdlTavern；输入只携带 `secret_ref`，由 Yggdrasil host 解析、脱敏、审计。
+- 需要 Yggdrasil live outbound profile（例如 `profiles/forge-with-live-models.example.yaml`）和环境变量（如 `OPENAI_API_KEY`、`DEEPSEEK_API_KEY`）。
+
+这仍是 `partial-opt-in`：默认不直接联网，真实 HTTPS 只在 host profile 启用 live outbound 且 secrets 存在时发生。所有 capability 均声明在 `manifest.yaml`。
 
 ## 使用
 
@@ -36,6 +44,6 @@
 
 ## 后续
 
-下一步是字节级 golden harness、真实 tokenizer binaries via wasm、真实扩展 JS sandbox 和通过 Yggdrasil public protocol 的真实模型调用；当前 fake generation 只验证 contract 生命周期。
+下一步是扩大 golden harness 场景、补更多 provider smoke tests，并继续把 fake generation 生命周期与真实 live-call path 收敛。
 
 - [C 轨道：引擎核心](../../docs/tracks/C_ENGINE_CORE.md)
