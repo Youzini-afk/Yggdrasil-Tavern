@@ -53,9 +53,73 @@ test('world info evaluates primary, secondary, regex, case, whole-word, recursiv
   assert.equal(result.activated.find((entry) => entry.id === 'ancient-map')?.matchedSecondaryKeys[0], 'observatory');
   assert.equal(result.activated.find((entry) => entry.id === 'regex-ridge')?.matchedKeys[0], '/old\\s+observatory/i');
   assert.equal(result.activated.find((entry) => entry.id === 'whole-word')?.position, 'ANBottom');
+  assert.equal(result.buckets.depthEntries[0]?.depth, 4);
+  assert.equal(result.buckets.depthEntries[0]?.role, 'system');
+  assert.equal(result.buckets.outlets.default?.entries[0]?.entryId, 'recursive-child');
+  assert.equal(result.diagnostics.routingTrace.some((entry) => entry.entryId === 'recursive-seed'), true);
+  assert.equal(result.diagnostics.uninserted.some((item) => item.includes('recursive-child')), true);
   assert.equal(result.diagnostics.iterations, 3);
   assert.equal(result.diagnostics.usedBudget > 0, true);
   assert.equal(result.diagnostics.unsupported.some((item) => item.includes('token-level')), true);
+});
+
+test('world info routes ST positions with unshift ordering, AN patch, atDepth, EM, and outlets', async () => {
+  const chat = await readJsonFixture('chat.json');
+  const book = {
+    name: 'routing-book',
+    entries: [
+      { uid: 'before-low', constant: true, content: 'before low', position: 0, order: 10 },
+      { uid: 'before-high', constant: true, content: 'before high', position: 'before', order: 20 },
+      { uid: 'after-low', constant: true, content: 'after low', position: '1', order: 30 },
+      { uid: 'after-high', constant: true, content: 'after high', position: 'after', order: 40 },
+      { uid: 'an-top', constant: true, content: 'an top', position: 'author_note_top', order: 50 },
+      { uid: 'an-bottom', constant: true, content: 'an bottom', position: 'author-note-bottom', order: 60 },
+      { uid: 'depth-assistant', constant: true, content: 'depth assistant', position: 'at-depth', depth: 2, role: 'assistant', order: 70 },
+      { uid: 'depth-default', constant: true, content: 'depth default', position: 4, order: 80 },
+      { uid: 'em-top', constant: true, content: 'em top', position: 'EMTop', order: 90 },
+      { uid: 'em-bottom', constant: true, content: 'em bottom', position: 6, order: 100 },
+      { uid: 'outlet-named', constant: true, content: 'outlet named', position: 7, outletName: 'memory', order: 110 },
+      { uid: 'outlet-default', constant: true, content: 'outlet default', position: 'outlet', order: 120 },
+    ],
+  };
+
+  const result = evaluateWorldInfo({ chat, book, originalAuthorNote: 'original note' });
+
+  assert.deepEqual(result.buckets.before, ['before high', 'before low']);
+  assert.deepEqual(result.buckets.after, ['after high', 'after low']);
+  assert.deepEqual(result.buckets.ANTop, ['an top']);
+  assert.deepEqual(result.buckets.ANBottom, ['an bottom']);
+  assert.deepEqual(result.buckets.anPatch, {
+    top: ['an top'],
+    original: 'original note',
+    bottom: ['an bottom'],
+    patched: 'an top\noriginal note\nan bottom',
+  });
+  assert.deepEqual(result.buckets.examples, [
+    { position: 'after', content: 'em bottom', entryId: 'em-bottom', order: 100 },
+    { position: 'before', content: 'em top', entryId: 'em-top', order: 90 },
+  ]);
+  assert.equal(result.buckets.em, result.buckets.examples);
+  assert.deepEqual(
+    result.buckets.depthEntries.map((bucket) => ({
+      depth: bucket.depth,
+      role: bucket.role,
+      ids: bucket.entries.map((entry) => entry.entryId),
+      content: bucket.content,
+    })),
+    [
+      { depth: 4, role: 'system', ids: ['depth-default'], content: ['depth default'] },
+      { depth: 2, role: 'assistant', ids: ['depth-assistant'], content: ['depth assistant'] },
+    ],
+  );
+  assert.deepEqual(result.buckets.outlets.memory?.content, ['outlet named']);
+  assert.deepEqual(result.buckets.outlets.default?.content, ['outlet default']);
+  assert.equal(result.activated.find((entry) => entry.id === 'depth-default')?.depth, 4);
+  assert.equal(result.activated.find((entry) => entry.id === 'depth-assistant')?.role, 'assistant');
+  assert.equal(result.diagnostics.routingTrace.find((entry) => entry.entryId === 'em-top')?.inserted, false);
+  assert.equal(result.diagnostics.routingTrace.find((entry) => entry.entryId === 'before-high')?.inserted, true);
+  assert.equal(result.diagnostics.uninserted.length, 6);
+  assert.equal(result.diagnostics.unsupported.some((item) => item.includes('routing output only')), true);
 });
 
 test('prompt-critical blocks inject WI and fields before buildPrompt assembles messages', async () => {

@@ -9,11 +9,55 @@
     "recursive-child"
   ],
   "buckets": {
-    "before": ["Constant note for Archivist.", "Seraphina knows the map points to the observatory."],
+    "before": ["Seraphina knows the map points to the observatory.", "Constant note for Archivist."],
     "after": ["Regex lore: the old observatory was sealed."],
     "atDepth": ["Recursive seed mentions moon-gate."],
     "ANTop": ["Case lore: Seraphina signs every catalog."],
     "ANBottom": ["Whole word lore: art is cataloged separately."],
-    "outlet": ["Recursive child unlocks the basement outlet."]
+    "EMTop": [],
+    "EMBottom": [],
+    "outlet": ["Recursive child unlocks the basement outlet."],
+    "examples": [],
+    "em": [],
+    "depthEntries": [
+      {
+        "depth": 4,
+        "role": "system",
+        "entries": [
+          {
+            "content": "Recursive seed mentions moon-gate.",
+            "entryId": "recursive-seed",
+            "order": 50,
+            "source": "prompt-critical-fixture-book",
+            "position": "atDepth",
+            "depth": 4,
+            "role": "system"
+          }
+        ],
+        "content": ["Recursive seed mentions moon-gate."]
+      }
+    ],
+    "anTop": ["Case lore: Seraphina signs every catalog."],
+    "anBottom": ["Whole word lore: art is cataloged separately."],
+    "anPatch": {
+      "top": ["Case lore: Seraphina signs every catalog."],
+      "bottom": ["Whole word lore: art is cataloged separately."],
+      "patched": "Case lore: Seraphina signs every catalog.\nWhole word lore: art is cataloged separately."
+    },
+    "outlets": {
+      "default": {
+        "entries": [
+          {
+            "content": "Recursive child unlocks the basement outlet.",
+            "entryId": "recursive-child",
+            "order": 60,
+            "source": "prompt-critical-fixture-book",
+            "position": "outlet",
+            "outletName": "default"
+          }
+        ],
+        "content": ["Recursive child unlocks the basement outlet."]
+      }
+    }
   }
 }
