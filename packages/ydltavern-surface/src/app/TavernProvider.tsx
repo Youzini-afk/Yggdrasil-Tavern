@@ -8,6 +8,46 @@ import type { TavernTheme, TavernThemeSettings } from '../components/product/the
 
 export type TavernDrawer = 'settings' | 'assets' | 'extensions' | 'dev';
 
+export interface TavernSettings {
+  activePreset: string;
+  streaming: boolean;
+  bannedTokens: string;
+  logitBias: string;
+  fastUImode: boolean;
+  reducedMotion: boolean;
+  showTimestamps: boolean;
+  showTokenCounter: boolean;
+  fontScale: number;
+  chatWidth: number;
+  avatarStyle: number;
+}
+
+const DEFAULT_SETTINGS: TavernSettings = {
+  activePreset: 'default',
+  streaming: true,
+  bannedTokens: '',
+  logitBias: '',
+  fastUImode: false,
+  reducedMotion: false,
+  showTimestamps: false,
+  showTokenCounter: false,
+  fontScale: 1,
+  chatWidth: 50,
+  avatarStyle: 0,
+};
+
+function readSettings(): TavernSettings {
+  try {
+    const raw = localStorage.getItem('ydltavern.settings');
+    if (raw) return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<TavernSettings>) };
+  } catch { /* ignore */ }
+  return DEFAULT_SETTINGS;
+}
+
+function writeSettings(settings: TavernSettings): void {
+  try { localStorage.setItem('ydltavern.settings', JSON.stringify(settings)); } catch { /* ignore */ }
+}
+
 export interface TavernRuntimeState {
   readonly runtime: STContextRuntime;
   readonly liveChat: Chat;
@@ -21,6 +61,10 @@ export interface TavernRuntimeState {
   readonly editFirstMessage: () => void;
   readonly swipeReply: () => void;
   readonly regenerateReply: () => void;
+
+  // Settings
+  readonly settings: TavernSettings;
+  readonly updateSettings: (partial: Partial<TavernSettings>) => void;
 
   // Theme system
   readonly theme: TavernTheme;
@@ -78,6 +122,7 @@ export function TavernProvider({
   const [activeDrawer, setActiveDrawer] = useState<TavernDrawer>('settings');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [themeSettings, setThemeSettingsState] = useState<TavernThemeSettings>(readThemeSettings);
+  const [settings, setSettings] = useState<TavernSettings>(readSettings);
 
   // Recompute TavernTheme when settings change
   const theme = useMemo(() => {
@@ -92,6 +137,14 @@ export function TavernProvider({
   const setThemeSettings = useCallback((settings: TavernThemeSettings) => {
     setThemeSettingsState(settings);
     writeThemeSettings(settings);
+  }, []);
+
+  const updateSettings = useCallback((partial: Partial<TavernSettings>) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...partial };
+      writeSettings(next);
+      return next;
+    });
   }, []);
 
   const { runtime, ownStore } = useMemo(() => {
@@ -168,6 +221,8 @@ export function TavernProvider({
         editFirstMessage,
         swipeReply,
         regenerateReply,
+        settings,
+        updateSettings,
         theme,
         themeSettings,
         setThemeSettings,

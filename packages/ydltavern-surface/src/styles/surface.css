@@ -3429,3 +3429,426 @@
   z-index: -1;
   pointer-events: none;
 }
+
+/* ==========================================================================
+   V5: Drawer section + range-block + ST-aligned form controls
+   ========================================================================== */
+
+.ydltavern-surface .drawer-section {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ydltavern-surface .drawer-section:last-child {
+  border-bottom: 0;
+}
+
+.ydltavern-surface .drawer-section-header {
+  margin-bottom: 12px;
+}
+
+.ydltavern-surface .drawer-section-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: var(--tavern-body-color);
+}
+
+.ydltavern-surface .drawer-section-header small {
+  font-size: 0.8em;
+  color: var(--tavern-em-color);
+  display: block;
+}
+
+.ydltavern-surface .range-block {
+  margin-bottom: 12px;
+}
+
+.ydltavern-surface .range-block label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ydltavern-surface .range-block label > span {
+  font-size: 0.85em;
+  color: var(--tavern-em-color);
+}
+
+.ydltavern-surface .text_pole,
+.ydltavern-surface .textarea_compact {
+  width: 100%;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--tavern-body-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9em;
+  outline: none;
+  transition: border-color var(--tavern-animation-duration);
+}
+
+.ydltavern-surface .text_pole:focus,
+.ydltavern-surface .textarea_compact:focus {
+  border-color: var(--tavern-active);
+}
+
+.ydltavern-surface .textarea_compact {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.ydltavern-surface .neo-range-input {
+  width: 100%;
+  accent-color: var(--tavern-active);
+}
+
+.ydltavern-surface .checkbox_label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  color: var(--tavern-body-color);
+  cursor: pointer;
+}
+
+.ydltavern-surface .checkbox_label input[type="checkbox"] {
+  accent-color: var(--tavern-active);
+}
+
+.ydltavern-surface .preset-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.ydltavern-surface .menu_button.danger {
+  border-color: var(--tavern-warning);
+  color: var(--tavern-warning);
+}
+
+.ydltavern-surface .menu_button.danger:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+/* === V5 Group B: persona/character lists + connection status === */
+.ydltavern-surface .connection-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  font-size: 0.85em;
+  color: var(--tavern-em-color);
+}
+
+.ydltavern-surface .status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tavern-em-color);
+}
+
+.ydltavern-surface .status-dot.status-dot-idle {
+  background: var(--tavern-em-color);
+}
+
+.ydltavern-surface .status-dot.status-dot-ok {
+  background: var(--tavern-active);
+}
+
+.ydltavern-surface .status-dot.status-dot-error {
+  background: var(--tavern-warning);
+}
+
+.ydltavern-surface .persona-list,
+.ydltavern-surface .character-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ydltavern-surface .persona-row,
+.ydltavern-surface .character-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.ydltavern-surface .persona-row.active {
+  border-color: var(--tavern-active);
+}
+
+.ydltavern-surface .persona-row-button,
+.ydltavern-surface .character-row-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--tavern-body-color);
+  border-radius: 6px;
+}
+
+.ydltavern-surface .persona-row-button:hover,
+.ydltavern-surface .character-row-button:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ydltavern-surface .persona-avatar,
+.ydltavern-surface .character-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ydltavern-surface .persona-avatar img,
+.ydltavern-surface .character-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ydltavern-surface .persona-avatar-placeholder,
+.ydltavern-surface .character-avatar-placeholder {
+  color: var(--tavern-em-color);
+  font-size: 1em;
+}
+
+.ydltavern-surface .persona-meta,
+.ydltavern-surface .character-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ydltavern-surface .persona-name,
+.ydltavern-surface .character-name {
+  font-weight: 600;
+  font-size: 0.92em;
+  color: var(--tavern-body-color);
+}
+
+.ydltavern-surface .persona-description,
+.ydltavern-surface .character-description {
+  font-size: 0.8em;
+  color: var(--tavern-em-color);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ydltavern-surface .character-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.ydltavern-surface .character-tag {
+  font-size: 0.7em;
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--tavern-em-color);
+  border-radius: 999px;
+}
+
+.ydltavern-surface .persona-active-badge {
+  color: var(--tavern-active);
+  font-size: 0.85em;
+  margin-left: 4px;
+}
+
+.ydltavern-surface .persona-row-actions,
+.ydltavern-surface .character-row-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.ydltavern-surface .character-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--tavern-em-color);
+  font-size: 0.85em;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+/* === V5 Group C: world info + backgrounds === */
+.ydltavern-surface .worldbook-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ydltavern-surface .worldbook-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.ydltavern-surface .worldbook-row.active {
+  border-color: var(--tavern-active);
+}
+
+.ydltavern-surface .worldbook-row-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--tavern-body-color);
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+
+.ydltavern-surface .worldbook-row-button:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ydltavern-surface .worldbook-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ydltavern-surface .worldbook-count {
+  font-size: 0.8em;
+  color: var(--tavern-em-color);
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.ydltavern-surface .worldbook-row-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.ydltavern-surface .wi-diagnostics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.85em;
+}
+
+.ydltavern-surface .wi-diagnostic-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--tavern-em-color);
+}
+
+.ydltavern-surface .wi-diagnostic-row code {
+  color: var(--tavern-body-color);
+  font-family: var(--tavern-font-mono, monospace);
+}
+
+.ydltavern-surface .bg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ydltavern-surface .bg-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--tavern-body-color);
+  transition: border-color var(--tavern-animation-duration);
+}
+
+.ydltavern-surface .bg-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ydltavern-surface .bg-card.active {
+  border-color: var(--tavern-active);
+}
+
+.ydltavern-surface .bg-card-thumb {
+  aspect-ratio: 16 / 9;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ydltavern-surface .bg-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ydltavern-surface .bg-card-placeholder {
+  color: var(--tavern-em-color);
+  font-size: 1.4em;
+}
+
+.ydltavern-surface .bg-card-name {
+  font-size: 0.8em;
+  color: var(--tavern-em-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ydltavern-surface .bg-empty {
+  grid-column: 1 / -1;
+  padding: 24px;
+  text-align: center;
+  color: var(--tavern-em-color);
+  font-size: 0.85em;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
