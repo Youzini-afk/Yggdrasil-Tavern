@@ -53,3 +53,24 @@ export type {
   UnnamedArgumentDef,
   SlashCommandDef,
 } from './stscript-st.js';
+export {
+  EXTENSION_PROMPT_TYPES,
+  EXTENSION_PROMPT_ROLES,
+  ExtensionPromptStore,
+  createVariableScope,
+  createToolManager,
+  createSTContextDeep,
+} from './context-st.js';
+export type {
+  ExtensionPromptTypeValue,
+  ExtensionPromptRoleValue,
+  ExtensionPromptEntry as STExtensionPromptEntry,
+  VariableScope,
+  SwipeState,
+  SwipeNamespace,
+  ToolDefinition,
+  ToolManagerNamespace,
+  STContextHostBridge,
+  STContextDeep,
+  CreateSTContextDeepOptions,
+} from './context-st.js';
