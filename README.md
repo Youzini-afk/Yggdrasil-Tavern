@@ -33,12 +33,12 @@ Contract slice 已落地。YdlTavern 现在已有可运行的最小纵切片：S
 - **共享类型包**：[`packages/ydltavern-types/`](packages/ydltavern-types/) —— Turn 模型与 ST event/slash/macro/connector/sampler/world-info 常量。
 - **资产导入器**：[`packages/ydltavern-importers/`](packages/ydltavern-importers/) —— 角色卡 JSON/PNG、世界书、JSONL chat importer v0，并有 ST-like fixture 对齐测试。
 - **ST 兼容运行时**：[`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) —— live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`addOneMessage`、`Generate`、扩展宏替换与 slash command core。
-- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络），并包含 World Info / persona / author note / instruct / macro 的 prompt-critical spine。
-- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/G 进入 `partial` / contract-slice，未宣称字节级对齐。
+- **引擎核心**：[`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) —— sampler normalization、prompt builder、OpenAI request builder（无网络），并包含 PromptManager marker fills、World Info routing、deterministic filters、seeded group/probability、sticky/cooldown/delay state。
+- **兼容矩阵**：[`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md) —— B/C/D/E/G/I 进入 `partial`，PromptManager 与 World Info advanced 已有 fixture-aligned subset，未宣称字节级对齐。
 - **YdlTavern 前端 surface**：[`packages/ydltavern-surface/`](packages/ydltavern-surface/) —— React surface bundle，`TavernPlaySurface` 可通过同一份 ST contract 发送、编辑、fake generate，并显示事件、prompt-critical、slash/macro 诊断；不包含独立桌面/Web/App 壳。
 - **引擎包**：[`packages/ydltavern-engine/`](packages/ydltavern-engine/) —— Yggdrasil 子进程能力包，`world_info.evaluate`、`preset.compile`、`turn.generate`、asset import 能调用当前本地 contract；仍无真实模型调用、无网络。
 
-下一步：在现有 prompt-critical 与 slash/macro 核心上，继续补完整 ST PromptManager 对齐、World Info 高级行为、STScript 控制流和第三方扩展加载。详细文档导航见 [`docs/`](docs/README.md)。
+下一步：继续补 tokenizer 级预算、text completion 路由、完整 STScript、第三方扩展加载和真实模型边界。详细文档导航见 [`docs/`](docs/README.md)。
 
 ## 致谢
 

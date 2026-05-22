@@ -53,16 +53,16 @@ YdlTavern 自己只负责：把 ST preset + Turn 模型翻译成“哪个 provid
 
 ## 当前状态
 
-`packages/ydltavern-engine-core` 已有结构级 alignment spine：
+`packages/ydltavern-engine-core` 已有 PromptManager / generation-prompt fixture-aligned subset：
 
-- sampler alias normalization；
-- prompt block 排序和 `chatHistory` 插入；
-- OpenAI request shape builder；
-- fixture 覆盖 OpenAI preset、prompt blocks、Turn chat、expected request。
+- sampler alias normalization 与 OpenAI request shape builder；
+- `compilePromptCollection()` 支持 ST-like `prompts` / `prompt_order`、enabled、trigger、marker、custom prompt、main/jailbreak override diagnostics；
+- `buildPromptCriticalBlocks()` 可通过 PromptManager marker 填充 worldInfoBefore/worldInfoAfter/persona/character/scenario/chatHistory/jailbreak；
+- `buildPrompt()` 仍负责当前 messages/text 输出，保留 block metadata。
 
-`packages/ydltavern-engine` 已把 `preset.compile` 和 `turn.generate` 接到 engine-core，但仍是 deterministic fake generation，不出网、不用 secret。
+`packages/ydltavern-engine` 的 `preset.compile` 和 `turn.generate` 会透传 PromptManager diagnostics、WI advanced diagnostics、nextState 和 frames；仍是 deterministic fake generation，不出网、不用 secret。
 
-这还不是 ST PromptManager 字节级复刻；world info、persona、author's note、instruct、token 预算和 provider-specific streaming 仍待实现。
+这仍是 `partial`。tokenizer 级 budget、text completion 路由、provider-specific streaming、完整 ST PromptManager 字节级 golden harness 还未完成。
 
 ## 不在范围内
 

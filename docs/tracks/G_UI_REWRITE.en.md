@@ -61,7 +61,7 @@ YdlTavern surface goals (hosted by a Yggdrasil shell + ordinary i5):
 - sending, editing, fake generation, and event log through the live ST contract;
 - engine request preview;
 - importer preview;
-- prompt-critical diagnostics: WI activated/skipped entries, buckets, blocks, and macro trace;
+- PromptManager / WI advanced diagnostics: effective order, marker fills, routing trace, AN patch, atDepth/outlet, group/probability/timed trace;
 - slash diagnostics: command input, execution result, variables, registered commands, and diagnostics.
 
 This is still diagnostic UI, not the final Tavern product interface. Later work must build the real ST-like layout, virtual list, themes, settings drawer, extensions drawer, and performance targets.

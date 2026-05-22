@@ -20,7 +20,7 @@ Implementation status:
 - `deferred` — intentionally not implemented by internal decision
 - `blocked` — waiting on another track
 
-Current stage: prompt-critical + slash core complete. ST source remains the ground truth; B/C/D/E/G/I now have runnable thin vertical paths, but nothing is claimed as byte-level aligned unless explicitly stated.
+Current stage: PromptManager / World Info advanced fixture-aligned subset complete. ST source remains the ground truth; B/C/D/E/G/I now have runnable thin vertical paths, but nothing is claimed as byte-level aligned unless explicitly stated.
 
 ## Overview
 
@@ -32,14 +32,14 @@ Current stage: prompt-critical + slash core complete. ST source remains the grou
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers (including aliases) | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| world info trigger types | 32 | keyword/regex/constant subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info entry schema fields | 50+ | core fields preserved/evaluated | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info evaluation pipeline steps | 39 | scan/order/position/recursive/budget subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
+| world info trigger types | 32 | keyword/regex/constant + deterministic filters | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info entry schema fields | 50+ | core + routing/group/probability/timed fields | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info evaluation pipeline steps | 39 | scan/routing/deterministic filters/seeded group/probability/timed state subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
 | character card V1 fields | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V2 fields | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | character card V3 fields | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema fields | 75 | fixture request shape | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
-| prompt manager identifiers | 13 typed | prompt-critical blocks + v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
+| OpenAI preset schema fields | 75 | fixture request shape + prompt_order subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| prompt manager identifiers | 13 typed | prompt_order/marker/effective collection subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | built-in extensions | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema fields | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema fields | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -56,8 +56,8 @@ The numbers are approximate. The inventory files and `@ydltavern/types` constant
 | `@ydltavern/types` | all | Turn model and ST event/slash/macro/connector/sampler/world-info/prompt-manager constants | stubbed foundation |
 | `@ydltavern/importers` | B | character JSON/PNG, world book, JSONL chat importers + ST-like fixtures | partial |
 | `@ydltavern/st-compat` | D + E | live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `Generate`, expanded macros, slash command core | partial |
-| `@ydltavern/engine-core` | C + I | sampler/request builder, World Info evaluator, prompt-critical blocks, macro trace | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface contract slice: send/edit/fake generate/event log/prompt-critical/slash diagnostics; Settings/Extensions slots | partial |
+| `@ydltavern/engine-core` | C + I | sampler/request builder, PromptManager collection, World Info routing/filters/group/probability/timed state, prompt-critical marker fills | partial |
+| `@ydltavern/surface` | G | TavernPlaySurface contract slice: send/edit/fake generate/event log/PromptManager/WI advanced/slash diagnostics; Settings/Extensions slots | partial |
 
 ## Built-in extension coverage (track F)
 

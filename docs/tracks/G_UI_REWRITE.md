@@ -61,7 +61,7 @@ YdlTavern surface 目标（由 Yggdrasil 壳承载 + 普通 i5）：
 - live ST contract 的发送、编辑、fake generate、event log；
 - engine request preview；
 - importer preview；
-- prompt-critical diagnostics：WI activated/skipped、buckets、blocks、macro trace；
+- PromptManager / WI advanced diagnostics：effective order、marker fills、routing trace、AN patch、atDepth/outlet、group/probability/timed trace；
 - slash diagnostics：输入命令、执行结果、变量、registered commands、diagnostics。
 
 这仍是诊断 UI，不是最终 Tavern 产品界面。后续要做真实 ST-like layout、虚拟列表、主题、设置抽屉、扩展抽屉和性能目标。

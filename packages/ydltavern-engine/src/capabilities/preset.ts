@@ -21,6 +21,18 @@ export const compilePreset = (input: unknown) => {
   const requestShape = mode === "openai_chat"
     ? buildOpenAIChatRequest({ model, messages: prompt.messages, sampler, stream: false })
     : undefined;
+  const promptManager = {
+    diagnostics: promptCritical.promptCritical.diagnostics.promptManager,
+    mapping: promptCritical.promptCritical.diagnostics.markerMapping,
+  };
+  const worldInfoDiagnostics = {
+    ...promptCritical.worldInfo.diagnostics,
+    nextState: promptCritical.worldInfo.nextState,
+    buckets: promptCritical.worldInfo.buckets,
+    anPatch: promptCritical.worldInfo.buckets.anPatch,
+    depthEntries: promptCritical.worldInfo.buckets.depthEntries,
+    outlets: promptCritical.worldInfo.buckets.outlets,
+  };
 
   return {
     prompt,
@@ -28,9 +40,21 @@ export const compilePreset = (input: unknown) => {
     diagnostics: {
       ...prompt.diagnostics,
       prompt_critical: promptCritical.promptCritical.diagnostics,
-      world_info: promptCritical.worldInfo.diagnostics,
+      prompt_manager: promptManager,
+      world_info: worldInfoDiagnostics,
+      knownDeltas: promptCritical.promptCritical.diagnostics.knownDeltas,
+      unsupported: [
+        ...promptCritical.promptCritical.diagnostics.unsupported,
+        ...promptCritical.worldInfo.diagnostics.unsupported,
+      ],
     },
     prompt_critical: promptCritical.promptCritical.diagnostics,
+    prompt_manager: promptManager,
+    knownDeltas: promptCritical.promptCritical.diagnostics.knownDeltas,
+    unsupported: [
+      ...promptCritical.promptCritical.diagnostics.unsupported,
+      ...promptCritical.worldInfo.diagnostics.unsupported,
+    ],
     world_info: promptCritical.worldInfo,
     meta: createCapabilityMeta(CAPABILITY_ID, {
       deterministic: true,

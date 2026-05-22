@@ -116,4 +116,4 @@ YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预
 
 ## 当前状态
 
-Prompt-critical + slash core 已落地。仓库包含 shared types、资产导入器、ST 兼容运行时、引擎核心、Yggdrasil 子进程能力包和 `@ydltavern/surface`；当前可以跑通 import / live `chat[]` edit / fake Generate / World Info subset / prompt-critical blocks / slash commands / surface diagnostics 的纵切片。字节级 ST 对齐仍以兼容矩阵为准。
+PromptManager / World Info advanced fixture-aligned subset 已落地。仓库包含 shared types、资产导入器、ST 兼容运行时、引擎核心、Yggdrasil 子进程能力包和 `@ydltavern/surface`；当前可以跑通 import / live `chat[]` edit / fake Generate / PromptManager marker fills / World Info routing、deterministic filters、seeded group/probability、sticky/cooldown/delay state / slash commands / surface diagnostics 的纵切片。字节级 ST 对齐仍以兼容矩阵为准。

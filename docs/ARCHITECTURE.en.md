@@ -116,4 +116,4 @@ No matter how YdlTavern evolves:
 
 ## Status
 
-The prompt-critical + slash core is in place. The repo contains shared types, asset importers, the ST compatibility runtime, engine core, a Yggdrasil subprocess capability package, and the `@ydltavern/surface` bundle; it can run a path through import / live `chat[]` edit / fake Generate / World Info subset / prompt-critical blocks / slash commands / surface diagnostics. Byte-level ST alignment is still tracked only by the compatibility matrix.
+The PromptManager / World Info advanced fixture-aligned subset is in place. The repo contains shared types, asset importers, the ST compatibility runtime, engine core, a Yggdrasil subprocess capability package, and the `@ydltavern/surface` bundle; it can run a path through import / live `chat[]` edit / fake Generate / PromptManager marker fills / World Info routing, deterministic filters, seeded group/probability, sticky/cooldown/delay state / slash commands / surface diagnostics. Byte-level ST alignment is still tracked only by the compatibility matrix.

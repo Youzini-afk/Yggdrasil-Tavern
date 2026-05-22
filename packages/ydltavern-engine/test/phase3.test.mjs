@@ -60,6 +60,30 @@ test("world_info.evaluate activates matching world info entries", () => {
   assert.equal(output.diagnostics.iterations, 1);
 });
 
+test("world_info.evaluate returns nextState and advanced diagnostics", () => {
+  const stickyBook = {
+    name: "Sticky Lore",
+    entries: [
+      { uid: "sticky-lore", key: ["engine"], content: "Sticky lore.", position: "atDepth", depth: 2, sticky: 2, order: 0 },
+      { uid: "outlet-lore", key: ["engine"], content: "Outlet lore.", position: "outlet", outletName: "memory", order: 1 },
+    ],
+  };
+  const output = worldInfoHandlers[`${PACKAGE_ID}/world_info.evaluate`]({
+    chat: sampleChat,
+    world_book: stickyBook,
+    runtimeState: { sticky: [], cooldown: [] },
+    chatLength: 5,
+    originalAuthorNote: "Original AN",
+  });
+
+  assert.ok(Array.isArray(output.nextState.sticky));
+  assert.equal(output.nextState.sticky[0].entryId, "sticky-lore");
+  assert.ok(output.diagnostics.routingTrace.length >= 2);
+  assert.equal(output.buckets.depthEntries[0].entries[0].entryId, "sticky-lore");
+  assert.equal(output.buckets.outlets.memory.entries[0].entryId, "outlet-lore");
+  assert.equal(output.buckets.anPatch.original, "Original AN");
+});
+
 test("preset.compile builds prompt and OpenAI request shape", () => {
   const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
     chat: sampleChat,
@@ -99,6 +123,74 @@ test("preset.compile includes prompt-critical WI, persona, and author note", () 
   assert.ok(output.diagnostics.prompt_critical.includedBlocks.includes("personaDescription"));
 });
 
+test("preset.compile preserves PromptManager and WI diagnostics", () => {
+  const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
+    chat: sampleChat,
+    world_info: {
+      world_book: loreBook,
+      originalAuthorNote: "Original author note",
+    },
+    promptManager: {
+      prompts: [
+        { identifier: "main", content: "Main {{char}}", marker: false, role: "system" },
+        { identifier: "worldInfoBefore", content: "", marker: true, role: "system" },
+        { identifier: "chatHistory", content: "", marker: true, role: "system" },
+      ],
+      prompt_order: [
+        { identifier: "main", enabled: true, order: 0 },
+        { identifier: "worldInfoBefore", enabled: true, order: 1, marker: true },
+        { identifier: "chatHistory", enabled: true, order: 2, marker: true },
+      ],
+    },
+    prompt_context: {
+      character: { name: "Alice" },
+      macro_context: { char: "Macro Alice" },
+    },
+    model: "phase3-model",
+  });
+
+  assert.ok(output.prompt_manager.diagnostics);
+  assert.ok(output.prompt_manager.mapping.some((item) => item.promptIdentifier === "worldInfoBefore"));
+  assert.ok(output.prompt_critical.promptManager);
+  assert.ok(output.prompt_critical.markerMapping.some((item) => item.promptIdentifier === "worldInfoBefore"));
+  assert.ok(Array.isArray(output.world_info.diagnostics.routingTrace));
+  assert.deepEqual(output.world_info.nextState, { sticky: [], cooldown: [] });
+  assert.equal(output.world_info.buckets.anPatch.original, "Original author note");
+  assert.ok(Array.isArray(output.diagnostics.world_info.depthEntries));
+  assert.ok(output.diagnostics.world_info.outlets);
+  assert.ok(Array.isArray(output.knownDeltas));
+  assert.ok(output.unsupported.length > 0);
+});
+
+test("preset.compile reads prompt_manager alias and WI passthrough inputs", () => {
+  const probabilisticBook = {
+    name: "Probability Lore",
+    entries: [
+      { uid: "prob-lore", key: ["engine"], content: "Probability lore.", position: "before", order: 0, probability: 50, useProbability: true },
+    ],
+  };
+  const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
+    chat: sampleChat,
+    world_book: probabilisticBook,
+    prompt_manager: {
+      prompts: [{ identifier: "worldInfoBefore", content: "", marker: true, role: "system" }],
+      promptOrder: [{ identifier: "worldInfoBefore", enabled: true, marker: true, order: 0 }],
+    },
+    randomValues: [0.25],
+    dryRun: true,
+    chat_length: 10,
+    runtimeState: { sticky: [{ entryId: "kept", start: 1, end: 20 }] },
+    generationType: "normal",
+    authorNote: "Current AN",
+    model: "phase3-model",
+  });
+
+  assert.equal(output.world_info.activated[0].id, "prob-lore");
+  assert.equal(output.world_info.diagnostics.activationTrace.find((item) => item.code === "probability_roll").randomValue, 0.25);
+  assert.deepEqual(output.world_info.nextState, { sticky: [{ entryId: "kept", start: 1, end: 20, protected: false }], cooldown: [] });
+  assert.ok(output.prompt_critical.promptManager);
+});
+
 test("turn.generate returns lifecycle frames and assistant outputs", () => {
   const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
     id: "generate_test",
@@ -108,7 +200,7 @@ test("turn.generate returns lifecycle frames and assistant outputs", () => {
     text: "sample response",
   });
 
-  assert.deepEqual(output.frames.map((frame) => frame.type), ["started", "prompt_critical", "token", "completed"]);
+  assert.deepEqual(output.frames.map((frame) => frame.type), ["started", "prompt_critical", "world_info_evaluated", "prompt_manager_compiled", "token", "completed"]);
   assert.equal(output.turn.role, "assistant");
   assert.equal(output.turn.variants[0].subs[0].text, "[ydltavern fake generation] sample response");
   assert.equal(output.message.mes, "[ydltavern fake generation] sample response");
@@ -128,9 +220,39 @@ test("turn.generate exposes prompt-critical diagnostics frame", () => {
   const frame = output.frames.find((item) => item.type === "prompt_critical");
   assert.ok(frame);
   assert.equal(frame.activated_world_info, 1);
+  assert.ok(frame.full_world_info.nextState);
   assert.ok(frame.diagnostics.includedBlocks.includes("personaDescription"));
   assert.equal(output.world_info.activated[0].id, "engine-lore");
   assert.ok(output.prompt_critical.includedBlocks.includes("worldInfoBefore"));
+});
+
+test("turn.generate exposes world info and prompt manager frames", () => {
+  const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
+    id: "generate_advanced_frames_test",
+    chat: sampleChat,
+    world_book: loreBook,
+    promptManager: {
+      prompts: [
+        { identifier: "worldInfoBefore", content: "", marker: true, role: "system" },
+        { identifier: "chatHistory", content: "", marker: true, role: "system" },
+      ],
+      prompt_order: [
+        { identifier: "worldInfoBefore", enabled: true, marker: true, order: 0 },
+        { identifier: "chatHistory", enabled: true, marker: true, order: 1 },
+      ],
+    },
+    model: "phase3-model",
+  });
+
+  const worldInfoFrame = output.frames.find((item) => item.type === "world_info_evaluated");
+  const promptManagerFrame = output.frames.find((item) => item.type === "prompt_manager_compiled");
+  assert.ok(worldInfoFrame);
+  assert.equal(worldInfoFrame.world_info.activated[0].id, "engine-lore");
+  assert.ok(worldInfoFrame.nextState);
+  assert.ok(Array.isArray(worldInfoFrame.diagnostics.routingTrace));
+  assert.ok(promptManagerFrame);
+  assert.ok(promptManagerFrame.diagnostics);
+  assert.ok(promptManagerFrame.mapping.some((item) => item.promptIdentifier === "worldInfoBefore"));
 });
 
 test("turn operations produce deterministic non-echo results", () => {

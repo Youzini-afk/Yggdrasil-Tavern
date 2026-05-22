@@ -20,7 +20,7 @@
 - `deferred` —— 内部决定不做
 - `blocked` —— 等其他轨道
 
-当前阶段：prompt-critical + slash core 完成。ST 源码仍是 ground truth；B/C/D/E/G/I 已有可运行纵切片，但除明确说明外还不是字节级对齐。
+当前阶段：PromptManager / World Info advanced fixture-aligned subset 完成。ST 源码仍是 ground truth；B/C/D/E/G/I 已有可运行纵切片，但除明确说明外还不是字节级对齐。
 
 ## 总览
 
@@ -32,14 +32,14 @@
 | chat completion sources | 26 | 1 request builder | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | text completion sources | 17 | 0 | inventoried | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
 | samplers（含 alias） | 151 | 151 normalized/passthrough | partial | `inventory/CONNECTORS_AND_SAMPLERS.raw.md` | C |
-| world info trigger types | 32 | keyword/regex/constant subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info entry schema 字段 | 50+ | core fields preserved/evaluated | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
-| world info 评估流水线步骤 | 39 | scan/order/position/recursive/budget subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
+| world info trigger types | 32 | keyword/regex/constant + deterministic filters | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info entry schema 字段 | 50+ | core + routing/group/probability/timed fields | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
+| world info 评估流水线步骤 | 39 | scan/routing/deterministic filters/seeded group/probability/timed state subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I + C |
 | 角色卡 V1 字段 | 16 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | 角色卡 V2 字段 | 33 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
 | 角色卡 V3 字段 | 14 | fixture importer | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B |
-| OpenAI preset schema 字段 | 75 | fixture request shape | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
-| prompt manager 标识符 | 13 typed | prompt-critical blocks + v0 builder | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
+| OpenAI preset schema 字段 | 75 | fixture request shape + prompt_order subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | B + C |
+| prompt manager 标识符 | 13 typed | prompt_order/marker/effective collection subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | C |
 | 内置扩展 | 14 | 0 | inventoried | `inventory/BUILTIN_EXTENSIONS.raw.md` | F |
 | Persona schema 字段 | 20 | personaDescription block subset | partial | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
 | Group chat schema 字段 | 25 | 0 | inventoried | `inventory/WORLD_INFO_AND_ASSETS.raw.md` | I |
@@ -56,8 +56,8 @@
 | `@ydltavern/types` | 全部 | Turn 模型、ST event/slash/macro/connector/sampler/world-info/prompt-manager 常量 | stubbed 基础 |
 | `@ydltavern/importers` | B | 角色卡 JSON/PNG、世界书、JSONL chat importer + ST-like fixtures | partial |
 | `@ydltavern/st-compat` | D + E | live `chat[]` Proxy、Turn store、`getContext()`、`eventSource`、`Generate`、扩展宏、slash command core | partial |
-| `@ydltavern/engine-core` | C + I | sampler/request builder、World Info evaluator、prompt-critical blocks、macro trace | partial |
-| `@ydltavern/surface` | G | TavernPlaySurface contract slice：send/edit/fake generate/event log/prompt-critical/slash diagnostics；Settings/Extensions slots | partial |
+| `@ydltavern/engine-core` | C + I | sampler/request builder、PromptManager collection、World Info routing/filters/group/probability/timed state、prompt-critical marker fills | partial |
+| `@ydltavern/surface` | G | TavernPlaySurface contract slice：send/edit/fake generate/event log/PromptManager/WI advanced/slash diagnostics；Settings/Extensions slots | partial |
 
 ## 内置扩展覆盖度（F 轨道）
 

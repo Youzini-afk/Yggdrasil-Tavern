@@ -48,18 +48,18 @@ output: next speaker selection exactly matches ST with the same seed
 
 ## Current status
 
-`packages/ydltavern-engine-core` now has the minimum prompt-critical I-track core:
+`packages/ydltavern-engine-core` now has a World Info advanced fixture-aligned subset:
 
-- World Info keyword / regex / constant activation;
-- secondary logic: `AND_ANY` / `NOT_ALL` / `NOT_ANY` / `AND_ALL`;
-- case-sensitive, whole-word, scan depth, order, and position buckets;
-- recursive scan and basic budget diagnostics;
-- persona, character description / personality / scenario, author note, post-history, and instruct blocks;
-- macro expansion trace.
+- keyword / regex / constant activation, primary / secondary logic, case-sensitive, whole-word, recursive scan;
+- before/after/ANTop/ANBottom/atDepth/EMTop/EMBottom/outlet routing with AN patch, depth entries, outlets, and routing trace;
+- deterministic filters for generation triggers, character filter, decorators, scan-data flags, min activations, delayUntilRecursion / excludeRecursion;
+- seeded probability, inclusion group, groupOverride, groupWeight, useGroupScoring;
+- sticky/cooldown/delay runtime state and multi-generation sequence diagnostics;
+- persona, character description / personality / scenario, author note, post-history, and instruct blocks.
 
-`packages/ydltavern-engine` consumes these results through `world_info.evaluate`, `preset.compile`, and `turn.generate`. `@ydltavern/surface` displays activated/skipped entries, buckets, blocks, and macro trace.
+`packages/ydltavern-engine` passes these results through `world_info.evaluate`, `preset.compile`, and `turn.generate`. `@ydltavern/surface` displays PromptManager order, marker fills, WI routing/group/probability/timed trace.
 
-This is still `partial`. Sticky/cooldown/delay, inclusion groups, probability rolls, vector WI, full persona lock, group rotation, and byte-level instruct template alignment are not implemented yet.
+This is still `partial`. Vector WI, full persona lock, group rotation, tokenizer budgeting, byte-level ST extension-prompt routing, and byte-level instruct template alignment are not complete yet.
 
 ## Out of scope
 

@@ -33,12 +33,12 @@ The contract slice is in place. YdlTavern now has a runnable thin vertical path:
 - **Shared types package**: [`packages/ydltavern-types/`](packages/ydltavern-types/) — Turn model plus ST event/slash/macro/connector/sampler/world-info constants.
 - **Asset importers**: [`packages/ydltavern-importers/`](packages/ydltavern-importers/) — character JSON/PNG, world book, and JSONL chat importer v0, backed by ST-like fixture tests.
 - **ST compatibility runtime**: [`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) — live `chat[]` Proxy, Turn store, `getContext()`, `eventSource`, `addOneMessage`, `Generate`, expanded macros, and slash command core.
-- **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, prompt builder, and OpenAI request builder (no network), plus a World Info / persona / author note / instruct / macro prompt-critical spine.
-- **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — B/C/D/G are now `partial` / contract-slice; byte-level alignment is not claimed yet.
+- **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, prompt builder, and OpenAI request builder (no network), plus a PromptManager marker fills, World Info routing, deterministic filters, seeded group/probability, and sticky/cooldown/delay state.
+- **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — B/C/D/E/G/I are now `partial`; PromptManager and World Info advanced have fixture-aligned subsets, with no byte-level alignment claim yet.
 - **YdlTavern frontend surface**: [`packages/ydltavern-surface/`](packages/ydltavern-surface/) — React surface bundle; `TavernPlaySurface` can send, edit, fake-generate, and show event, prompt-critical, and slash/macro diagnostics through the same ST contract. It does not include an independent desktop/web/app shell.
 - **Engine package**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package; `world_info.evaluate`, `preset.compile`, `turn.generate`, and asset import call the current local contracts. Still no real model calls and no network.
 
-Next: build from the current prompt-critical and slash/macro core toward full ST PromptManager alignment, advanced World Info behavior, STScript control flow, and third-party extension loading. Full documentation index in [`docs/`](docs/README.en.md).
+Next: continue with tokenizer-level budgeting, text-completion routing, full STScript, third-party extension loading, and the real model-call boundary. Full documentation index in [`docs/`](docs/README.en.md).
 
 ## Acknowledgements
 

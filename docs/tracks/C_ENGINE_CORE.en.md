@@ -53,16 +53,16 @@ YdlTavern only handles: translate ST preset + Turn model into "which provider, w
 
 ## Current status
 
-`packages/ydltavern-engine-core` now has a structure-level alignment spine:
+`packages/ydltavern-engine-core` now has a PromptManager / generation-prompt fixture-aligned subset:
 
-- sampler alias normalization;
-- prompt block ordering and `chatHistory` insertion;
-- OpenAI request shape builder;
-- fixtures for OpenAI preset, prompt blocks, Turn chat, and expected request.
+- sampler alias normalization and OpenAI request shape builder;
+- `compilePromptCollection()` supports ST-like `prompts` / `prompt_order`, enabled state, triggers, markers, custom prompts, and main/jailbreak override diagnostics;
+- `buildPromptCriticalBlocks()` can fill worldInfoBefore/worldInfoAfter/persona/character/scenario/chatHistory/jailbreak through PromptManager markers;
+- `buildPrompt()` still owns the current messages/text output and preserves block metadata.
 
-`packages/ydltavern-engine` connects `preset.compile` and `turn.generate` to engine-core, but generation is still deterministic fake behavior with no network and no secrets.
+`packages/ydltavern-engine` passes PromptManager diagnostics, WI advanced diagnostics, nextState, and frames through `preset.compile` and `turn.generate`; generation is still deterministic fake behavior with no network and no secrets.
 
-This is not a byte-level ST PromptManager clone yet; world info, persona, author's note, instruct, token budgeting, and provider-specific streaming remain to be implemented.
+This is still `partial`. Tokenizer-level budgeting, text-completion routing, provider-specific streaming, and a full byte-level ST PromptManager golden harness are not complete yet.
 
 ## Out of scope
 

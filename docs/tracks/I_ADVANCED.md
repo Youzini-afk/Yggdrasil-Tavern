@@ -48,18 +48,18 @@ output: 下一个 speaker 选择跟 ST 同种子下完全一致
 
 ## 当前状态
 
-`packages/ydltavern-engine-core` 已有 prompt-critical I 轨最小核心：
+`packages/ydltavern-engine-core` 已有 World Info advanced fixture-aligned subset：
 
-- World Info keyword / regex / constant 触发；
-- secondary logic：`AND_ANY` / `NOT_ALL` / `NOT_ANY` / `AND_ALL`；
-- case-sensitive、whole-word、scan depth、order、position buckets；
-- recursive scan 与基础 budget diagnostics；
-- persona、character description / personality / scenario、author note、post-history、instruct blocks；
-- macro expansion trace。
+- keyword / regex / constant、primary / secondary logic、case-sensitive、whole-word、recursive scan；
+- before/after/ANTop/ANBottom/atDepth/EMTop/EMBottom/outlet routing，包含 AN patch、depth entries、outlets、routing trace；
+- generation trigger、character filter、decorators、scan data flags、min activations、delayUntilRecursion / excludeRecursion 的 deterministic filters；
+- seeded probability、inclusion group、groupOverride、groupWeight、useGroupScoring；
+- sticky/cooldown/delay runtime state 与 multi-generation sequence diagnostics；
+- persona、character description / personality / scenario、author note、post-history、instruct blocks。
 
-`packages/ydltavern-engine` 的 `world_info.evaluate`、`preset.compile`、`turn.generate` 会消费这些结果。`@ydltavern/surface` 会展示 activated/skipped、buckets、blocks 和 macro trace。
+`packages/ydltavern-engine` 的 `world_info.evaluate`、`preset.compile`、`turn.generate` 会透传这些结果。`@ydltavern/surface` 会展示 PromptManager order、marker fills、WI routing/group/probability/timed trace。
 
-这仍是 `partial`。sticky/cooldown/delay、inclusion group、probability roll、vector WI、完整 persona lock、群聊轮换和 instruct template 字节级对齐还未实现。
+这仍是 `partial`。vector WI、完整 persona lock、群聊轮换、tokenizer budget、ST extension prompt 字节级路由和 instruct template 字节级对齐还未完成。
 
 ## 不在范围内
 

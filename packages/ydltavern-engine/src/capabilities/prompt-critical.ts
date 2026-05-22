@@ -2,12 +2,14 @@ import {
   buildPromptCriticalBlocks,
   evaluateWorldInfo,
   type BuildPromptCriticalBlocksResult,
+  type CompilePromptCollectionInput,
   type EvaluateWorldInfoInput,
   type EvaluateWorldInfoResult,
   type MacroContext,
   type PromptBlock,
   type PromptCriticalAuthorNote,
   type PromptCriticalCharacterFields,
+  type PromptCriticalPromptManagerInput,
   type WorldInfoBook,
 } from "@ydltavern/engine-core";
 import type { Chat } from "@ydltavern/types";
@@ -19,6 +21,52 @@ export interface PromptCriticalReadResult {
   readonly promptCritical: BuildPromptCriticalBlocksResult;
   readonly blocks: readonly PromptBlock[];
 }
+
+const WORLD_INFO_PASSTHROUGH_FIELDS = [
+  "maxRecursion",
+  "max_recursion",
+  "minActivations",
+  "min_activations",
+  "minimumActivations",
+  "generationType",
+  "generation_type",
+  "activeCharacterName",
+  "active_character_name",
+  "characterName",
+  "character_name",
+  "charName",
+  "activeCharacterTags",
+  "active_character_tags",
+  "characterTags",
+  "character_tags",
+  "charTags",
+  "character",
+  "personaDescription",
+  "persona_description",
+  "persona",
+  "characterDescription",
+  "character_description",
+  "characterPersonality",
+  "character_personality",
+  "characterDepthPrompt",
+  "character_depth_prompt",
+  "depthPrompt",
+  "depth_prompt",
+  "scenario",
+  "creatorNotes",
+  "creator_notes",
+  "runtimeState",
+  "state",
+  "chatLength",
+  "chat_length",
+  "dryRun",
+  "dry_run",
+  "authorNote",
+  "originalAuthorNote",
+  "author_note",
+  "randomValues",
+  "rngSequence",
+] as const;
 
 export function readChat(value: unknown): Chat {
   if (isRecord(value) && Array.isArray(value["turns"])) {
@@ -67,6 +115,7 @@ export function readPromptCriticalInput(record: UnknownRecord, chat: Chat, model
   const worldInfo = evaluateWorldInfoFromInput(record, chat);
   const promptContext = readPromptContext(record);
   const promptCritical = buildPromptCriticalBlocks({
+    ...readPromptManagerInput(record),
     userName: readString(promptContext, record, ["user_name", "userName", "user"]),
     model,
     persona: readString(promptContext, record, ["persona"]),
@@ -77,6 +126,7 @@ export function readPromptCriticalInput(record: UnknownRecord, chat: Chat, model
     worldInfo,
     macroContext: readMacroContext(promptContext["macro_context"] ?? promptContext["macroContext"] ?? record["macro_context"] ?? record["macroContext"]),
     baseOrder: readNumber(promptContext["base_order"] ?? promptContext["baseOrder"] ?? record["prompt_critical_base_order"] ?? record["promptCriticalBaseOrder"]),
+    generationType: readGenerationType(record["generationType"] ?? record["generation_type"]),
   });
 
   return {
@@ -103,6 +153,7 @@ function readWorldInfoInput(record: UnknownRecord, chat: Chat): EvaluateWorldInf
     ?? directWorldInfoBook;
 
   return {
+    ...readWorldInfoPassthrough(record),
     chat,
     book,
     books,
@@ -114,9 +165,87 @@ function readWorldInfoInput(record: UnknownRecord, chat: Chat): EvaluateWorldInf
   };
 }
 
+function readWorldInfoPassthrough(record: UnknownRecord): Partial<EvaluateWorldInfoInput> {
+  const worldInfoValue = record["world_info"] ?? record["worldInfo"];
+  const worldInfoRecord = isRecord(worldInfoValue) ? worldInfoValue : {};
+  const result: Record<string, unknown> = {};
+  for (const fieldName of WORLD_INFO_PASSTHROUGH_FIELDS) {
+    const value = record[fieldName] ?? worldInfoRecord[fieldName];
+    if (value !== undefined) {
+      result[fieldName] = value;
+    }
+  }
+  copyDefined(result, "authorNote", readWorldInfoAuthorNote(record["authorNote"] ?? record["author_note"] ?? worldInfoRecord["authorNote"] ?? worldInfoRecord["author_note"]));
+  copyDefined(result, "originalAuthorNote", readWorldInfoAuthorNote(record["originalAuthorNote"] ?? worldInfoRecord["originalAuthorNote"]));
+  copyDefined(result, "author_note", readWorldInfoAuthorNote(record["author_note"] ?? worldInfoRecord["author_note"]));
+
+  const promptContext = readPromptContext(record);
+  copyFallback(result, "persona", promptContext["persona"]);
+  copyFallback(result, "character", promptContext["character"]);
+  copyFallback(result, "macroContext", promptContext["macro_context"] ?? promptContext["macroContext"]);
+  copyFallback(result, "authorNote", readWorldInfoAuthorNote(promptContext["author_note"] ?? promptContext["authorNote"]));
+  copyFallback(result, "originalAuthorNote", readWorldInfoAuthorNote(promptContext["original_author_note"] ?? promptContext["originalAuthorNote"]));
+
+  return result as Partial<EvaluateWorldInfoInput>;
+}
+
+function readPromptManagerInput(record: UnknownRecord): {
+  readonly promptManager?: PromptCriticalPromptManagerInput;
+  readonly prompt_manager?: PromptCriticalPromptManagerInput;
+  readonly prompts?: unknown;
+  readonly prompt_order?: unknown;
+  readonly promptOrder?: unknown;
+  readonly generationType?: string | readonly string[];
+  readonly generation_type?: string | readonly string[];
+  readonly main_prompt?: string;
+  readonly mainPrompt?: string;
+  readonly jailbreak_prompt?: string;
+  readonly jailbreakPrompt?: string;
+  readonly overrides?: CompilePromptCollectionInput["overrides"];
+} {
+  const result: Record<string, unknown> = {};
+  copyDefined(result, "promptManager", record["promptManager"]);
+  copyDefined(result, "prompt_manager", record["prompt_manager"]);
+  copyDefined(result, "prompts", record["prompts"]);
+  copyDefined(result, "prompt_order", record["prompt_order"]);
+  copyDefined(result, "promptOrder", record["promptOrder"]);
+  copyDefined(result, "generationType", readGenerationType(record["generationType"]));
+  copyDefined(result, "generation_type", readGenerationType(record["generation_type"]));
+  copyDefined(result, "main_prompt", readStringField(record, "main_prompt"));
+  copyDefined(result, "mainPrompt", readStringField(record, "mainPrompt"));
+  copyDefined(result, "jailbreak_prompt", readStringField(record, "jailbreak_prompt"));
+  copyDefined(result, "jailbreakPrompt", readStringField(record, "jailbreakPrompt"));
+  copyDefined(result, "overrides", isRecord(record["overrides"]) ? record["overrides"] : undefined);
+  return result;
+}
+
 function readPromptContext(record: UnknownRecord): UnknownRecord {
   const value = record["prompt_context"] ?? record["promptContext"];
   return isRecord(value) ? value : {};
+}
+
+function copyDefined(result: Record<string, unknown>, fieldName: string, value: unknown): void {
+  if (value !== undefined) {
+    result[fieldName] = value;
+  }
+}
+
+function copyFallback(result: Record<string, unknown>, fieldName: string, value: unknown): void {
+  if (result[fieldName] === undefined && value !== undefined) {
+    result[fieldName] = value;
+  }
+}
+
+function readGenerationType(value: unknown): string | readonly string[] | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
+    return value;
+  }
+
+  return undefined;
 }
 
 function readWorldBooks(value: unknown): readonly WorldInfoBook[] {
@@ -194,6 +323,18 @@ function readAuthorNote(value: unknown): string | PromptCriticalAuthorNote | und
     content: value["content"],
     position: value["position"] === "top" || value["position"] === "bottom" ? value["position"] : undefined,
   };
+}
+
+function readWorldInfoAuthorNote(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (isRecord(value) && typeof value["content"] === "string") {
+    return value["content"];
+  }
+
+  return undefined;
 }
 
 function readString(primary: UnknownRecord, fallback: UnknownRecord, fieldNames: readonly string[]): string | undefined {

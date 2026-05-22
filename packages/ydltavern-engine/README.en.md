@@ -2,7 +2,7 @@
 
 This is the Yggdrasil subprocess capability package for the YdlTavern engine.
 
-Current phase: prompt-critical contract slice. `world_info.evaluate`, `preset.compile`, `turn.generate`, `turn.swipe/regenerate/continue`, and character/world-book imports call this repo's types, engine-core, importers, and st-compat packages. There are still no real model calls, no network, and no secrets.
+Current phase: PromptManager / World Info advanced contract slice. `world_info.evaluate`, `preset.compile`, `turn.generate`, `turn.swipe/regenerate/continue`, and character/world-book imports call this repo's types, engine-core, importers, and st-compat packages, passing through prompt_manager, world_info routing, nextState, and frame diagnostics. There are still no real model calls, no network, and no secrets.
 
 ## Usage
 
@@ -13,6 +13,6 @@ Current phase: prompt-critical contract slice. `world_info.evaluate`, `preset.co
 
 ## Next
 
-Next: fill in ST PromptManager details, advanced World Info behavior, and the real model-call boundary. Current fake generation only verifies the contract lifecycle.
+Next: fill in tokenizer budgeting, text-completion routing, provider-specific streaming, and the real model-call boundary. Current fake generation only verifies the contract lifecycle.
 
 - [Track C: Engine Core](../../docs/tracks/C_ENGINE_CORE.md)

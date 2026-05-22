@@ -53,7 +53,51 @@ const FIXTURE_BOOK: WorldInfoBook = {
       order: 30,
     },
     {
-      uid: 'wi_surf_05',
+      uid: 'wi_surf_05_depth',
+      comment: 'atDepth assistant injection preview — activated by "review".',
+      key: ['review'],
+      content: 'Depth reminder: compare the last assistant answer against the agenda.',
+      position: 'atDepth',
+      depth: 1,
+      role: 'assistant',
+      order: 35,
+    },
+    {
+      uid: 'wi_surf_06_group_a',
+      comment: 'Seeded group candidate A.',
+      key: ['product'],
+      content: 'Group A: emphasize release risk.',
+      position: 'before',
+      group: 'surface-group',
+      useProbability: true,
+      probability: 100,
+      groupWeight: 1,
+      order: 40,
+    },
+    {
+      uid: 'wi_surf_07_group_b',
+      comment: 'Seeded group candidate B.',
+      key: ['product'],
+      content: 'Group B: emphasize customer impact.',
+      position: 'before',
+      group: 'surface-group',
+      useProbability: true,
+      probability: 100,
+      groupWeight: 3,
+      order: 41,
+    },
+    {
+      uid: 'wi_surf_08_timed',
+      comment: 'Sticky/cooldown preview — activated by "calendar".',
+      key: ['calendar'],
+      content: 'Sticky note: check calendar conflicts before finalizing.',
+      position: 'after',
+      sticky: 2,
+      cooldown: 1,
+      order: 45,
+    },
+    {
+      uid: 'wi_surf_09',
       comment: 'Disabled entry — should always be skipped.',
       key: ['demo'],
       content: 'This content should never appear.',
@@ -80,6 +124,10 @@ function usePromptCritical(
       book: FIXTURE_BOOK,
       scanDepth: 4,
       budget: { type: 'characters', max: 2000 },
+      generationType: 'normal',
+      chatLength: chat.turns.length,
+      randomValues: [0.72, 0.24, 0.83],
+      authorNote: 'Always include time-boxed agenda items.',
       macroContext: {
         user: ctx.name1,
         char: ctx.name2,
@@ -99,6 +147,29 @@ function usePromptCritical(
       instruct: 'You are {{char}}. {{user}} is your team lead.',
       postHistory: 'End every response with a concrete next step.',
       worldInfo: wi,
+      promptManager: {
+        generationType: 'normal',
+        prompts: [
+          { identifier: 'main', content: 'Surface main prompt for {{char}}.', marker: false, role: 'system' },
+          { identifier: 'worldInfoBefore', marker: true, role: 'system' },
+          { identifier: 'personaDescription', marker: true, role: 'system' },
+          { identifier: 'charDescription', marker: true, role: 'system' },
+          { identifier: 'scenario', marker: true, role: 'system' },
+          { identifier: 'worldInfoAfter', marker: true, role: 'system' },
+          { identifier: 'chatHistory', marker: true, role: 'system' },
+          { identifier: 'jailbreak', marker: true, role: 'system' },
+        ],
+        prompt_order: [
+          { identifier: 'main', enabled: true },
+          { identifier: 'worldInfoBefore', enabled: true },
+          { identifier: 'personaDescription', enabled: true },
+          { identifier: 'charDescription', enabled: true },
+          { identifier: 'scenario', enabled: true },
+          { identifier: 'worldInfoAfter', enabled: true },
+          { identifier: 'chatHistory', enabled: true },
+          { identifier: 'jailbreak', enabled: true },
+        ],
+      },
     });
 
     const macroPreview = substituteMacros(
@@ -139,6 +210,12 @@ export function PromptCriticalPanel({ runtime, chat }: PromptCriticalPanelProps)
           <dd className="value-large">{wi.skipped.length}</dd>
         </div>
         <div className="diag-cell diag-cell-wide">
+          <dt>prompt manager</dt>
+          <dd>
+            {critical.diagnostics.markerMapping.map((entry) => entry.promptIdentifier).join(' / ') || 'legacy order'}
+          </dd>
+        </div>
+        <div className="diag-cell diag-cell-wide">
           <dt>blocks included</dt>
           <dd>{critical.diagnostics.includedBlocks.join(' / ') || '—'}</dd>
         </div>
@@ -147,6 +224,24 @@ export function PromptCriticalPanel({ runtime, chat }: PromptCriticalPanelProps)
           <dd>{critical.diagnostics.skippedFields.join(' / ') || '—'}</dd>
         </div>
       </dl>
+
+      <div className="diag-subsection">
+        <h3>PromptManager marker mapping</h3>
+        {critical.diagnostics.markerMapping.length === 0 ? (
+          <p className="diag-footnote">No PromptManager mapping; using legacy fallback order.</p>
+        ) : (
+          <ul className="diag-list">
+            {critical.diagnostics.markerMapping.map((entry, idx) => (
+              <li key={`${entry.promptIdentifier}-${idx}`} className="diag-list-item">
+                <span className="diag-list-key">{entry.promptIdentifier}</span>
+                <span className="diag-list-pos">{entry.marker ? 'marker' : entry.source}</span>
+                <span className="diag-list-text">{String(entry.blockIdentifier)}</span>
+                <span className="diag-list-meta">order {entry.order}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div className="diag-subsection">
         <h3>World Info activated entries</h3>
@@ -204,6 +299,77 @@ export function PromptCriticalPanel({ runtime, chat }: PromptCriticalPanelProps)
       </div>
 
       <div className="diag-subsection">
+        <h3>WI routing trace</h3>
+        <ul className="diag-list">
+          {wi.diagnostics.routingTrace.map((entry, idx) => (
+            <li key={`${entry.entryId}-${idx}`} className="diag-list-item">
+              <span className="diag-list-key">{entry.entryId}</span>
+              <span className="diag-list-pos">{entry.bucket}</span>
+              <span className="diag-list-text">
+                {entry.inserted ? 'inserted into prompt-critical bucket' : entry.note || 'diagnostic route only'}
+              </span>
+              <span className="diag-list-meta">
+                {entry.depth !== undefined ? `depth ${entry.depth}` : entry.outletName ? `outlet ${entry.outletName}` : entry.position}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="diag-subsection diag-split">
+        <div>
+          <h3>atDepth / EM / outlet</h3>
+          <ul className="diag-list">
+            {wi.buckets.depthEntries.map((bucket) => (
+              <li key={`${bucket.depth}-${bucket.role}`} className="diag-list-item">
+                <span className="diag-list-key">depth {bucket.depth}</span>
+                <span className="diag-list-pos">{bucket.role}</span>
+                <span className="diag-list-text">{bucket.content}</span>
+              </li>
+            ))}
+            {wi.buckets.em.map((entry, idx) => (
+              <li key={`em-${idx}`} className="diag-list-item">
+                <span className="diag-list-key">EM {entry.position}</span>
+                <span className="diag-list-text">{entry.content}</span>
+              </li>
+            ))}
+            {Object.entries(wi.buckets.outlets).map(([name, bucket]) => (
+              <li key={name} className="diag-list-item">
+                <span className="diag-list-key">outlet {name}</span>
+                <span className="diag-list-text">{bucket.content.join(' / ')}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3>Author Note patch</h3>
+          <pre className="diag-code-block">{wi.buckets.anPatch.patched || '—'}</pre>
+        </div>
+      </div>
+
+      <div className="diag-subsection">
+        <h3>WI advanced trace</h3>
+        <ul className="diag-list">
+          {wi.diagnostics.activationTrace
+            .filter((entry) => ['probability_roll', 'probability_failed', 'group_candidate', 'group_winner', 'group_loser', 'group_scoring_loser', 'sticky_active', 'cooldown_active', 'delay_active'].includes(entry.code))
+            .slice(0, 12)
+            .map((entry, idx) => (
+              <li key={`${entry.entryId}-${entry.code}-${idx}`} className="diag-list-item">
+                <span className="diag-list-key">{entry.code}</span>
+                <span className="diag-list-pos">{entry.entryId}</span>
+                <span className="diag-list-text">{entry.reason}</span>
+                <span className="diag-list-meta">
+                  {entry.group ? `group ${entry.group}` : entry.roll !== undefined ? `roll ${entry.roll.toFixed(2)}` : ''}
+                </span>
+              </li>
+            ))}
+        </ul>
+        <p className="diag-footnote">
+          nextState sticky: {wi.nextState.sticky?.length ?? 0}; cooldown: {wi.nextState.cooldown?.length ?? 0}
+        </p>
+      </div>
+
+      <div className="diag-subsection">
         <h3>Prompt-critical blocks</h3>
         <ul className="diag-list">
           {critical.blocks.map((block) => (
@@ -248,6 +414,9 @@ export function PromptCriticalPanel({ runtime, chat }: PromptCriticalPanelProps)
               </li>
             ))}
           </ul>
+        )}
+        {critical.diagnostics.knownDeltas.length > 0 && (
+          <p className="diag-footnote">Known deltas: {critical.diagnostics.knownDeltas.join(' / ')}</p>
         )}
       </div>
     </section>
