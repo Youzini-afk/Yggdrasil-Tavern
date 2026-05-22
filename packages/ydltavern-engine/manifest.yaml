@@ -77,6 +77,127 @@ provides:
     output_schema: {}
     streaming: false
     description: Returns deterministic engine diagnostics and in-memory invocation counters.
+  # Deep-port capabilities (N1-N12)
+  - id: ydltavern/engine/prompt.manager.compile
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Compiles ST PromptManager prompts into a ChatCompletion chat array via preparePromptsForChatCompletion.
+  - id: ydltavern/engine/world_info.route
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Routes activated WI entries into position buckets via routeActivatedEntries.
+  - id: ydltavern/engine/world_info.match_keys
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Tests keyword match and selective logic via matchKeys + selectiveLogicMatches.
+  - id: ydltavern/engine/provider.chat.build_request
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Builds a chat completion request body per provider via buildChatRequest.
+  - id: ydltavern/engine/provider.text.build_request
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Builds a text completion request body per provider via buildTextRequest.
+  - id: ydltavern/engine/provider.text.plan_horde
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Plans a Kobold Horde job with enforced min length via planHordeJob.
+  - id: ydltavern/engine/instruct.format_chat
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Formats a single chat message with instruct-mode sequences via formatInstructModeChat.
+  - id: ydltavern/engine/instruct.stopping_sequences
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Computes stopping sequences from an instruct template via getInstructStoppingSequences.
+  - id: ydltavern/engine/tokenizer.best_match
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Selects the best tokenizer ID for a given API and model via getTokenizerBestMatch.
+  - id: ydltavern/engine/tokenizer.guesstimate
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Returns a byte-length-based token guesstimate via guesstimate.
+  - id: ydltavern/engine/script.macro.expand
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Expands ST macros in text via substituteSTMacrosDeep with full macro registry.
+  - id: ydltavern/engine/extension.regex.apply_st
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Applies ST-native regex scripts via getRegexedString (deep-port RegexScriptST format).
+  - id: ydltavern/engine/extension.loader.parse_manifest
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Parses and validates an ST extension manifest via parseSTManifest.
+  - id: ydltavern/engine/extension.loader.plan_activate_all
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Plans activation order and load steps for all extensions via planActivateAll.
+  - id: ydltavern/engine/extension.caption.plan
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Plans a caption request for an image via planCaption.
+  - id: ydltavern/engine/extension.tts.plan_narration
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Plans TTS narration segments for a message via planTtsNarration.
+  - id: ydltavern/engine/extension.translate.plan
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Plans a translation request via planTranslate.
+  - id: ydltavern/engine/extension.connection_profile.snapshot
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Snapshots current connection settings into a profile via snapshotConnectionProfile.
+  - id: ydltavern/engine/extension.connection_profile.apply_plan
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Produces apply commands from a connection profile via applyConnectionProfilePlan.
+  - id: ydltavern/engine/extension.sd.process_triggers
+    version: 0.0.1
+    input_schema: {}
+    output_schema: {}
+    streaming: false
+    description: Detects SD generation triggers in text via processSdTriggers.
 consumes: []
 contributes:
   schemas: []

@@ -92,3 +92,29 @@ export type {
   GallerySettings,
   AssetEntry,
 } from './extensions-st-providers.js';
+export {
+  ST_EXTENSION_HOOK_NAMES,
+  parseSTManifest,
+  isActivationEligible,
+  sortByActivationOrder,
+  buildLoadPlan,
+  planHookDispatch,
+  STDisabledExtensionsStore,
+  planActivateAll,
+} from './loader-st.js';
+export type {
+  STExtensionManifest,
+  STExtensionHookName,
+  STExtensionDiscoveryRecord,
+  STManifestParseResult,
+  STActivationContext,
+  STActivationDecision,
+  STExtensionRecord,
+  STLoadPlanStep,
+  STLoadPlan,
+  BuildLoadPlanInput,
+  STHookDispatchResult,
+  STExtensionHookSnapshot,
+  STActivationPlan,
+  ActivateAllInput,
+} from './loader-st.js';

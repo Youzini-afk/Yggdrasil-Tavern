@@ -23,6 +23,21 @@ export { AssetsPanel } from './components/product/AssetsPanel.js';
 export { ExtensionsPanel } from './components/product/ExtensionsPanel.js';
 export { DevDiagnosticsPanel } from './components/product/DevDiagnosticsPanel.js';
 
+export { PromptManagerInspector } from './components/product/PromptManagerInspector.js';
+export type { PromptManagerInspectorProps } from './components/product/PromptManagerInspector.js';
+
+export { WorldInfoInspector } from './components/product/WorldInfoInspector.js';
+export type { WorldInfoInspectorProps } from './components/product/WorldInfoInspector.js';
+
+export { STScriptInspector } from './components/product/STScriptInspector.js';
+export type { STScriptInspectorProps } from './components/product/STScriptInspector.js';
+
+export { ExtensionsInspector } from './components/product/ExtensionsInspector.js';
+export type { ExtensionsInspectorProps } from './components/product/ExtensionsInspector.js';
+
+export { ConnectorInspector } from './components/product/ConnectorInspector.js';
+export type { ConnectorInspectorProps } from './components/product/ConnectorInspector.js';
+
 export { TurnView } from './components/TurnView.js';
 export type { TurnViewProps } from './components/TurnView.js';
 

@@ -1,6 +1,7 @@
 import readline from "node:readline";
 
 import { assetHandlers } from "./capabilities/asset.js";
+import { deepPortHandlers } from "./capabilities/deep-port.js";
 import { describeHandlers } from "./capabilities/describe.js";
 import { createDiagnosticsHandlers } from "./capabilities/diagnostics.js";
 import { extensionHandlers } from "./capabilities/extensions.js";
@@ -44,6 +45,7 @@ const handlers: HandlerRecord = {
   ...scriptHandlers,
   ...extensionHandlers,
   ...modelHandlers,
+  ...deepPortHandlers,
   ...createDiagnosticsHandlers(counters),
 };
 
