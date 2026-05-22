@@ -94,8 +94,8 @@ that produced each fixture, then writes one report per scenario to
 `diff/<category>-<name>.json` plus an aggregate `diff/_summary.json`.
 
 Round 2 R1 made this workflow operational against the current deep-port modules.
-Current results are **6/20 perfect** (tokenizer self-baseline), **6/20 structural**
-(chat/instruct), and **8/20 unverifiable** (macro/world-info shim limits).
+Round 3 T-track tightened the shims and current results are **9/20 perfect**,
+**3/20 cosmetic**, **8/20 structural**, **0/20 unverifiable**, and **0 errors**.
 
 The comparator intentionally exits 0 after writing reports, even when structural
 diffs are found. Treat `diff/_summary.json` as the pass/fail source of truth for
@@ -154,6 +154,10 @@ diff -r fixtures/ /tmp/fixtures1
 # Should produce no output (identical)
 ```
 
+`node runner/run.mjs --all` is also expected to produce byte-identical fixtures on
+repeated runs. The shims freeze moment/Date and seed `Math.random`, so WI budget
+paths, probability gates, random macros, and time macros are deterministic.
+
 ## Architecture
 
 ### Custom Module Loader
@@ -188,45 +192,56 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 | DOM | jsdom instance with jQuery stub |
 | Settings | All ST settings globals pinned to defaults |
 
+### Round 3 shim deepening
+
+- **World Info** now executes ST `checkWorldInfo` end-to-end under the harness
+  instead of returning empty shim activations. Scenario entries are loaded into the
+  shimmed WI store, budget accounting is deterministic, and probability/RNG paths
+  use the seeded harness RNG. Current WI scenarios are therefore verifiable and
+  classified as structural rather than unverifiable.
+- **Macros** now execute ST `evaluateMacros` end-to-end under the harness instead
+  of fallback-only substitution. Moment/Date are frozen and random macro paths use
+  the seeded harness RNG. `macro/env-basic` is byte-identical; nested, random, and
+  time macro scenarios still have documented structural deltas.
+
 ## Scenario Categories
 
 | Category | ST Function | Scenario Count | Current Status |
 |----------|------------|----------------|-----------|
-| instruct | `formatInstructModeChat` | 2 | ⚠️ Structural in YdlTavern diff — 0/2 perfect, see `diff/instruct-*.json` |
-| chat | `sendOpenAIRequest` | 4 | ⚠️ Structural in YdlTavern diff — 0/4 perfect, see `diff/chat-*.json` |
-| macro | `evaluateMacros` | 4 | ⚠️ Unverifiable — ST fixtures used fallback env substitution |
-| world-info | `checkWorldInfo` | 4 | ⚠️ Unverifiable — ST shim returned empty activation results |
+| instruct | `formatInstructModeChat` | 2 | ✅ Perfect — 2/2 byte-identical, see `diff/instruct-*.json` |
+| chat | `sendOpenAIRequest` | 4 | ⚠️ Mostly cosmetic — 0/4 perfect, 3 cosmetic, 1 structural, see `diff/chat-*.json` |
+| macro | `evaluateMacros` | 4 | ⚠️ Verifiable — 1/4 perfect, 3 structural, see `diff/macro-*.json` |
+| world-info | `checkWorldInfo` | 4 | ⚠️ Verifiable — 0/4 perfect, 4 structural, see `diff/world-info-*.json` |
 | tokenizer | YdlTavern `countTokens` | 6 | ✅ Perfect self-baseline — 6/6 match current runtime output |
 
 ## Fixture Generation Results
 
-**14/14 scenarios produce fixtures.** Determinism verified (byte-identical on repeated runs).
+**20/20 scenarios produce fixtures/diffs.** Determinism verified (byte-identical on repeated runs).
 
-Round 2 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
-6 perfect, 6 structural, 8 unverifiable, 0 errors. See `diff/_summary.json` for
-the exact current breakdown.
+Round 3 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
+9 perfect, 3 cosmetic, 8 structural, 0 unverifiable, 0 errors. See
+`diff/_summary.json` for the exact current breakdown.
 
-Next steps: improve the ST shim coverage enough to extract real WI activation and
-macro evaluator fixtures, then move those scenarios from `unverifiable` to real
-perfect/structural classifications.
+Next steps: close the documented structural deltas in chat, world-info, and macro
+reports and keep expanding scenario coverage.
 
 ### Detailed Status
 
-- **instruct/** (2/2): Both ChatML and Llama3 templates produce correct formatted output via ST's real `formatInstructModeChat`.
-- **chat/** (4/4): All four chat scenarios capture the full request body via fetch interception. The request shape includes model, temperature, tokens, etc.
-- **macro/** (4/4): Fallback env substitution works. Full `evaluateMacros` fails on `getInstructMacros` (DOM-dependent instruct state). Time/random macros use fallback.
-- **world-info/** (4/4): `checkWorldInfo` runs but finds 0 entries because the WI data store (`worldInfoCache`) is not populated from scenario entries. The function structure is exercised but keyword matching is not.
+- **instruct/** (2/2): Both ChatML and Llama3 templates produce byte-identical formatted output via ST's real `formatInstructModeChat`.
+- **chat/** (4/4): All four chat scenarios capture the full request body via fetch interception. Three scenarios are cosmetic-only and one remains structural.
+- **macro/** (4/4): Full `evaluateMacros` executes under frozen moment/Date and seeded RNG. `env-basic` is byte-identical; nested, random, and time scenarios have structural deltas.
+- **world-info/** (4/4): `checkWorldInfo` executes against scenario WI entries with deterministic budget/RNG controls. All four scenarios are verifiable and currently structural.
 - **tokenizer/** (6/6): `countTokens(text, { modelHint })` self-baseline is byte-identical against current runtime output.
 
 ## Known Limitations (v0)
 
-1. **evaluateMacros partial**: The ST macro engine's `evaluateMacros` function depends on `getInstructMacros` which reads DOM state (`power_user.instruct`). The harness falls back to simple `{{user}}`/`{{char}}` substitution. Time macros (`{{time}}`), random macros (`{{roll:}}`), and instruct macros are not fully exercised. A future version should populate the instruct state more completely.
+1. **evaluateMacros structural deltas**: The ST macro engine now runs end-to-end under the harness, but nested, random, and time macro scenarios still differ structurally from YdlTavern output. Treat `diff/macro-*.json` as the compatibility work queue.
 
-2. **World Info entries not loaded**: The `checkWorldInfo` function runs but finds 0 entries because the WI data store (`worldInfoCache`, `world_names`) is not populated from scenario input. This requires implementing `loadWorldInfo` or directly populating the cache — a deeper shim.
+2. **World Info structural deltas**: The harness now loads scenario entries and executes `checkWorldInfo`, but YdlTavern output still differs from ST in all four current WI scenarios. Treat `diff/world-info-*.json` as the compatibility work queue.
 
-3. **Event handler errors in WI**: The WI module emits events that trigger event handlers. Some handlers fail with "entries is not iterable" because the global state they expect (like `characters` array with WI data) is empty. These errors are non-fatal and the WI scan completes.
+3. **Event handler errors in WI**: The WI module emits events that trigger event handlers. Some handlers can still see reduced harness state compared with a full ST browser session. These errors are non-fatal when the WI scan completes and reports a structural diff.
 
-4. **Chat settings defaults**: The chat scenario request bodies use ST's default settings (e.g., `temperature: 1`, `max_tokens: 300`) rather than the scenario-specified values. This is because the scenario settings need to be applied to `oai_settings` before the request assembly — a future improvement.
+4. **Chat is not byte-perfect**: Three chat scenarios are cosmetic-only, but one still has a structural delta. Do not document chat completion request parity as implemented until all four scenarios are perfect.
 
 5. **Top-level side effects**: ST modules run top-level code that accesses DOM elements. Our jQuery stub catches these calls, but some might produce unexpected behavior.
 

@@ -98,9 +98,11 @@ Realtime 模型调用使用单独的 WebSocket 路径：`ydltavern/engine/model.
 
 YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。当前 surface 已从诊断页升级为产品 UI skeleton：`react-virtuoso` 虚拟聊天列表、dark/light/parchment 主题系统、Connection/Sampler/Persona/Theme 分页设置、loader-st 状态驱动的 ExtensionsDrawer、QuickReplyBar 和移动响应式布局。
 
+Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manifest.yaml` 是 Yggdrasil package manifest，由 host 读取并通过 `kernel.surface.contribution.list` 暴露 `ydltavern/play`、`ydltavern/settings`、`ydltavern/extensions`；`packages/ydltavern-surface/surface.manifest.json` 是 React bundle descriptor，保留 export name、wrapper class、fonts、fixtures/sample props 等 framework hints，供 SurfaceHost 挂载 React bundle 时使用。
+
 ### Golden harness
 
-`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；v0 有 shim/fallback 限制，不表示所有域已字节级实现。
+`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；Round 3 T-track 后 WI/macro shim 已能驱动真实 `checkWorldInfo` / `evaluateMacros` 路径，当前 compare 覆盖 20 个 scenarios（9 perfect、3 cosmetic、8 structural、0 unverifiable、0 error），但 structural deltas 仍不表示全域字节级实现。
 
 ### 扩展生态分发
 
@@ -132,4 +134,4 @@ YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预
 
 ## 当前状态
 
-YdlTavern 的主要开发面已完成一轮系统推进和一轮深度移植：资产导入/导出、ST 兼容运行时、STScript 运行时、约 70 个 slash commands、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher）、内置扩展逻辑、sandbox-enabled extension loader、live model call / realtime boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox v0 受限执行，真实模型调用已能 opt-in 走 Yggdrasil outbound，golden harness `compare.mjs` 已跑通 20 个 scenarios（6 perfect、6 structural、8 unverifiable）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展和更多 fixture 场景仍需继续补齐。
+YdlTavern 的主要开发面已完成一轮系统推进、一轮深度移植和 Round 3 T-track tightening：资产导入/导出、ST 兼容运行时、STScript 运行时、70 个 slash commands、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher）、内置扩展逻辑、sandbox-enabled extension loader、live model call / realtime boundary、产品 surface shell 和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，扩展 JS 已能在 QuickJS sandbox v0 受限执行，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（9 perfect、3 cosmetic、8 structural、0 unverifiable、0 error）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、DOM 型扩展和更多 fixture 场景仍需继续补齐。

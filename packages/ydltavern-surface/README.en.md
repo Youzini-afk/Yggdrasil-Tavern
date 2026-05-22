@@ -23,7 +23,7 @@ Still partial: complete ST operation flows, theme-file import, screenshot alignm
 This package keeps two manifests for two host layers:
 
 - `manifest.yaml` is the Yggdrasil-compliant package manifest used by the Yggdrasil host and exposed through `kernel.surface.contribution.list` for `ydltavern/play`, `ydltavern/settings`, and `ydltavern/extensions`.
-- `surface.manifest.json` is the React-host-side bundle descriptor. It keeps framework hints, CSS wrapper information, fonts, fixtures, and sample props needed by SurfaceHost when mounting React components.
+- `surface.manifest.json` is the React-host-side bundle descriptor. It keeps framework hints such as export name, wrapper class, fonts, fixtures, and sample props needed by SurfaceHost when mounting React components.
 - Both files coexist for now; they may be merged once Yggdrasil surface-loader semantics settle.
 - Each surface contribution in `manifest.yaml` uses `metadata` for React-specific hints needed by SurfaceHost, such as `framework`, `export_name`, and `wrapper_class`.
 
