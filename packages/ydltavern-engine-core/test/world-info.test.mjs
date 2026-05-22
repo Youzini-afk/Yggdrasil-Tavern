@@ -98,6 +98,50 @@ test('world info comma-separated multi-group must win every group', () => {
   assert.deepEqual(result.diagnostics.activationTrace.filter((item) => item.entryId === 'multi' && item.code === 'group_candidate').map((item) => item.group), ['red', 'blue']);
 });
 
+test('world info timed effects persist across generation sequence', () => {
+  const book = {
+    entries: [entry('timed', 'rune', 'timed lore', { sticky: 2, cooldown: 2 })],
+  };
+
+  const first = evaluateWorldInfo({ chat: chatWithText('the rune glows'), chatLength: 1, book });
+  assert.deepEqual(first.activated.map((item) => item.id), ['timed']);
+  assert.deepEqual(first.nextState.sticky.map(({ entryId, start, end }) => ({ entryId, start, end })), [{ entryId: 'timed', start: 1, end: 3 }]);
+  assert.deepEqual(first.nextState.cooldown, []);
+
+  const sticky = evaluateWorldInfo({ chat: chatWithText('quiet room'), chatLength: 2, runtimeState: first.nextState, book });
+  assert.deepEqual(sticky.activated.map((item) => item.id), ['timed']);
+  assert.equal(sticky.diagnostics.activationTrace.find((item) => item.entryId === 'timed' && item.code === 'sticky_active')?.activated, true);
+
+  const cooldown = evaluateWorldInfo({ chat: chatWithText('the rune glows'), chatLength: 4, runtimeState: sticky.nextState, book });
+  assert.deepEqual(cooldown.activated, []);
+  assert.equal(cooldown.skipped.find((item) => item.id === 'timed')?.code, 'cooldown_active');
+  assert.equal(cooldown.nextState.cooldown.find((item) => item.entryId === 'timed')?.protected, true);
+  assert.equal(cooldown.diagnostics.activationTrace.find((item) => item.entryId === 'timed' && item.code === 'protected_cooldown_transition')?.activated, false);
+});
+
+test('world info delay expires at chatLength threshold', () => {
+  const book = {
+    entries: [entry('delay', 'gate', 'delayed lore', { delay: 3 })],
+  };
+
+  const waiting = evaluateWorldInfo({ chat: chatWithText('gate'), chat_length: 2, book });
+  assert.deepEqual(waiting.activated, []);
+  assert.equal(waiting.skipped.find((item) => item.id === 'delay')?.code, 'delay_active');
+
+  const ready = evaluateWorldInfo({ chat: chatWithText('gate'), chat_length: 3, book });
+  assert.deepEqual(ready.activated.map((item) => item.id), ['delay']);
+});
+
+test('world info dryRun does not update timed effect state', () => {
+  const book = {
+    entries: [entry('dry', 'spark', 'dry lore', { sticky: 2, cooldown: 2 })],
+  };
+
+  const result = evaluateWorldInfo({ chat: chatWithText('spark'), chatLength: 1, dry_run: true, book });
+  assert.deepEqual(result.activated.map((item) => item.id), ['dry']);
+  assert.deepEqual(result.nextState, { sticky: [], cooldown: [] });
+});
+
 function chatWithText(text) {
   return {
     id: 'chat',

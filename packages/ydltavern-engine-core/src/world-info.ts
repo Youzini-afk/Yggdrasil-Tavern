@@ -82,6 +82,9 @@ export interface WorldInfoEntry {
   readonly useProbability?: boolean | number | string;
   readonly use_probability?: boolean | number | string;
   readonly probability?: number | string;
+  readonly sticky?: boolean | number | string;
+  readonly cooldown?: boolean | number | string;
+  readonly delay?: number | string;
   readonly group?: readonly string[] | string;
   readonly groupOverride?: boolean | number | string;
   readonly group_override?: boolean | number | string;
@@ -154,6 +157,12 @@ export interface EvaluateWorldInfoInput {
   readonly creatorNotes?: string;
   readonly creator_notes?: string;
   readonly budget?: WorldInfoBudget;
+  readonly runtimeState?: WorldInfoRuntimeState;
+  readonly state?: WorldInfoRuntimeState;
+  readonly chatLength?: number;
+  readonly chat_length?: number;
+  readonly dryRun?: boolean;
+  readonly dry_run?: boolean;
   readonly macroContext?: MacroContext;
   readonly authorNote?: string;
   readonly originalAuthorNote?: string;
@@ -161,6 +170,21 @@ export interface EvaluateWorldInfoInput {
   readonly random?: () => number;
   readonly randomValues?: readonly number[];
   readonly rngSequence?: readonly number[];
+}
+
+export interface WorldInfoRuntimeEffectState {
+  readonly entryId?: string;
+  readonly entryHash?: string;
+  readonly id?: string;
+  readonly hash?: string;
+  readonly start: number;
+  readonly end: number;
+  readonly protected?: boolean;
+}
+
+export interface WorldInfoRuntimeState {
+  sticky?: readonly WorldInfoRuntimeEffectState[];
+  cooldown?: readonly WorldInfoRuntimeEffectState[];
 }
 
 export interface WorldInfoActivatedEntry {
@@ -293,6 +317,7 @@ interface PendingActivation {
     readonly trace: readonly MacroTraceEntry[];
   };
   readonly cost: number;
+  readonly stateActivation?: 'sticky';
 }
 
 export interface WorldInfoRoutingTraceEntry {
@@ -313,6 +338,7 @@ export interface EvaluateWorldInfoResult {
   readonly skipped: readonly WorldInfoSkippedEntry[];
   readonly buckets: WorldInfoBuckets;
   readonly diagnostics: WorldInfoDiagnostics;
+  readonly nextState: WorldInfoRuntimeState;
 }
 
 interface BuildBucketsResult {
@@ -407,12 +433,19 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
   const minActivations = Math.max(0, input.minActivations ?? input.min_activations ?? input.minimumActivations ?? 0);
   const budgetType = input.budget?.type ?? 'characters';
   const budgetLimit = input.budget?.max;
+  const chatLength = normalizeChatLength(input);
+  const dryRun = input.dryRun === true || input.dry_run === true;
   const warnings: string[] = [];
-  const unsupported = ['ST token-level budget alignment is approximated, not tokenizer exact.', 'Sticky/cooldown/vector lore are not implemented in engine-core P1.'];
+  const unsupported = ['ST token-level budget alignment is approximated, not tokenizer exact.', 'Vector lore is not implemented in engine-core P1.'];
   const candidates = collectCandidates(input);
+  const runtimeState = normalizeRuntimeState(input.runtimeState ?? input.state, chatLength);
+  const nextState = cloneRuntimeState(runtimeState);
+  const activationTrace: WorldInfoActivationTraceEntry[] = [];
+  if (!dryRun) {
+    transitionExpiredStickyToCooldown(candidates, runtimeState, nextState, chatLength, activationTrace);
+  }
   const activated = new Map<string, WorldInfoActivatedEntry>();
   const skipped = new Map<string, WorldInfoSkippedEntry>();
-  const activationTrace: WorldInfoActivationTraceEntry[] = [];
   const matchContext = buildMatchContext(input);
   const randomState = buildRandomState(input);
   let scanText = buildScanText(input.chat, scanDepth, input.scanData);
@@ -425,6 +458,37 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
 
     for (const candidate of candidates) {
       if (activated.has(candidate.id)) {
+        continue;
+      }
+
+      const delay = normalizeNonNegativeInteger(candidate.entry.delay);
+      if (delay > 0 && chatLength < delay) {
+        const delayMatch: MatchResult = { activated: false, reason: `delay active until chatLength ${delay}`, code: 'delay_active', matchedKeys: [], matchedSecondaryKeys: [] };
+        rememberSkipped(skipped, candidate, delayMatch.reason ?? 'delay active', delayMatch.code);
+        activationTrace.push(traceActivation(candidate, false, delayMatch, iteration));
+        continue;
+      }
+
+      const stickyState = findRuntimeEffect(nextState.sticky, candidate, chatLength);
+      if (stickyState !== undefined) {
+        const match: MatchResult = { activated: true, reason: `sticky active through chatLength ${stickyState.end}`, code: 'sticky_active', matchedKeys: [], matchedSecondaryKeys: [] };
+        const expanded = substituteMacros(stripActivationDecorators(candidate.entry.content), input.macroContext ?? {});
+        const cost = budgetCost(expanded.text, budgetType);
+        if (budgetLimit !== undefined && candidate.entry.ignoreBudget !== true && usedBudget + cost > budgetLimit) {
+          const budgetMatch = { ...match, activated: false, reason: 'budget exceeded', code: 'budget_exceeded' };
+          rememberSkipped(skipped, candidate, budgetMatch.reason ?? 'budget exceeded', budgetMatch.code);
+          activationTrace.push(traceActivation(candidate, false, budgetMatch, iteration));
+          continue;
+        }
+        pending.push({ candidate, match, expanded, cost, stateActivation: 'sticky' });
+        continue;
+      }
+
+      const cooldownState = findRuntimeEffect(nextState.cooldown, candidate, chatLength);
+      if (cooldownState !== undefined) {
+        const cooldownMatch: MatchResult = { activated: false, reason: `cooldown active through chatLength ${cooldownState.end}`, code: 'cooldown_active', matchedKeys: [], matchedSecondaryKeys: [] };
+        rememberSkipped(skipped, candidate, cooldownMatch.reason ?? 'cooldown active', cooldownMatch.code);
+        activationTrace.push(traceActivation(candidate, false, cooldownMatch, iteration));
         continue;
       }
 
@@ -467,6 +531,9 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
       selected.push(item);
     }
     const newlyActivated = activatePending(selected, activated, skipped, activationTrace, iteration, warnings);
+    if (!dryRun) {
+      updateRuntimeStateForActivations(selected, nextState, chatLength);
+    }
     usedBudget += selected.reduce((sum, item) => sum + item.cost, 0);
 
     if (newlyActivated.length === 0) {
@@ -540,6 +607,7 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
 
   const activatedList = [...activated.values()].sort(compareActivated);
   const routed = buildBuckets(activatedList, readOriginalAuthorNote(input));
+  const resultState = dryRun ? cloneRuntimeState(runtimeState) : pruneRuntimeState(nextState, chatLength);
 
   return {
     activated: activatedList,
@@ -558,6 +626,7 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
       activationTrace,
       routingTrace: routed.routingTrace,
     },
+    nextState: resultState,
   };
 }
 
@@ -998,6 +1067,164 @@ function normalizeGroups(value: WorldInfoEntry['group']): readonly string[] {
 function groupWeight(entry: WorldInfoEntry): number {
   const weight = Number(entry.groupWeight ?? entry.group_weight ?? 1);
   return Number.isFinite(weight) && weight > 0 ? weight : 1;
+}
+
+function normalizeChatLength(input: EvaluateWorldInfoInput): number {
+  const explicit = input.chatLength ?? input.chat_length;
+  if (Number.isFinite(explicit) && explicit !== undefined) {
+    return Math.max(0, Math.floor(explicit));
+  }
+  return input.chat.turns.filter((turn) => turn.hidden !== true && turn.deleted !== true).length;
+}
+
+function normalizeRuntimeState(state: WorldInfoRuntimeState | undefined, chatLength: number): WorldInfoRuntimeState {
+  void chatLength;
+  return {
+    sticky: normalizeRuntimeEffects(state?.sticky),
+    cooldown: normalizeRuntimeEffects(state?.cooldown),
+  };
+}
+
+function normalizeRuntimeEffects(effects: readonly WorldInfoRuntimeEffectState[] | undefined): readonly WorldInfoRuntimeEffectState[] {
+  if (effects === undefined) {
+    return [];
+  }
+  const normalized: WorldInfoRuntimeEffectState[] = [];
+  for (const effect of effects) {
+      const start = Math.floor(Number(effect.start));
+      const end = Math.floor(Number(effect.end));
+      const entryId = effect.entryId ?? effect.id;
+      const entryHash = effect.entryHash ?? effect.hash;
+      if (!Number.isFinite(start) || !Number.isFinite(end) || (entryId === undefined && entryHash === undefined)) {
+        continue;
+      }
+      normalized.push(omitUndefined({ entryId, entryHash, start, end, protected: effect.protected === true }));
+  }
+  return normalized;
+}
+
+function cloneRuntimeState(state: WorldInfoRuntimeState): WorldInfoRuntimeState {
+  return {
+    sticky: state.sticky?.map((effect) => ({ ...effect })) ?? [],
+    cooldown: state.cooldown?.map((effect) => ({ ...effect })) ?? [],
+  };
+}
+
+function pruneRuntimeState(state: WorldInfoRuntimeState, chatLength: number): WorldInfoRuntimeState {
+  return {
+    sticky: (state.sticky ?? []).filter((effect) => effect.end >= chatLength),
+    cooldown: (state.cooldown ?? []).filter((effect) => effect.end >= chatLength),
+  };
+}
+
+function findRuntimeEffect(effects: readonly WorldInfoRuntimeEffectState[] | undefined, candidate: CandidateEntry, chatLength: number): WorldInfoRuntimeEffectState | undefined {
+  const hash = entryHash(candidate.entry);
+  return effects?.find((effect) => effect.start <= chatLength && effect.end >= chatLength && (effect.entryId === candidate.id || effect.entryHash === hash));
+}
+
+function updateRuntimeStateForActivations(selected: readonly PendingActivation[], state: WorldInfoRuntimeState, chatLength: number): void {
+  const sticky = [...(state.sticky ?? [])];
+  const cooldown = [...(state.cooldown ?? [])];
+  for (const item of selected) {
+    if (item.stateActivation === 'sticky') {
+      continue;
+    }
+    const stickyLength = normalizeDuration(item.candidate.entry.sticky);
+    const cooldownLength = normalizeDuration(item.candidate.entry.cooldown);
+    const hash = entryHash(item.candidate.entry);
+    if (stickyLength > 0) {
+      upsertRuntimeEffect(sticky, { entryId: item.candidate.id, entryHash: hash, start: chatLength, end: chatLength + stickyLength });
+    }
+    if (cooldownLength > 0 && stickyLength === 0) {
+      upsertRuntimeEffect(cooldown, { entryId: item.candidate.id, entryHash: hash, start: chatLength + 1, end: chatLength + cooldownLength });
+    }
+  }
+  state.sticky = sticky;
+  state.cooldown = cooldown;
+}
+
+function transitionExpiredStickyToCooldown(
+  candidates: readonly CandidateEntry[],
+  currentState: WorldInfoRuntimeState,
+  nextState: WorldInfoRuntimeState,
+  chatLength: number,
+  activationTrace: WorldInfoActivationTraceEntry[],
+): void {
+  const nextSticky = [...(nextState.sticky ?? [])].filter((effect) => effect.end >= chatLength);
+  const nextCooldown = [...(nextState.cooldown ?? [])];
+  for (const effect of currentState.sticky ?? []) {
+    if (effect.end >= chatLength || effect.protected === true) {
+      continue;
+    }
+    const candidate = candidates.find((item) => item.id === effect.entryId || entryHash(item.entry) === effect.entryHash);
+    if (candidate === undefined) {
+      continue;
+    }
+    const cooldownLength = normalizeDuration(candidate.entry.cooldown);
+    if (cooldownLength <= 0) {
+      continue;
+    }
+    const cooldownEffect = {
+      entryId: candidate.id,
+      entryHash: entryHash(candidate.entry),
+      start: effect.end + 1,
+      end: effect.end + cooldownLength,
+      protected: true,
+    };
+    if (cooldownEffect.end >= chatLength) {
+      upsertRuntimeEffect(nextCooldown, cooldownEffect);
+    }
+    activationTrace.push(
+      traceActivation(
+        candidate,
+        false,
+        { activated: false, reason: `sticky expired; protected cooldown until chatLength ${cooldownEffect.end}`, code: 'protected_cooldown_transition', matchedKeys: [], matchedSecondaryKeys: [] },
+        0,
+      ),
+    );
+  }
+  nextState.sticky = nextSticky;
+  nextState.cooldown = nextCooldown;
+}
+
+function upsertRuntimeEffect(effects: WorldInfoRuntimeEffectState[], effect: WorldInfoRuntimeEffectState): void {
+  const index = effects.findIndex((item) => item.entryId === effect.entryId || item.entryHash === effect.entryHash);
+  if (index >= 0) {
+    effects[index] = effect;
+  } else {
+    effects.push(effect);
+  }
+}
+
+function normalizeDuration(value: WorldInfoEntry['sticky'] | WorldInfoEntry['cooldown']): number {
+  if (value === true) {
+    return 1;
+  }
+  if (value === false || value === undefined) {
+    return 0;
+  }
+  return normalizeNonNegativeInteger(value);
+}
+
+function normalizeNonNegativeInteger(value: number | string | undefined): number {
+  const numeric = Number(value ?? 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return 0;
+  }
+  return Math.floor(numeric);
+}
+
+function entryHash(entry: WorldInfoEntry): string {
+  return stableHash(`${normalizeStringArray(entry.key ?? entry.keys).join('\u0001')}\u0002${entry.content}`);
+}
+
+function stableHash(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
 function normalizeProbability(value: WorldInfoEntry['probability']): number {
