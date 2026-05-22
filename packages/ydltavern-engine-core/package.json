@@ -13,6 +13,8 @@
     "test": "npm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/tokenizer": "^0.0.4",
+    "@huggingface/tokenizers": "^0.1.3",
     "@ydltavern/types": "file:../ydltavern-types",
     "gpt-tokenizer": "^3.4.0",
     "llama-tokenizer-js": "^1.2.2",

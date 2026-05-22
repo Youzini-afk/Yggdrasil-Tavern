@@ -7,9 +7,26 @@ import {
   selectEncodingForModel,
   OpenAITokenizerAdapter,
   LlamaTokenizerAdapter,
+  AnthropicTokenizerAdapter,
+  HuggingFaceTokenizerAdapter,
+  createHuggingFaceTokenizer,
   getTokenizer,
   createGuesstimateAdapter,
 } from '../dist/index.js';
+
+const MINIMAL_HF_TOKENIZER_JSON = {
+  version: '1.0',
+  normalizer: null,
+  pre_tokenizer: { type: 'Whitespace' },
+  post_processor: null,
+  decoder: { type: 'WordPiece', prefix: '##', cleanup: true },
+  model: {
+    type: 'WordPiece',
+    vocab: { '[UNK]': 0, hello: 1, world: 2 },
+    unk_token: '[UNK]',
+  },
+  added_tokens: [],
+};
 
 // ---------------------------------------------------------------------------
 // selectEncodingForModel
@@ -278,6 +295,97 @@ test('LlamaTokenizerAdapter lazy loading: tokenizer not loaded until first call'
 });
 
 // ---------------------------------------------------------------------------
+// AnthropicTokenizerAdapter — Claude local text approximation only
+
+test('AnthropicTokenizerAdapter count("hello world") returns positive estimate (local text approximation only)', async () => {
+  const adapter = new AnthropicTokenizerAdapter('claude-sonnet-4');
+  const count = await adapter.count('hello world');
+  assert.ok(count >= 1);
+});
+
+test('AnthropicTokenizerAdapter encode throws NotSupported because package is countTokens-only', async () => {
+  const adapter = new AnthropicTokenizerAdapter();
+  await assert.rejects(
+    () => adapter.encode('hello world'),
+    /encode is not supported/,
+  );
+});
+
+test('AnthropicTokenizerAdapter decode throws NotSupported because package is countTokens-only', async () => {
+  const adapter = new AnthropicTokenizerAdapter();
+  await assert.rejects(
+    () => adapter.decode([1, 2]),
+    /decode is not supported/,
+  );
+});
+
+test('AnthropicTokenizerAdapter shares cached loaded counter singleton', async () => {
+  const first = new AnthropicTokenizerAdapter();
+  const second = new AnthropicTokenizerAdapter();
+  await first.load();
+  await second.load();
+  const firstCount = await first.count('hello world');
+  const secondCount = await second.count('hello world');
+  assert.equal(firstCount, secondCount);
+});
+
+test('AnthropicTokenizerAdapter preserves optional modelHint metadata', () => {
+  const adapter = new AnthropicTokenizerAdapter('claude-opus-4');
+  assert.equal(adapter.id, TOKENIZER.CLAUDE);
+  assert.equal(adapter.modelHint, 'claude-opus-4');
+});
+
+// ---------------------------------------------------------------------------
+// HuggingFaceTokenizerAdapter — caller supplies tokenizer.json/config source
+
+test('HuggingFaceTokenizerAdapter throws useful error on missing tokenizer source', async () => {
+  const adapter = new HuggingFaceTokenizerAdapter(TOKENIZER.MISTRAL, { tokenizerJson: {} }, 'invalid-source');
+  await assert.rejects(
+    () => adapter.load(),
+    /Tokenizer must contain/,
+  );
+});
+
+test('HuggingFaceTokenizerAdapter encodes, decodes, and counts with embedded minimal fixture', async () => {
+  const adapter = new HuggingFaceTokenizerAdapter(
+    TOKENIZER.MISTRAL,
+    { tokenizerJson: MINIMAL_HF_TOKENIZER_JSON, tokenizerConfig: {} },
+    'minimal-wordpiece',
+  );
+  const tokens = await adapter.encode('hello world');
+  assert.deepEqual([...tokens], [1, 2]);
+  assert.equal(await adapter.count('hello world'), 2);
+  assert.equal(await adapter.decode(tokens), 'hello world');
+});
+
+test('HuggingFaceTokenizerAdapter caches loaded tokenizer by cacheKey', async () => {
+  const first = new HuggingFaceTokenizerAdapter(
+    TOKENIZER.GEMMA,
+    { tokenizerJson: MINIMAL_HF_TOKENIZER_JSON, tokenizerConfig: {} },
+    'shared-minimal',
+  );
+  const second = new HuggingFaceTokenizerAdapter(
+    TOKENIZER.GEMMA,
+    { tokenizerJson: { ...MINIMAL_HF_TOKENIZER_JSON, model: { ...MINIMAL_HF_TOKENIZER_JSON.model, vocab: { '[UNK]': 0 } } }, tokenizerConfig: {} },
+    'shared-minimal',
+  );
+
+  assert.deepEqual([...(await first.encode('hello world'))], [1, 2]);
+  // Same id + modelHint reuses the first parsed tokenizer despite a different second source.
+  assert.deepEqual([...(await second.encode('hello world'))], [1, 2]);
+});
+
+test('createHuggingFaceTokenizer factory returns adapter with requested id', () => {
+  const adapter = createHuggingFaceTokenizer(
+    TOKENIZER.QWEN2,
+    { tokenizerJson: MINIMAL_HF_TOKENIZER_JSON, tokenizerConfig: {} },
+    'qwen2-fixture',
+  );
+  assert.ok(adapter instanceof HuggingFaceTokenizerAdapter);
+  assert.equal(adapter.id, TOKENIZER.QWEN2);
+});
+
+// ---------------------------------------------------------------------------
 // getTokenizer
 
 test('getTokenizer(OPENAI) returns OpenAITokenizerAdapter', async () => {
@@ -306,9 +414,11 @@ test('getTokenizer(LLAMA3) returns LlamaTokenizerAdapter (not guesstimate)', asy
   assert.equal(adapter.fallback, undefined);
 });
 
-test('getTokenizer(CLAUDE) returns guesstimate adapter (fallback)', async () => {
+test('getTokenizer(CLAUDE) returns AnthropicTokenizerAdapter (local approximation)', async () => {
   const adapter = await getTokenizer(TOKENIZER.CLAUDE);
-  assert.equal(adapter.fallback, true);
+  assert.ok(adapter instanceof AnthropicTokenizerAdapter);
+  assert.equal(adapter.id, TOKENIZER.CLAUDE);
+  assert.equal(adapter.fallback, undefined);
 });
 
 test('getTokenizer(OPENAI, { modelHint: "gpt-4o" }) selects o200k_base encoding', async () => {
@@ -321,6 +431,11 @@ test('getTokenizer(OPENAI, { modelHint: "gpt-4o" }) selects o200k_base encoding'
 
 test('getTokenizer(NONE) returns guesstimate fallback', async () => {
   const adapter = await getTokenizer(TOKENIZER.NONE);
+  assert.equal(adapter.fallback, true);
+});
+
+test('getTokenizer(MISTRAL) remains guesstimate fallback because HF source is host-provided', async () => {
+  const adapter = await getTokenizer(TOKENIZER.MISTRAL);
   assert.equal(adapter.fallback, true);
 });
 
