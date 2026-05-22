@@ -122,6 +122,103 @@ test('world info routes ST positions with unshift ordering, AN patch, atDepth, E
   assert.equal(result.diagnostics.unsupported.some((item) => item.includes('routing output only')), true);
 });
 
+test('world info applies deterministic advanced filters and diagnostics', async () => {
+  const chat = await readJsonFixture('chat.json');
+  const book = {
+    name: 'advanced-filters-book',
+    entries: [
+      { uid: 'trigger-ok', key: ['map'], triggers: ['normal'], content: 'trigger ok', order: 10 },
+      { uid: 'trigger-skip', key: ['map'], generationTriggers: ['continue'], content: 'trigger skip', order: 20 },
+      {
+        uid: 'character-ok',
+        key: ['map'],
+        characterFilter: { names: ['Seraphina'], tags: ['guide'] },
+        content: 'character ok',
+        order: 30,
+      },
+      {
+        uid: 'character-skip',
+        key: ['map'],
+        characterFilter: { tags: ['villain'], exclude: true },
+        content: 'character skip',
+        order: 40,
+      },
+      { uid: 'decorator-forced', content: '@@activate forced by decorator', order: 50 },
+      { uid: 'decorator-blocked', constant: true, content: '@@dont_activate blocked by decorator', order: 60 },
+      { uid: 'scan-flag', key: ['careful archivist'], matchPersonaDescription: true, content: 'scan flag ok', order: 70 },
+    ],
+  };
+
+  const result = evaluateWorldInfo({
+    chat,
+    book,
+    generation_type: 'normal',
+    activeCharacterName: 'Seraphina',
+    activeCharacterTags: ['guide', 'villain'],
+    personaDescription: 'The user is a careful archivist.',
+  });
+
+  assert.deepEqual(
+    result.activated.map((entry) => [entry.id, entry.code]),
+    [
+      ['trigger-ok', 'key_match'],
+      ['character-ok', 'key_match'],
+      ['decorator-forced', 'decorator_forced'],
+      ['scan-flag', 'scan_flag_match'],
+    ],
+  );
+  assert.equal(result.activated.find((entry) => entry.id === 'decorator-forced')?.content, 'forced by decorator');
+  assert.equal(result.skipped.find((entry) => entry.id === 'trigger-skip')?.code, 'trigger_mismatch');
+  assert.equal(result.skipped.find((entry) => entry.id === 'character-skip')?.code, 'character_filter_mismatch');
+  assert.equal(result.skipped.find((entry) => entry.id === 'decorator-blocked')?.code, 'decorator_blocked');
+  assert.equal(result.diagnostics.activationTrace.some((entry) => entry.entryId === 'scan-flag' && entry.code === 'scan_flag_match'), true);
+});
+
+test('world info honors delay/exclude recursion and min activation scan expansion deterministically', async () => {
+  const chat = await readJsonFixture('chat.json');
+  const extendedChat = {
+    ...chat,
+    turns: [
+      {
+        id: 'turn-user-prologue',
+        index: -1,
+        role: 'user',
+        source: 'user_input',
+        variants: [{ id: 'turn-user-prologue-variant', subs: [{ kind: 'text', text: 'Prologue clue.' }], meta: {}, created_at: 1699999999000 }],
+        active_variant: 0,
+        created_at: 1699999999000,
+      },
+      ...chat.turns,
+    ],
+  };
+  const book = {
+    name: 'recursion-min-book',
+    entries: [
+      { uid: 'seed', key: ['map'], content: 'seed mentions lantern-key', order: 10 },
+      { uid: 'delayed', key: ['lantern-key'], delayUntilRecursion: true, content: 'delayed recursion active', order: 20 },
+      { uid: 'excluded-seed', key: ['map'], excludeRecursion: true, content: 'excluded mentions sealed-door', order: 30 },
+      { uid: 'excluded-child', key: ['sealed-door'], delayUntilRecursion: true, content: 'should not activate', order: 40 },
+      { uid: 'min-activation', key: ['Prologue'], content: 'min activation from expanded scan', order: 50 },
+    ],
+  };
+
+  const result = evaluateWorldInfo({ chat: extendedChat, book, scanDepth: 3, recursiveScanDepth: 2, minActivations: 4 });
+
+  assert.deepEqual(
+    result.activated.map((entry) => [entry.id, entry.code]),
+    [
+      ['seed', 'key_match'],
+      ['delayed', 'key_match'],
+      ['excluded-seed', 'key_match'],
+      ['min-activation', 'min_activation_scan'],
+    ],
+  );
+  assert.equal(result.skipped.find((entry) => entry.id === 'excluded-child')?.code, 'delay_until_recursion');
+  assert.equal(result.activated.find((entry) => entry.id === 'min-activation')?.reason.includes('min activation scan'), true);
+  assert.equal(result.diagnostics.warnings.some((warning) => warning.includes('min activations requested 4')), true);
+  assert.equal(result.diagnostics.activationTrace.some((entry) => entry.entryId === 'delayed' && entry.iteration === 1), true);
+});
+
 test('prompt-critical blocks inject WI and fields before buildPrompt assembles messages', async () => {
   const [book, input, chat] = await Promise.all([
     readJsonFixture('world-info-book.json'),

@@ -14,6 +14,17 @@ export type WorldInfoPosition =
   | 'outlet';
 export type WorldInfoLogic = 'AND_ANY' | 'NOT_ALL' | 'NOT_ANY' | 'AND_ALL';
 export type WorldInfoBudgetType = 'characters' | 'approxTokens';
+export type WorldInfoGenerationType = 'normal' | 'continue' | 'impersonate' | 'swipe' | 'regenerate' | 'quiet';
+
+export interface WorldInfoCharacterFilter {
+  readonly names?: readonly string[] | string;
+  readonly name?: readonly string[] | string;
+  readonly characterNames?: readonly string[] | string;
+  readonly tags?: readonly string[] | string;
+  readonly tag?: readonly string[] | string;
+  readonly isExclude?: boolean;
+  readonly exclude?: boolean;
+}
 
 export interface WorldInfoEntry {
   readonly uid?: string | number;
@@ -27,8 +38,23 @@ export interface WorldInfoEntry {
   readonly content: string;
   readonly constant?: boolean;
   readonly selective?: boolean;
-  readonly selectiveLogic?: WorldInfoLogic | number;
+  readonly selectiveLogic?: WorldInfoLogic | number | string | readonly string[];
   readonly logic?: WorldInfoLogic | number;
+  readonly triggers?: readonly string[] | string;
+  readonly trigger?: readonly string[] | string;
+  readonly generationTriggers?: readonly string[] | string;
+  readonly generationTrigger?: readonly string[] | string;
+  readonly generationTypes?: readonly string[] | string;
+  readonly generationType?: readonly string[] | string;
+  readonly generation_type?: readonly string[] | string;
+  readonly characterFilter?: WorldInfoCharacterFilter | readonly string[] | string;
+  readonly character_filter?: WorldInfoCharacterFilter | readonly string[] | string;
+  readonly decorators?: readonly string[] | string;
+  readonly decorator?: readonly string[] | string;
+  readonly activationDecorator?: readonly string[] | string;
+  readonly dontActivate?: boolean;
+  readonly dont_activate?: boolean;
+  readonly activate?: boolean;
   readonly order?: number;
   readonly position?: WorldInfoPosition | number | string;
   readonly depth?: number;
@@ -45,7 +71,13 @@ export interface WorldInfoEntry {
   readonly disabled?: boolean;
   readonly excludeRecursion?: boolean;
   readonly preventRecursion?: boolean;
-  readonly delayUntilRecursion?: boolean;
+  readonly delayUntilRecursion?: boolean | number;
+  readonly matchPersonaDescription?: boolean;
+  readonly matchCharacterDescription?: boolean;
+  readonly matchCharacterPersonality?: boolean;
+  readonly matchCharacterDepthPrompt?: boolean;
+  readonly matchScenario?: boolean;
+  readonly matchCreatorNotes?: boolean;
   readonly ignoreBudget?: boolean;
   readonly outletName?: string;
   readonly outlet_name?: string;
@@ -69,6 +101,48 @@ export interface EvaluateWorldInfoInput {
   readonly scanData?: string | readonly string[];
   readonly scanDepth?: number;
   readonly recursiveScanDepth?: number;
+  readonly maxRecursion?: number;
+  readonly max_recursion?: number;
+  readonly minActivations?: number;
+  readonly min_activations?: number;
+  readonly minimumActivations?: number;
+  readonly generationType?: WorldInfoGenerationType | string;
+  readonly generation_type?: WorldInfoGenerationType | string;
+  readonly activeCharacterName?: string;
+  readonly active_character_name?: string;
+  readonly characterName?: string;
+  readonly character_name?: string;
+  readonly charName?: string;
+  readonly activeCharacterTags?: readonly string[] | string;
+  readonly active_character_tags?: readonly string[] | string;
+  readonly characterTags?: readonly string[] | string;
+  readonly character_tags?: readonly string[] | string;
+  readonly charTags?: readonly string[] | string;
+  readonly character?: {
+    readonly name?: string;
+    readonly tags?: readonly string[] | string;
+    readonly description?: string;
+    readonly personality?: string;
+    readonly depthPrompt?: string;
+    readonly depth_prompt?: string;
+    readonly scenario?: string;
+    readonly creatorNotes?: string;
+    readonly creator_notes?: string;
+  };
+  readonly personaDescription?: string;
+  readonly persona_description?: string;
+  readonly persona?: string;
+  readonly characterDescription?: string;
+  readonly character_description?: string;
+  readonly characterPersonality?: string;
+  readonly character_personality?: string;
+  readonly characterDepthPrompt?: string;
+  readonly character_depth_prompt?: string;
+  readonly depthPrompt?: string;
+  readonly depth_prompt?: string;
+  readonly scenario?: string;
+  readonly creatorNotes?: string;
+  readonly creator_notes?: string;
   readonly budget?: WorldInfoBudget;
   readonly macroContext?: MacroContext;
   readonly authorNote?: string;
@@ -88,6 +162,8 @@ export interface WorldInfoActivatedEntry {
   readonly outletName?: string;
   readonly matchedKeys: readonly string[];
   readonly matchedSecondaryKeys: readonly string[];
+  readonly reason: string;
+  readonly code: string;
   readonly macroTrace: readonly MacroTraceEntry[];
 }
 
@@ -150,6 +226,7 @@ export interface WorldInfoSkippedEntry {
   readonly id: string;
   readonly book?: string;
   readonly reason: string;
+  readonly code?: string;
 }
 
 export interface WorldInfoDiagnostics {
@@ -162,7 +239,19 @@ export interface WorldInfoDiagnostics {
   readonly warnings: readonly string[];
   readonly unsupported: readonly string[];
   readonly uninserted: readonly string[];
+  readonly activationTrace: readonly WorldInfoActivationTraceEntry[];
   readonly routingTrace: readonly WorldInfoRoutingTraceEntry[];
+}
+
+export interface WorldInfoActivationTraceEntry {
+  readonly entryId: string;
+  readonly source?: string;
+  readonly activated: boolean;
+  readonly code: string;
+  readonly reason: string;
+  readonly iteration: number;
+  readonly matchedKeys: readonly string[];
+  readonly matchedSecondaryKeys: readonly string[];
 }
 
 export interface WorldInfoRoutingTraceEntry {
@@ -201,9 +290,26 @@ interface CandidateEntry {
 interface MatchResult {
   readonly activated: boolean;
   readonly reason?: string;
+  readonly code?: string;
   readonly matchedKeys: readonly string[];
   readonly matchedSecondaryKeys: readonly string[];
 }
+
+interface MatchContext {
+  readonly generationType: WorldInfoGenerationType;
+  readonly characterName?: string;
+  readonly characterTags: readonly string[];
+  readonly scanFlagTexts: Readonly<Record<ScanFlagName, string | undefined>>;
+  readonly minActivationScan?: boolean;
+}
+
+type ScanFlagName =
+  | 'matchPersonaDescription'
+  | 'matchCharacterDescription'
+  | 'matchCharacterPersonality'
+  | 'matchCharacterDepthPrompt'
+  | 'matchScenario'
+  | 'matchCreatorNotes';
 
 const POSITION_BY_NUMBER = new Map<number, WorldInfoPosition>([
   [0, 'before'],
@@ -235,20 +341,41 @@ const POSITION_NAMES = new Set<WorldInfoPosition>([
 ]);
 
 const DEFAULT_AT_DEPTH = 4;
+const DEFAULT_GENERATION_TYPE: WorldInfoGenerationType = 'normal';
+const GENERATION_TYPES = new Set<WorldInfoGenerationType>([
+  'normal',
+  'continue',
+  'impersonate',
+  'swipe',
+  'regenerate',
+  'quiet',
+]);
+const GENERATION_TRIGGER_FIELDS = ['triggers', 'trigger', 'generationTriggers', 'generationTrigger', 'generationTypes', 'generationType', 'generation_type'] as const;
+const SCAN_FLAG_NAMES: readonly ScanFlagName[] = [
+  'matchPersonaDescription',
+  'matchCharacterDescription',
+  'matchCharacterPersonality',
+  'matchCharacterDepthPrompt',
+  'matchScenario',
+  'matchCreatorNotes',
+];
 
 export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldInfoResult {
   const scanDepth = Math.max(0, input.scanDepth ?? 4);
-  const maxIterations = Math.max(1, input.recursiveScanDepth ?? 1);
+  const maxIterations = Math.max(1, input.maxRecursion ?? input.max_recursion ?? input.recursiveScanDepth ?? 1);
+  const minActivations = Math.max(0, input.minActivations ?? input.min_activations ?? input.minimumActivations ?? 0);
   const budgetType = input.budget?.type ?? 'characters';
   const budgetLimit = input.budget?.max;
   const warnings: string[] = [];
   const unsupported = [
     'ST token-level budget alignment is approximated, not tokenizer exact.',
-    'Sticky/cooldown/delay/group scoring/vector lore are not implemented in engine-core P1.',
+    'Sticky/cooldown/group scoring/vector lore are not implemented in engine-core P1.',
   ];
   const candidates = collectCandidates(input);
   const activated = new Map<string, WorldInfoActivatedEntry>();
   const skipped = new Map<string, WorldInfoSkippedEntry>();
+  const activationTrace: WorldInfoActivationTraceEntry[] = [];
+  const matchContext = buildMatchContext(input);
   let scanText = buildScanText(input.chat, scanDepth, input.scanData);
   let usedBudget = 0;
   let iterations = 0;
@@ -262,21 +389,25 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
         continue;
       }
 
-      const match = matchEntry(candidate.entry, scanText, iteration);
+      const match = matchEntry(candidate.entry, scanText, iteration, matchContext);
       if (!match.activated) {
-        rememberSkipped(skipped, candidate, match.reason ?? 'keys did not match');
+        rememberSkipped(skipped, candidate, match.reason ?? 'keys did not match', match.code ?? 'key_mismatch');
+        activationTrace.push(traceActivation(candidate, false, match, iteration));
         continue;
       }
 
-      const expanded = substituteMacros(candidate.entry.content, input.macroContext ?? {});
+      const expanded = substituteMacros(stripActivationDecorators(candidate.entry.content), input.macroContext ?? {});
       const cost = budgetCost(expanded.text, budgetType);
       if (budgetLimit !== undefined && candidate.entry.ignoreBudget !== true && usedBudget + cost > budgetLimit) {
-        rememberSkipped(skipped, candidate, 'budget exceeded');
+        const budgetMatch = { ...match, activated: false, reason: 'budget exceeded', code: 'budget_exceeded' };
+        rememberSkipped(skipped, candidate, budgetMatch.reason, budgetMatch.code);
+        activationTrace.push(traceActivation(candidate, false, budgetMatch, iteration));
         continue;
       }
 
       usedBudget += cost;
       skipped.delete(candidate.id);
+      activationTrace.push(traceActivation(candidate, true, match, iteration));
       const position = normalizePosition(candidate.entry.position, warnings);
       const active: WorldInfoActivatedEntry = {
         id: candidate.id,
@@ -290,6 +421,8 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
         outletName: position === 'outlet' ? normalizeOutletName(candidate.entry) : undefined,
         matchedKeys: match.matchedKeys,
         matchedSecondaryKeys: match.matchedSecondaryKeys,
+        reason: match.reason ?? 'activated',
+        code: match.code ?? 'key_match',
         macroTrace: expanded.trace,
       };
       activated.set(candidate.id, active);
@@ -304,6 +437,62 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
     }
 
     scanText = `${scanText}\n${newlyActivated.join('\n')}`;
+  }
+
+  if (minActivations > activated.size) {
+    const minScanText = buildMinActivationScanText(input, scanDepth, scanText);
+    if (minScanText !== scanText) {
+      warnings.push(
+        `WI min activations requested ${minActivations}; expanded scan text from ${scanText.length} to ${minScanText.length} characters.`,
+      );
+      scanText = minScanText;
+      for (const candidate of candidates) {
+        if (activated.size >= minActivations) {
+          break;
+        }
+        if (activated.has(candidate.id)) {
+          continue;
+        }
+
+        const match = matchEntry(candidate.entry, scanText, iterations, { ...matchContext, minActivationScan: true });
+        if (!match.activated) {
+          rememberSkipped(skipped, candidate, match.reason ?? 'keys did not match', match.code ?? 'key_mismatch');
+          activationTrace.push(traceActivation(candidate, false, match, iterations));
+          continue;
+        }
+
+        const expanded = substituteMacros(stripActivationDecorators(candidate.entry.content), input.macroContext ?? {});
+        const cost = budgetCost(expanded.text, budgetType);
+        if (budgetLimit !== undefined && candidate.entry.ignoreBudget !== true && usedBudget + cost > budgetLimit) {
+          const budgetMatch = { ...match, activated: false, reason: 'budget exceeded', code: 'budget_exceeded' };
+          rememberSkipped(skipped, candidate, budgetMatch.reason, budgetMatch.code);
+          activationTrace.push(traceActivation(candidate, false, budgetMatch, iterations));
+          continue;
+        }
+
+        usedBudget += cost;
+        skipped.delete(candidate.id);
+        activationTrace.push(traceActivation(candidate, true, match, iterations));
+        const position = normalizePosition(candidate.entry.position, warnings);
+        const active: WorldInfoActivatedEntry = {
+          id: candidate.id,
+          book: candidate.bookName,
+          comment: candidate.entry.comment,
+          content: expanded.text,
+          position,
+          order: candidate.entry.order ?? 0,
+          depth: position === 'atDepth' ? normalizeDepth(candidate.entry.depth) : candidate.entry.depth,
+          role: position === 'atDepth' ? normalizeDepthRole(candidate.entry, warnings) : undefined,
+          outletName: position === 'outlet' ? normalizeOutletName(candidate.entry) : undefined,
+          matchedKeys: match.matchedKeys,
+          matchedSecondaryKeys: match.matchedSecondaryKeys,
+          reason: match.reason ?? 'min activation scan matched',
+          code: match.code ?? 'min_activation_scan',
+          macroTrace: expanded.trace,
+        };
+        activated.set(candidate.id, active);
+      }
+    }
   }
 
   const activatedList = [...activated.values()].sort(compareActivated);
@@ -323,6 +512,7 @@ export function evaluateWorldInfo(input: EvaluateWorldInfoInput): EvaluateWorldI
       warnings,
       unsupported: [...unsupported, ...unsupportedRoutingNotes(routed.uninserted)],
       uninserted: routed.uninserted,
+      activationTrace,
       routingTrace: routed.routingTrace,
     },
   };
@@ -344,42 +534,250 @@ function collectCandidates(input: EvaluateWorldInfoInput): readonly CandidateEnt
   return candidates.sort((left, right) => compareEntry(left.entry, right.entry) || left.index - right.index);
 }
 
-function matchEntry(entry: WorldInfoEntry, scanText: string, iteration: number): MatchResult {
+function buildMatchContext(input: EvaluateWorldInfoInput): MatchContext {
+  const generationType = normalizeGenerationType(input.generationType ?? input.generation_type);
+  const characterName =
+    input.activeCharacterName ??
+    input.active_character_name ??
+    input.characterName ??
+    input.character_name ??
+    input.charName ??
+    input.character?.name;
+  const characterTags = normalizeStringArray(
+    input.activeCharacterTags ?? input.active_character_tags ?? input.characterTags ?? input.character_tags ?? input.charTags ?? input.character?.tags,
+  );
+  return {
+    generationType,
+    characterName,
+    characterTags,
+    scanFlagTexts: {
+      matchPersonaDescription: input.personaDescription ?? input.persona_description ?? input.persona,
+      matchCharacterDescription: input.characterDescription ?? input.character_description ?? input.character?.description,
+      matchCharacterPersonality: input.characterPersonality ?? input.character_personality ?? input.character?.personality,
+      matchCharacterDepthPrompt:
+        input.characterDepthPrompt ?? input.character_depth_prompt ?? input.depthPrompt ?? input.depth_prompt ?? input.character?.depthPrompt ?? input.character?.depth_prompt,
+      matchScenario: input.scenario ?? input.character?.scenario,
+      matchCreatorNotes: input.creatorNotes ?? input.creator_notes ?? input.character?.creatorNotes ?? input.character?.creator_notes,
+    },
+  };
+}
+
+function normalizeGenerationType(value: string | undefined): WorldInfoGenerationType {
+  const normalized = value?.toLowerCase().replace(/[^a-z0-9]/gu, '') ?? DEFAULT_GENERATION_TYPE;
+  switch (normalized) {
+    case 'continue':
+    case 'continuation':
+      return 'continue';
+    case 'impersonate':
+    case 'impersonation':
+      return 'impersonate';
+    case 'swipe':
+      return 'swipe';
+    case 'regenerate':
+    case 'regen':
+      return 'regenerate';
+    case 'quiet':
+    case 'quietprompt':
+      return 'quiet';
+    default:
+      return 'normal';
+  }
+}
+
+function generationTriggerMatches(
+  entry: WorldInfoEntry,
+  generationType: WorldInfoGenerationType,
+): { readonly matches: boolean; readonly triggers: readonly WorldInfoGenerationType[] } {
+  const raw: string[] = [];
+  for (const field of GENERATION_TRIGGER_FIELDS) {
+    raw.push(...normalizeStringArray(entry[field]));
+  }
+
+  raw.push(...normalizeSelectiveLogicTriggers(entry.selectiveLogic));
+  const triggers = raw.map(normalizeGenerationType).filter((trigger, index, values) => GENERATION_TYPES.has(trigger) && values.indexOf(trigger) === index);
+  return { matches: triggers.length === 0 || triggers.includes(generationType), triggers };
+}
+
+function normalizeSelectiveLogicTriggers(value: WorldInfoEntry['selectiveLogic']): readonly string[] {
+  const raw = normalizeStringArray(value);
+  return raw.filter((item) => GENERATION_TYPES.has(normalizeGenerationType(item)) || item.toLowerCase() === 'continuation');
+}
+
+function characterFilterMatches(entry: WorldInfoEntry, characterName: string | undefined, characterTags: readonly string[]): boolean {
+  const filter = entry.characterFilter ?? entry.character_filter;
+  if (filter === undefined) {
+    return true;
+  }
+
+  const normalizedName = normalizeComparable(characterName);
+  const normalizedTags = new Set(characterTags.map(normalizeComparable));
+  const { names, tags, exclude } = normalizeCharacterFilter(filter);
+  if (names.length === 0 && tags.length === 0) {
+    return true;
+  }
+
+  const nameMatched = names.length > 0 && normalizedName !== undefined && names.some((name) => normalizeComparable(name) === normalizedName);
+  const tagMatched = tags.length > 0 && tags.some((tag) => normalizedTags.has(normalizeComparable(tag) ?? ''));
+  const matched = nameMatched || tagMatched;
+  return exclude ? !matched : matched;
+}
+
+function normalizeCharacterFilter(filter: NonNullable<WorldInfoEntry['characterFilter']>): {
+  readonly names: readonly string[];
+  readonly tags: readonly string[];
+  readonly exclude: boolean;
+} {
+  if (typeof filter === 'string' || Array.isArray(filter)) {
+    return { names: normalizeStringArray(filter), tags: [], exclude: false };
+  }
+
+  const objectFilter = filter as WorldInfoCharacterFilter;
+  return {
+    names: normalizeStringArray(objectFilter.names ?? objectFilter.name ?? objectFilter.characterNames),
+    tags: normalizeStringArray(objectFilter.tags ?? objectFilter.tag),
+    exclude: objectFilter.isExclude === true || objectFilter.exclude === true,
+  };
+}
+
+function readActivationDecorator(entry: WorldInfoEntry): 'activate' | 'dont_activate' | undefined {
+  const explicit = [
+    ...normalizeStringArray(entry.decorators),
+    ...normalizeStringArray(entry.decorator),
+    ...normalizeStringArray(entry.activationDecorator),
+  ]
+    .map((item) => item.toLowerCase().replace(/[^a-z_]/gu, ''))
+    .join(' ');
+
+  if (entry.dontActivate === true || entry.dont_activate === true || explicit.includes('dont_activate') || explicit.includes('dontactivate')) {
+    return 'dont_activate';
+  }
+  if (entry.activate === true || explicit.includes('activate') || /@@activate\b/iu.test(entry.content)) {
+    return /@@dont_activate\b/iu.test(entry.content) ? 'dont_activate' : 'activate';
+  }
+  if (/@@dont_activate\b/iu.test(entry.content)) {
+    return 'dont_activate';
+  }
+  return undefined;
+}
+
+function stripActivationDecorators(content: string): string {
+  return content.replace(/@@(?:dont_activate|activate)\b\s*/giu, '').trim();
+}
+
+function buildScanFlagText(entry: WorldInfoEntry, scanFlagTexts: MatchContext['scanFlagTexts']): string {
+  const parts: string[] = [];
+  for (const flag of SCAN_FLAG_NAMES) {
+    if (entry[flag] === true) {
+      const text = scanFlagTexts[flag];
+      if (text !== undefined && text.trim() !== '') {
+        parts.push(text);
+      }
+    }
+  }
+  return parts.join('\n');
+}
+
+function buildMinActivationScanText(input: EvaluateWorldInfoInput, scanDepth: number, currentScanText: string): string {
+  const expandedDepth = Math.max(scanDepth, input.chat.turns.length);
+  const expanded = buildScanText(input.chat, expandedDepth, input.scanData);
+  const context = buildMatchContext(input);
+  const flagTexts = Object.values(context.scanFlagTexts).filter((text): text is string => text !== undefined && text.trim() !== '');
+  return [...new Set([currentScanText, expanded, ...flagTexts].filter((text) => text.trim() !== ''))].join('\n');
+}
+
+function traceActivation(
+  candidate: CandidateEntry,
+  activated: boolean,
+  match: MatchResult,
+  iteration: number,
+): WorldInfoActivationTraceEntry {
+  return {
+    entryId: candidate.id,
+    source: candidate.bookName,
+    activated,
+    code: match.code ?? (activated ? 'key_match' : 'key_mismatch'),
+    reason: match.reason ?? (activated ? 'activated' : 'keys did not match'),
+    iteration,
+    matchedKeys: match.matchedKeys,
+    matchedSecondaryKeys: match.matchedSecondaryKeys,
+  };
+}
+
+function matchEntry(entry: WorldInfoEntry, scanText: string, iteration: number, context: MatchContext): MatchResult {
   if (entry.disable === true || entry.disabled === true) {
-    return { activated: false, reason: 'disabled', matchedKeys: [], matchedSecondaryKeys: [] };
+    return { activated: false, reason: 'disabled', code: 'disabled', matchedKeys: [], matchedSecondaryKeys: [] };
+  }
+
+  const decorator = readActivationDecorator(entry);
+  if (decorator === 'dont_activate') {
+    return { activated: false, reason: 'decorator @@dont_activate blocked entry', code: 'decorator_blocked', matchedKeys: [], matchedSecondaryKeys: [] };
+  }
+
+  const triggerResult = generationTriggerMatches(entry, context.generationType);
+  if (!triggerResult.matches) {
+    return {
+      activated: false,
+      reason: `generation trigger mismatch for ${context.generationType}`,
+      code: 'trigger_mismatch',
+      matchedKeys: [],
+      matchedSecondaryKeys: [],
+    };
+  }
+
+  if (!characterFilterMatches(entry, context.characterName, context.characterTags)) {
+    return {
+      activated: false,
+      reason: 'character filter mismatch',
+      code: 'character_filter_mismatch',
+      matchedKeys: [],
+      matchedSecondaryKeys: [],
+    };
   }
 
   if (entry.delayUntilRecursion === true && iteration === 0) {
-    return { activated: false, reason: 'delayUntilRecursion', matchedKeys: [], matchedSecondaryKeys: [] };
+    return { activated: false, reason: 'delayUntilRecursion waiting for recursive scan', code: 'delay_until_recursion', matchedKeys: [], matchedSecondaryKeys: [] };
   }
 
-  const localScan = limitScanLines(scanText, entry.scanDepth ?? entry.scan_depth);
+  if (typeof entry.delayUntilRecursion === 'number' && iteration < entry.delayUntilRecursion) {
+    return { activated: false, reason: `delayUntilRecursion waiting until iteration ${entry.delayUntilRecursion}`, code: 'delay_until_recursion', matchedKeys: [], matchedSecondaryKeys: [] };
+  }
+
+  if (decorator === 'activate') {
+    return { activated: true, reason: 'decorator @@activate forced entry', code: 'decorator_forced', matchedKeys: [], matchedSecondaryKeys: [] };
+  }
+
+  const scanFlagText = buildScanFlagText(entry, context.scanFlagTexts);
+  const localScanBase = context.minActivationScan ? scanText : limitScanLines(scanText, entry.scanDepth ?? entry.scan_depth);
+  const localScan = scanFlagText.length === 0 ? localScanBase : `${localScanBase}\n${scanFlagText}`;
   const primaryKeys = entry.key ?? entry.keys ?? [];
   const secondaryKeys = entry.keysecondary ?? entry.secondaryKeys ?? [];
   const caseSensitive = entry.caseSensitive ?? entry.case_sensitive ?? false;
   const wholeWords = entry.matchWholeWords ?? entry.match_whole_words ?? false;
   const matchedKeys = entry.constant === true ? [] : matchingKeys(primaryKeys, localScan, caseSensitive, wholeWords);
+  const reasonPrefix = context.minActivationScan ? 'min activation scan ' : scanFlagText.length > 0 ? 'scan flag match ' : '';
+  const successCode = context.minActivationScan ? 'min_activation_scan' : scanFlagText.length > 0 ? 'scan_flag_match' : 'key_match';
 
   if (entry.constant !== true && primaryKeys.length > 0 && matchedKeys.length === 0) {
-    return { activated: false, reason: 'primary keys did not match', matchedKeys, matchedSecondaryKeys: [] };
+    return { activated: false, reason: `${reasonPrefix}primary keys did not match`.trim(), code: 'key_mismatch', matchedKeys, matchedSecondaryKeys: [] };
   }
 
   if (entry.constant !== true && primaryKeys.length === 0) {
-    return { activated: false, reason: 'no primary keys', matchedKeys, matchedSecondaryKeys: [] };
+    return { activated: false, reason: 'no primary keys', code: 'key_mismatch', matchedKeys, matchedSecondaryKeys: [] };
   }
 
   const matchedSecondaryKeys = matchingKeys(secondaryKeys, localScan, caseSensitive, wholeWords);
-  const logic = normalizeLogic(entry.selectiveLogic ?? entry.logic);
+  const logic = normalizeLogic(entry.logic ?? (isWorldInfoLogic(entry.selectiveLogic) || typeof entry.selectiveLogic === 'number' ? entry.selectiveLogic : undefined));
   if (secondaryKeys.length > 0 && !secondaryLogicMatches(logic, secondaryKeys.length, matchedSecondaryKeys.length)) {
     return {
       activated: false,
-      reason: `secondary keys failed ${logic}`,
+      reason: `${reasonPrefix}secondary keys failed ${logic}`.trim(),
+      code: 'key_mismatch',
       matchedKeys,
       matchedSecondaryKeys,
     };
   }
 
-  return { activated: true, matchedKeys, matchedSecondaryKeys };
+  return { activated: true, reason: `${reasonPrefix}${entry.constant === true ? 'constant entry' : 'keys matched'}`.trim(), code: successCode, matchedKeys, matchedSecondaryKeys };
 }
 
 function secondaryLogicMatches(logic: WorldInfoLogic, total: number, matched: number): boolean {
@@ -589,6 +987,10 @@ function normalizeLogic(logic: WorldInfoEntry['logic']): WorldInfoLogic {
   return 'AND_ANY';
 }
 
+function isWorldInfoLogic(value: unknown): value is WorldInfoLogic {
+  return value === 'AND_ANY' || value === 'NOT_ALL' || value === 'NOT_ANY' || value === 'AND_ALL';
+}
+
 function compareEntry(left: WorldInfoEntry, right: WorldInfoEntry): number {
   return (left.order ?? 0) - (right.order ?? 0);
 }
@@ -737,10 +1139,31 @@ function unsupportedRoutingNotes(uninserted: readonly string[]): readonly string
     : ['WI atDepth/outlet/EM routes are diagnostics/routing output only; engine-core does not splice them into final chat messages.'];
 }
 
-function rememberSkipped(skipped: Map<string, WorldInfoSkippedEntry>, candidate: CandidateEntry, reason: string): void {
+function rememberSkipped(skipped: Map<string, WorldInfoSkippedEntry>, candidate: CandidateEntry, reason: string, code?: string): void {
   if (!skipped.has(candidate.id)) {
-    skipped.set(candidate.id, { id: candidate.id, book: candidate.bookName, reason });
+    skipped.set(candidate.id, omitUndefined({ id: candidate.id, book: candidate.bookName, reason, code }));
   }
+}
+
+function normalizeStringArray(value: readonly string[] | string | number | undefined): readonly string[] {
+  if (value === undefined) {
+    return [];
+  }
+  if (typeof value === 'number') {
+    return [String(value)];
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(/[|,]/u)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+  return value.map((item) => String(item).trim()).filter((item) => item.length > 0);
+}
+
+function normalizeComparable(value: string | undefined): string | undefined {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === undefined || normalized === '' ? undefined : normalized;
 }
 
 function budgetCost(text: string, type: WorldInfoBudgetType): number {
