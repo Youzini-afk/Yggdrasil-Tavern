@@ -1,4 +1,17 @@
-import { buildOpenAIChatRequest, buildPrompt, normalizeSamplerSettings } from "@ydltavern/engine-core";
+import {
+  applyPromptBudget,
+  buildOpenAIChatRequest,
+  buildPrompt,
+  buildTextCompletionRequest,
+  cancelledStreamFrame,
+  createApproxTokenizer,
+  normalizeOpenAIChatStreamFrame,
+  normalizeOllamaStreamFrame,
+  normalizeSamplerSettings,
+  normalizeTextCompletionStreamFrame,
+  routePromptMessages,
+  type TextCompletionProviderFamily,
+} from "@ydltavern/engine-core";
 import { projectTurnToSTChatMessage } from "@ydltavern/st-compat";
 import type { Turn } from "@ydltavern/types";
 
@@ -23,9 +36,26 @@ export const generateTurnSnapshot = (input: unknown) => {
   const promptBlocks = readPromptBlocks(record["prompt_blocks"]);
   const sampler = normalizeSamplerSettings(record["sampler"]);
   const model = stringField(record, "model", "ydltavern-fake-model");
+  const mode = record["mode"] === "text" ? "text" : "chat";
   const promptCritical = readPromptCriticalInput(record, chat, model);
-  const prompt = buildPrompt([...promptCritical.blocks, ...promptBlocks], chat, { mode: "chat" });
-  const requestShape = buildOpenAIChatRequest({ model, messages: prompt.messages, sampler, stream: false });
+  const blocks = [...promptCritical.blocks, ...promptBlocks];
+  const prompt = buildPrompt(blocks, chat, { mode });
+  const tokenBudget = readTokenBudget(record, promptCritical.blocks, chat);
+  const promptRouting = routePromptMessages(prompt.messages, promptCritical.worldInfo.buckets);
+  const textProvider = readTextProvider(record["text_provider"] ?? record["provider"]);
+  const requestShape = mode === "text"
+    ? buildTextCompletionRequest({
+        provider: textProvider,
+        prompt: prompt.text,
+        model,
+        sampler,
+        stopStrings: readStringArray(record["stop_strings"] ?? record["stop"]),
+        maxContext: readNumber(record["max_context"] ?? record["maxContext"]),
+        maxResponse: readNumber(record["max_response"] ?? record["maxResponse"]),
+        stream: readBoolean(record["stream"]),
+      })
+    : buildOpenAIChatRequest({ model, messages: prompt.messages, sampler, stream: false });
+  const normalizedStreamPreview = normalizeStreamPreview(record["stream_preview"] ?? record["streamPreview"], mode, textProvider);
   const text = deterministicGenerationText(record, prompt.text || prompt.messages.map((message) => message.content).join("\n"));
   const createdAt = 0;
   const turn: Turn = {
@@ -57,6 +87,8 @@ export const generateTurnSnapshot = (input: unknown) => {
       prompt_manager: promptCritical.promptCritical.diagnostics.promptManager,
       prompt_manager_mapping: promptCritical.promptCritical.diagnostics.markerMapping,
       activated_world_info: promptCritical.worldInfo.activated.length,
+      token_budget: tokenBudget,
+      prompt_routing: promptRouting.diagnostics,
     },
     {
       type: "world_info_evaluated",
@@ -72,6 +104,15 @@ export const generateTurnSnapshot = (input: unknown) => {
       knownDeltas: promptCritical.promptCritical.diagnostics.knownDeltas,
       unsupported: promptCritical.promptCritical.diagnostics.unsupported,
     },
+    {
+      type: "request_built",
+      mode,
+      request_shape: "request" in requestShape ? requestShape.request : requestShape,
+      diagnostics: "diagnostics" in requestShape ? requestShape.diagnostics : undefined,
+      token_budget: tokenBudget,
+      prompt_routing: promptRouting.diagnostics,
+    },
+    { type: "stream_preview", frames: normalizedStreamPreview },
     { type: "token", text },
     { type: "completed", finish_reason: "deterministic_fake" },
   ];
@@ -80,6 +121,9 @@ export const generateTurnSnapshot = (input: unknown) => {
     meta: createCapabilityMeta(GENERATE_ID, { deterministic: true, fake_generation: true, model }),
     prompt,
     request_shape: requestShape,
+    token_budget: tokenBudget,
+    prompt_routing: promptRouting,
+    normalized_stream_preview: normalizedStreamPreview,
     prompt_critical: promptCritical.promptCritical.diagnostics,
     world_info: promptCritical.worldInfo,
     frames,
@@ -133,6 +177,53 @@ function deterministicGenerationText(record: Record<string, unknown>, promptText
 
   const seed = promptText.trim().replace(/\s+/gu, " ").slice(0, 80);
   return seed.length > 0 ? `[ydltavern fake generation] ${seed}` : "[ydltavern fake generation]";
+}
+
+function readTextProvider(value: unknown): TextCompletionProviderFamily {
+  return value === "textgen" || value === "kobold" || value === "ollama" || value === "generic" ? value : "generic";
+}
+
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function readStringArray(value: unknown): readonly string[] | undefined {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    const strings = value.filter((item): item is string => typeof item === "string");
+    return strings.length > 0 ? strings : undefined;
+  }
+  return undefined;
+}
+
+function readTokenBudget(record: Record<string, unknown>, blocks: Parameters<typeof applyPromptBudget>[0], chat: Parameters<typeof applyPromptBudget>[1]) {
+  const maxTokens = readNumber(record["max_prompt_tokens"] ?? record["maxPromptTokens"] ?? record["token_budget"] ?? record["tokenBudget"]);
+  if (maxTokens === undefined) {
+    return undefined;
+  }
+  return applyPromptBudget(blocks, chat, {
+    maxTokens,
+    reserveTokens: readNumber(record["reserve_tokens"] ?? record["reserveTokens"]),
+    tokenizer: createApproxTokenizer(),
+  });
+}
+
+function normalizeStreamPreview(value: unknown, mode: "chat" | "text", provider: TextCompletionProviderFamily) {
+  if (!Array.isArray(value)) {
+    return [cancelledStreamFrame("no stream preview input")];
+  }
+  return value.flatMap((chunk) => {
+    if (mode === "chat") {
+      return normalizeOpenAIChatStreamFrame(chunk);
+    }
+    return provider === "ollama" ? normalizeOllamaStreamFrame(chunk) : normalizeTextCompletionStreamFrame(chunk);
+  });
 }
 
 function readVariantIndex(value: unknown, fallback: number): number {

@@ -101,6 +101,30 @@ test("preset.compile builds prompt and OpenAI request shape", () => {
   assert.equal(output.diagnostics.insertedHistoryTurns, 1);
 });
 
+test("preset.compile builds text completion request and budget diagnostics", () => {
+  const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
+    chat: sampleChat,
+    prompt_blocks: promptBlocks,
+    mode: "text",
+    provider: "textgen",
+    sampler: { temperature: 0.4, max_tokens: 16, top_k: 20 },
+    model: "phase3-text-model",
+    max_prompt_tokens: 64,
+    reserve_tokens: 8,
+    stop_strings: ["</s>"],
+    goldenExpected: outputLikeTextFixture(),
+    goldenMode: "structure",
+  });
+
+  assert.equal(output.request_shape, undefined);
+  assert.equal(output.text_request_shape.max_new_tokens, 16);
+  assert.equal(output.text_request_shape.stopping_strings[0], "</s>");
+  assert.equal(output.text_request_diagnostics.provider, "textgen");
+  assert.equal(output.token_budget.tokenUsage.budget, 64);
+  assert.ok(Array.isArray(output.prompt_routing.diagnostics));
+  assert.equal(output.golden.pass, true);
+});
+
 test("preset.compile includes prompt-critical WI, persona, and author note", () => {
   const output = presetHandlers[`${PACKAGE_ID}/preset.compile`]({
     chat: sampleChat,
@@ -200,11 +224,37 @@ test("turn.generate returns lifecycle frames and assistant outputs", () => {
     text: "sample response",
   });
 
-  assert.deepEqual(output.frames.map((frame) => frame.type), ["started", "prompt_critical", "world_info_evaluated", "prompt_manager_compiled", "token", "completed"]);
+  assert.deepEqual(output.frames.map((frame) => frame.type), ["started", "prompt_critical", "world_info_evaluated", "prompt_manager_compiled", "request_built", "stream_preview", "token", "completed"]);
   assert.equal(output.turn.role, "assistant");
   assert.equal(output.turn.variants[0].subs[0].text, "[ydltavern fake generation] sample response");
   assert.equal(output.message.mes, "[ydltavern fake generation] sample response");
   assert.equal(output.request_shape.model, "phase3-model");
+});
+
+test("turn.generate can build text completion and normalize stream preview", () => {
+  const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
+    id: "generate_text_test",
+    chat: sampleChat,
+    prompt_blocks: promptBlocks,
+    mode: "text",
+    provider: "ollama",
+    model: "phase3-text-model",
+    max_prompt_tokens: 64,
+    stream_preview: [
+      { response: "hello", thinking: "plan" },
+      { done: true, done_reason: "stop", eval_count: 3 },
+    ],
+  });
+
+  const requestFrame = output.frames.find((item) => item.type === "request_built");
+  const streamFrame = output.frames.find((item) => item.type === "stream_preview");
+  assert.equal(output.request_shape.request.model, "phase3-text-model");
+  assert.equal(output.request_shape.diagnostics.provider, "ollama");
+  assert.equal(output.token_budget.tokenUsage.budget, 64);
+  assert.ok(requestFrame.prompt_routing.length >= 0);
+  assert.equal(streamFrame.frames[0].type, "delta");
+  assert.equal(streamFrame.frames[1].type, "reasoning_delta");
+  assert.equal(streamFrame.frames[2].type, "end");
 });
 
 test("turn.generate exposes prompt-critical diagnostics frame", () => {
@@ -225,6 +275,10 @@ test("turn.generate exposes prompt-critical diagnostics frame", () => {
   assert.equal(output.world_info.activated[0].id, "engine-lore");
   assert.ok(output.prompt_critical.includedBlocks.includes("worldInfoBefore"));
 });
+
+function outputLikeTextFixture() {
+  return "structure-only text fixture";
+}
 
 test("turn.generate exposes world info and prompt manager frames", () => {
   const output = turnHandlers[`${PACKAGE_ID}/turn.generate`]({
