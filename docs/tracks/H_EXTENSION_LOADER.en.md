@@ -39,15 +39,15 @@ YdlTavern exposes these package surfaces in the main panel (following Yggdrasil 
 
 ## Installation channels
 
-Depends on Yggdrasil's git installation capability:
+Installation does not depend on a kernel git transport:
 
 - ST-style extensions: YdlTavern pulls git / zip itself and stores them in `extensions/`
-- Yggdrasil packages: use `kernel.v1.outbound.git_fetch` + `official/package-installer-lab`, writing to the host profile lockfile (already implemented in Yggdrasil)
+- Yggdrasil packages: wait for Yggdrasil Round 10+ `official/git-tools-lab`, an ordinary capability package install flow; no dedicated kernel git method is used
 
 ## Dependencies
 
 - Track D (ST-style extensions use the compatibility layer)
-- Yggdrasil git installation channel (already exists)
+- Yggdrasil ordinary-package installation channel (Round 10+)
 - Track C (extension generate hooks)
 - Track E (extensions register slash commands / macros)
 

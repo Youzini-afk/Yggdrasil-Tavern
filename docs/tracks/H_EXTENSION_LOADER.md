@@ -39,15 +39,15 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 
 ## 安装通道
 
-依赖 Yggdrasil 的 git 安装能力：
+安装能力不依赖内核 git 传输：
 
 - ST 风格扩展：YdlTavern 自己拉 git / zip，存到 `extensions/`
-- Yggdrasil 包：走 `kernel.v1.outbound.git_fetch` + `official/package-installer-lab`，写到 host profile lockfile（Yggdrasil 已实现）
+- Yggdrasil 包：等待 Yggdrasil Round 10+ 的普通能力包 `official/git-tools-lab` 提供安装流；不通过内核专用 git 方法
 
 ## 依赖
 
 - D 轨道（ST 风格扩展用兼容层）
-- Yggdrasil git 安装通道（已有）
+- Yggdrasil 普通能力包安装通道（Round 10+）
 - C 轨道（扩展 generate hook）
 - E 轨道（扩展注册 slash commands / 宏）
 
