@@ -8,17 +8,11 @@ Round 8 Y-track 已完成：ST 扩展 same-window 托管、messageFormatting（s
 
 - **Production extension hosting**：在 host 上实现 `/scripts/extensions/<id>/` static route，服务已安装扩展文件与 ST compatibility shims。
 - **Activity Drawer**：透明展示扩展活动（fetch URL hash、localStorage writes、slash command registrations、event listeners、DOM mount targets），不做拦截。
-- **Performance baseline benchmark**：固定 subprocess JSON-RPC、SSE streaming、prompt construction 的 benchmark inputs 与报告格式。
-- **Phase B pain-point resolution**：推进 multi-agent / MCP / vector RAG / ToolManager 的协议边界与用户路径。
-
-## Performance baseline benchmark
-
-- **Subprocess JSON-RPC**：测量 `ydltavern-engine` capability 调用的 cold/warm latency、payload 大小、serialization 成本与错误路径。
-- **SSE streaming**：测量 `model.live_call.stream` 的首 token 延迟、chunk cadence、cancel latency 与 host outbound audit overhead。
-- **Prompt construction**：测量 PromptManager、World Info、macro expansion、token counting 与 instruct wrapping 在典型上下文长度下的成本。
-- **Golden fixture reuse**：把 benchmark inputs 固定成可复现 fixtures，避免性能数字随 demo 数据漂移。
+- **Phase B pain-point resolution**：以 [`../guides/PERFORMANCE_BASELINE.md`](../guides/PERFORMANCE_BASELINE.md) 和 `perf/baseline.json` 为 regression reference，推进 multi-agent / MCP / vector RAG / ToolManager 的协议边界与用户路径。
 
 ## Phase B pain-point resolution
+
+Phase B 事项都应在同机前后对比 `perf/baseline.json`，普通稳定场景以 10% 为 advisory 阈值，波动较大的 E2E / jsdom / WASM 场景以 20% 为 advisory 阈值。
 
 - **Multi-agent orchestration**：定义 YdlTavern 如何把 ST-style chat flow 映射到 Yggdrasil agent/session 协作，而不是把 agent 逻辑塞进 UI。
 - **MCP protocol surface**：明确 MCP tool/resource/prompt 通过 Yggdrasil capability boundary 暴露给 YdlTavern 的方式。

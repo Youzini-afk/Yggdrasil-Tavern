@@ -18,7 +18,7 @@
 
 ## 路线图
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列；Y-track 已完成，保留 Round 9 生产扩展托管、Activity Drawer、性能 baseline 与 Phase B 事项
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.md) —— 当前后续工作队列；Y-track 与 baseline benchmark 已完成，保留 Round 9 生产扩展托管、Activity Drawer 与 Phase B 事项
 
 ## Guides
 
@@ -27,6 +27,7 @@
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) —— 通过 Yggdrasil WebSocket outbound 使用 OpenAI Realtime / Gemini Live stub
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) —— 在 QuickJS sandbox 中 opt-in 加载真实 SillyTavern ESM 扩展
 - [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.md) —— Round 8 same-window ST 扩展兼容承诺、DOM 契约、globals 与 URL layout
+- [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.md) —— 运行 5 包 37 场景 tinybench baseline，并使用 `perf/baseline.json` 做回归参考
 - [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) —— SillyTavern UI/layout fork、9 抽屉、主题、消息、composer 与移动端 parity
 - [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) —— Yggdrasil clients/web 如何解析、iframe 挂载并通过 RPC bridge 运行 YdlTavern surface bundle
 
@@ -72,6 +73,7 @@
 | 配置真实模型调用 | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) |
 | 配置 Realtime WebSocket 模型 | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) |
 | 加载真实 ST 扩展 | [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.md) → [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) |
+| 运行性能 baseline | [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.md) |
 | 理解 UI fork / ST parity | [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.md) |
 | 本地挂载 YdlTavern surface bundle | [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) |
 | 找 ST 源码里某个 API/事件/命令 | 对应的 `inventory/*.raw.md` |

@@ -18,7 +18,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 
 ## Roadmap
 
-- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.en.md) — current follow-up work queue; Y-track is complete and only Round 9 production extension hosting, Activity Drawer, performance baseline, and Phase B work remains
+- [`roadmap/NEXT_STEPS.md`](roadmap/NEXT_STEPS.en.md) — current follow-up work queue; Y-track and baseline benchmark are complete, leaving Round 9 production extension hosting, Activity Drawer, and Phase B work
 
 ## Guides
 
@@ -27,6 +27,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) — use OpenAI Realtime / Gemini Live stub through Yggdrasil WebSocket outbound
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.en.md) — opt into loading real SillyTavern ESM extensions in the QuickJS sandbox
 - [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.en.md) — Round 8 same-window ST extension compatibility promise, DOM contract, globals, and URL layout
+- [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.en.md) — run the 5-package, 37-scenario tinybench baseline and use `perf/baseline.json` as the regression reference
 - [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.en.md) — SillyTavern UI/layout fork, 9 drawers, themes, messages, composer, and mobile parity
 - [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.en.md) — how Yggdrasil clients/web resolves, iframe-mounts, and RPC-bridges the YdlTavern surface bundle
 
@@ -72,6 +73,7 @@ Parallel work by domain, not linear milestones. See [`tracks/README.md`](tracks/
 | Configure live model calls | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.en.md) |
 | Configure Realtime WebSocket models | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) |
 | Load real ST extensions | [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.en.md) → [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.en.md) |
+| Run the performance baseline | [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.en.md) |
 | Understand the UI fork / ST parity | [`guides/UI_FORK_GUIDE.md`](guides/UI_FORK_GUIDE.en.md) |
 | Mount the YdlTavern surface bundle locally | [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.en.md) |
 | Find a specific ST API/event/command | the matching `inventory/*.raw.md` |
