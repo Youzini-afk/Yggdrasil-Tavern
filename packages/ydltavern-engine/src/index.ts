@@ -21,6 +21,8 @@ interface JsonRpcRequest {
   params?: Record<string, unknown>;
 }
 
+const kernelBindings: Record<string, unknown> = {};
+
 interface CapabilityInvokeParams {
   capability_id?: string;
   input?: unknown;
@@ -99,6 +101,7 @@ const serveFallback = (): void => {
 
       try {
         if (request.method === "package.handshake") {
+          Object.assign(kernelBindings, request.params?.bindings ?? {});
           respond(request.id, { result: handshake() });
           return;
         }
@@ -127,7 +130,10 @@ const main = async (): Promise<void> => {
       const sdk = (await import("@yggdrasil/subprocess")) as unknown as SdkModule;
       if (typeof sdk.serveSubprocessPackage === "function") {
         sdk.serveSubprocessPackage({
-          onHandshake: () => handshake(),
+          onHandshake: (params: Record<string, unknown>) => {
+            Object.assign(kernelBindings, params.bindings ?? {});
+            return handshake();
+          },
           onInvoke: (params: CapabilityInvokeParams, context?: HandlerContext) => invoke(params, context),
         });
         return;
