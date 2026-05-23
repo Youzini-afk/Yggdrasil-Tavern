@@ -6,6 +6,22 @@
 
 YdlTavern 把 SillyTavern 社区多年沉淀下来的内容格式和扩展生态接进 Yggdrasil 平台底座。前端体验保持熟悉，引擎层走 Yggdrasil 的现代实现。
 
+## 安装
+
+YdlTavern 通过 Yggdrasil 的项目机制安装：
+
+```bash
+yg install github.com/Youzini-afk/Yggdrasil-Tavern
+```
+
+安装后，YdlTavern 会作为 `yggdrasil_native` 项目出现在 Home 屏幕上。
+点击 Play 进入聊天界面。
+
+API key 配置走 Yggdrasil 的密钥存储 — 在 API Connections 抽屉里粘贴一次即可。
+详见 [Yggdrasil 密钥管理指南](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.md)。
+
+项目 id 使用稳定形态 `youzini-afk__YdlTavern__d2a47e5c`：前缀来自发布者与项目名，后缀是 canonical name `Youzini-afk/Yggdrasil-Tavern` 的 SHA-256 前 8 位。
+
 ## 它做什么
 
 - 直接导入 SillyTavern 的角色卡（V1 / V2 / V3）、世界书、提示词预设、聊天历史。

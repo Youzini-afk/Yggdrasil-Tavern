@@ -1,0 +1,18 @@
+schema_version: 1
+project:
+  id: youzini-afk__YdlTavern__d2a47e5c
+  title: YdlTavern
+  description: SillyTavern-compatible AI roleplay surface for Yggdrasil. Catches existing ST community resources (character cards, world books, presets, chat history, extensions).
+  type: yggdrasil_native
+  entry_surface_id: ydltavern/play
+  packages:
+    - packages/ydltavern-engine/manifest.yaml
+    - packages/ydltavern-surface/manifest.yaml
+  optional_packages: []
+  required_surfaces:
+    - ydltavern/play
+    - ydltavern/settings
+    - ydltavern/extensions
+  secret_policy:
+    fallback_to_platform: true
+    require_per_project: []

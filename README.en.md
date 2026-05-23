@@ -6,6 +6,22 @@
 
 YdlTavern brings the content formats and extension ecosystem the SillyTavern community has built up over the years onto the Yggdrasil platform substrate. The frontend stays familiar; the engine layer uses Yggdrasil's modern implementation.
 
+## Installation
+
+YdlTavern installs through Yggdrasil's project mechanism:
+
+```bash
+yg install github.com/Youzini-afk/Yggdrasil-Tavern
+```
+
+After installation, YdlTavern appears on the Home screen as a `yggdrasil_native` project.
+Click Play to enter the chat surface.
+
+API key configuration uses Yggdrasil's secret store — paste once in the API Connections drawer.
+See the [Yggdrasil secret management guide](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md).
+
+The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the prefix comes from publisher and project name, and the suffix is the first 8 characters of the SHA-256 of the canonical name `Youzini-afk/Yggdrasil-Tavern`.
+
 ## What it does
 
 - Imports SillyTavern character cards (V1 / V2 / V3), world books, prompt presets, and chat history directly.
