@@ -11,7 +11,7 @@ export interface ConnectionSettings {
 const DEFAULT_CONNECTION: ConnectionSettings = {
   provider: 'openai',
   model: 'gpt-4o-mini',
-  secretRef: '',
+  secretRef: 'secret_ref:store:OPENAI_API_KEY',
   apiBaseUrl: '',
   stream: true,
 };
@@ -27,8 +27,8 @@ export interface ConnectionFormProps {
 
 function validateSecretRef(value: string): string | undefined {
   if (value.length === 0) return undefined;
-  if (/^secret_ref:(env|file|inline):.+/.test(value)) return undefined;
-  return 'Expected format: secret_ref:env:KEY_NAME';
+  if (/^secret_ref:(env|file|inline|store):.+/.test(value)) return undefined;
+  return 'Expected format: secret_ref:store:KEY_NAME';
 }
 
 export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX.Element {
@@ -94,7 +94,7 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
             value={draft.secretRef}
             onChange={handleChange('secretRef')}
             onBlur={handleSecretBlur}
-            placeholder="secret_ref:env:OPENAI_API_KEY"
+            placeholder="secret_ref:store:OPENAI_API_KEY"
           />
           {secretError !== undefined ? (
             <span className="settings-field-error">{secretError}</span>

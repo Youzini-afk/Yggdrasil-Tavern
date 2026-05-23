@@ -237,6 +237,11 @@ permissions:
         methods: [POST, WEBSOCKET]
     hosts: []
   secret_refs:
+    - secret_ref:store:OPENAI_API_KEY
+    - secret_ref:store:DEEPSEEK_API_KEY
+    - secret_ref:store:ANTHROPIC_API_KEY
+    - secret_ref:store:OPENROUTER_API_KEY
+    - secret_ref:store:GEMINI_API_KEY
     - secret_ref:env:OPENAI_API_KEY
     - secret_ref:env:DEEPSEEK_API_KEY
     - secret_ref:env:ANTHROPIC_API_KEY

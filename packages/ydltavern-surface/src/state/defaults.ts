@@ -58,6 +58,7 @@ export const DEFAULT_SAMPLER: SamplerSettings = {
 export const DEFAULT_CONNECTION: ConnectionSettings = {
   provider: 'openai',
   model: 'gpt-4-turbo',
+  secretRef: 'secret_ref:store:OPENAI_API_KEY',
 };
 
 export const DEFAULT_FORMATTING: FormattingSettings = {

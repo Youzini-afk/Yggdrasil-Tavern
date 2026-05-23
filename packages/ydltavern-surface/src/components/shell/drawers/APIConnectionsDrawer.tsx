@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DrawerShell } from '../DrawerShell';
 import type { DrawerState } from '../useDrawers';
 import { ConnectionForm } from '../../product/Settings/ConnectionForm';
 import type { ConnectionSettings as ConnectionFormSettings } from '../../product/Settings/ConnectionForm';
 import { useTavern } from '../../../app/TavernProvider';
+import {
+  defaultSecretName,
+  deleteSecret,
+  listSecrets,
+  secretRefForStore,
+  secretStoreHealth,
+  storeSecret,
+} from '../../../state/secrets.js';
 
 const PROVIDER_GROUPS = [
   {
@@ -116,6 +124,12 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
         />
       </section>
 
+      <APIKeySection
+        provider={tavern.connectionSettings.provider}
+        currentSecretRef={tavern.connectionSettings.secretRef ?? ''}
+        onSecretRefChange={(ref) => tavern.updateConnectionSettings({ secretRef: ref })}
+      />
+
       <section className="drawer-section">
         <header className="drawer-section-header">
           <h3>Connection profiles</h3>
@@ -161,15 +175,222 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
         </div>
       </section>
 
-      <section className="drawer-section">
-        <header className="drawer-section-header">
-          <h3>Status</h3>
-        </header>
-        <div className="connection-status">
-          <span className="status-dot status-dot-idle" aria-hidden="true" />
-          <span>Not connected</span>
-        </div>
-      </section>
+      <StatusSection secretRef={tavern.connectionSettings.secretRef ?? ''} />
     </DrawerShell>
+  );
+}
+
+function APIKeySection({ provider, currentSecretRef, onSecretRefChange }: {
+  provider: string;
+  currentSecretRef: string;
+  onSecretRefChange: (ref: string) => void;
+}) {
+  const defaultName = defaultSecretName(provider);
+  const [secretName, setSecretName] = useState(defaultName);
+  const [keyValue, setKeyValue] = useState('');
+  const [savedKeys, setSavedKeys] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<{ kind: 'ok' | 'err' | 'idle'; message: string }>({ kind: 'idle', message: '' });
+  const [storeAvailable, setStoreAvailable] = useState<boolean | null>(null);
+
+  const refresh = async () => {
+    try {
+      const names = await listSecrets();
+      setSavedKeys(names);
+      setStoreAvailable(true);
+    } catch (err) {
+      setStoreAvailable(false);
+      setStatus({ kind: 'err', message: `secret-store unavailable: ${(err as Error).message}` });
+    }
+  };
+
+  useEffect(() => { refresh().catch(() => {}); }, []);
+
+  useEffect(() => { setSecretName(defaultSecretName(provider)); }, [provider]);
+
+  const onSave = async () => {
+    if (!keyValue.trim() || !secretName.trim()) return;
+    const trimmedName = secretName.trim();
+    setBusy(true);
+    setStatus({ kind: 'idle', message: '' });
+    try {
+      const result = await storeSecret(trimmedName, keyValue);
+      setKeyValue('');
+      setStatus({
+        kind: 'ok',
+        message: result.created ? `Saved key as ${trimmedName}` : `Updated key ${trimmedName}`,
+      });
+      onSecretRefChange(secretRefForStore(trimmedName));
+      await refresh();
+    } catch (err) {
+      setStatus({ kind: 'err', message: (err as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onDelete = async (name: string) => {
+    setBusy(true);
+    try {
+      await deleteSecret(name);
+      if (currentSecretRef === secretRefForStore(name)) {
+        onSecretRefChange('');
+      }
+      await refresh();
+      setStatus({ kind: 'ok', message: `Removed ${name}` });
+    } catch (err) {
+      setStatus({ kind: 'err', message: (err as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onUseExisting = (name: string) => {
+    setSecretName(name);
+    onSecretRefChange(secretRefForStore(name));
+  };
+
+  return (
+    <section className="drawer-section">
+      <header className="drawer-section-header">
+        <h3>API Key</h3>
+        <small>
+          Stored encrypted in <code>~/.yggdrasil/secrets.dat</code>. Never sent to model providers
+          except as request headers.
+        </small>
+      </header>
+
+      {storeAvailable === false && (
+        <div className="connection-status status-error">
+          Secret store unavailable. Verify <code>official/secret-store-lab</code> is loaded
+          in your host profile.
+        </div>
+      )}
+
+      <div className="range-block">
+        <label>
+          <span>Secret name:</span>
+          <input
+            type="text"
+            className="text_pole"
+            value={secretName}
+            onChange={(e) => setSecretName(e.target.value)}
+            placeholder={defaultName}
+          />
+        </label>
+      </div>
+      <div className="range-block">
+        <label>
+          <span>API key:</span>
+          <input
+            type="password"
+            className="text_pole"
+            value={keyValue}
+            onChange={(e) => setKeyValue(e.target.value)}
+            placeholder="Paste key, then save"
+            autoComplete="off"
+          />
+        </label>
+      </div>
+      <div className="preset-actions">
+        <button
+          type="button"
+          className="menu_button"
+          onClick={onSave}
+          disabled={busy || !keyValue.trim() || !secretName.trim()}
+        >
+          <i className="fa-solid fa-floppy-disk" aria-hidden="true" /> Save key
+        </button>
+      </div>
+
+      {savedKeys.length > 0 && (
+        <div className="range-block">
+          <label className="ydl-saved-keys-label">
+            <span>Saved keys:</span>
+          </label>
+          <ul className="ydl-saved-keys-list">
+            {savedKeys.map((name) => {
+              const ref = secretRefForStore(name);
+              const inUse = currentSecretRef === ref;
+              return (
+                <li key={name} className="ydl-saved-key-row">
+                  <span className="ydl-saved-key-name">
+                    {name} {inUse && <em>(in use)</em>}
+                  </span>
+                  <span className="ydl-saved-key-actions">
+                    {!inUse && (
+                      <button
+                        type="button"
+                        className="menu_button menu_button_compact"
+                        onClick={() => onUseExisting(name)}
+                      >
+                        Use
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="menu_button menu_button_compact menu_button_danger"
+                      onClick={() => onDelete(name)}
+                      disabled={busy}
+                    >
+                      <i className="fa-solid fa-trash" aria-hidden="true" />
+                    </button>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {status.kind !== 'idle' && (
+        <div className={`connection-status ${status.kind === 'ok' ? 'status-ok' : 'status-error'}`}>
+          {status.message}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function StatusSection({ secretRef }: { secretRef: string }) {
+  const [storeStatus, setStoreStatus] = useState<{
+    kind: 'ok' | 'err' | 'unknown';
+    keySource?: string;
+    secretCount?: number;
+  }>({ kind: 'unknown' });
+
+  useEffect(() => {
+    secretStoreHealth()
+      .then((h) => setStoreStatus({ kind: 'ok', keySource: h.key_source, secretCount: h.secret_count }))
+      .catch(() => setStoreStatus({ kind: 'err' }));
+  }, []);
+
+  const hasSecret = secretRef.startsWith('secret_ref:store:');
+
+  return (
+    <section className="drawer-section">
+      <header className="drawer-section-header">
+        <h3>Status</h3>
+      </header>
+      <div className="connection-status">
+        <span
+          className={`status-dot ${
+            storeStatus.kind === 'ok' && hasSecret ? 'status-dot-ok' : 'status-dot-idle'
+          }`}
+          aria-hidden="true"
+        />
+        <span>
+          {storeStatus.kind === 'unknown' && 'Checking secret store…'}
+          {storeStatus.kind === 'err' && 'Secret store unavailable'}
+          {storeStatus.kind === 'ok' && (
+            <>
+              Secret store ready ({storeStatus.secretCount} stored, key via {storeStatus.keySource}).
+              {!hasSecret && ' No API key selected for this profile.'}
+              {hasSecret && ' API key configured.'}
+            </>
+          )}
+        </span>
+      </div>
+    </section>
   );
 }

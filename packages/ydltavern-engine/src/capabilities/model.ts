@@ -32,14 +32,19 @@ export const modelHandlers: HandlerRecord = {
 export function readModelProfile(input: unknown): ModelCallProfile {
   const record = inputRecord(input);
   const mode: ModelCallMode = record["mode"] === "text" ? "text" : "chat";
+  const provider = stringField(record, "provider", "fake-local");
   return {
-    provider: stringField(record, "provider", "fake-local"),
+    provider,
     model: stringField(record, "model", "ydltavern-fake-model"),
     endpoint: readOptionalString(record["endpoint"]),
-    secretRef: readOptionalString(record["secretRef"] ?? record["secret_ref"]),
+    secretRef: readOptionalString(record["secretRef"] ?? record["secret_ref"]) ?? defaultSecretRef(provider),
     mode,
     stream: readBoolean(record["stream"]),
   };
+}
+
+function defaultSecretRef(provider: string): string | undefined {
+  return provider === "fake-local" ? undefined : "secret_ref:store:OPENAI_API_KEY";
 }
 
 function readOptionalString(value: unknown): string | undefined {
