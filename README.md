@@ -21,6 +21,7 @@ YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + 
 - 它跟其他第三方项目享有同样的待遇：同一份清单、同一套权限、同一道审计闸门。
 - 它会用上 Yggdrasil 已经做好的：模型接入、`secret_ref`、流式与取消生命周期、提案与审批、记忆、分享、外发审计、git 安装能力包。
 - 它按内核 v1 契约作为路径 A 包运行（`entry.contract: "v1"`），通过 bindings / subprocess SDK 调用平台能力；生成的 `@yggdrasil/kernel-sdk` 可通过 npm 或 sibling workspace path（`file:../Yggdrasil/sdk/typescript/kernel-sdk`）消费。
+- 发布后可通过 `yg install github.com/Youzini-afk/Yggdrasil-Tavern` 安装。
 
 Yggdrasil 那边的相关入口见 [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.md)。
 

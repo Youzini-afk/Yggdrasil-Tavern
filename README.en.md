@@ -21,6 +21,7 @@ YdlTavern is an integration project on top of Yggdrasil. It consumes the platfor
 - It gets the same treatment as any third-party project: same manifest, same permissions, same audit boundary.
 - It uses what Yggdrasil already provides: model integration, `secret_ref`, streaming and cancel lifecycle, proposals and approval, memory, sharing, outbound audit, git package install.
 - It runs as a kernel v1 Path A package (`entry.contract: "v1"`) and calls platform authority through bindings / the subprocess SDK; the generated `@yggdrasil/kernel-sdk` can be consumed from npm or a sibling workspace path (`file:../Yggdrasil/sdk/typescript/kernel-sdk`).
+- Once published, it can be installed with `yg install github.com/Youzini-afk/Yggdrasil-Tavern`.
 
 For Yggdrasil's side of the boundary, see [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.en.md).
 
