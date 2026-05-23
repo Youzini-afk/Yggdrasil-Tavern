@@ -6,6 +6,8 @@ import { useDrawers, type DrawerId, type DrawerState } from '../components/shell
 
 export interface StandaloneDrawerSurfaceProps {
   readonly className?: string;
+  readonly sessionId?: string;
+  readonly projectId?: string;
 }
 
 export interface CreateStandaloneDrawerSurfaceOptions {
@@ -23,10 +25,10 @@ export function createStandaloneDrawerSurface({
   surfaceClassName,
   Drawer,
 }: CreateStandaloneDrawerSurfaceOptions): (props: StandaloneDrawerSurfaceProps) => JSX.Element {
-  return function StandaloneDrawerSurface({ className }: StandaloneDrawerSurfaceProps): JSX.Element {
+  return function StandaloneDrawerSurface({ className, sessionId, projectId }: StandaloneDrawerSurfaceProps): JSX.Element {
     return (
       <div className={composeClass(['ydltavern-surface', 'tavern-surface', surfaceClassName], className)}>
-        <TavernProvider>
+        <TavernProvider sessionId={sessionId} projectId={projectId}>
           <StandaloneDrawerRoot drawerId={drawerId} Drawer={Drawer} />
         </TavernProvider>
       </div>

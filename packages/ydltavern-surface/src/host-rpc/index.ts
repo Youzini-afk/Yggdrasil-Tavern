@@ -6,6 +6,7 @@ interface RpcCallMessage {
   id: string;
   method: string;
   params: unknown;
+  session_id?: string;
 }
 
 interface RpcResultMessage {
@@ -16,10 +17,13 @@ interface RpcResultMessage {
 }
 
 let nextRpcId = 1;
+let activeSessionId: string | undefined;
 const pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
+let listenerWindow: Window | undefined;
 
-// One global listener registered at module load.
-if (typeof window !== 'undefined') {
+function ensureRpcListener(): void {
+  if (typeof window === 'undefined' || listenerWindow === window) return;
+  listenerWindow = window;
   window.addEventListener('message', (e: MessageEvent) => {
     const msg = e.data as RpcResultMessage;
     if (msg?.type !== 'rpc.result') return;
@@ -34,10 +38,19 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// One global listener registered at module load when possible, and lazily in
+// callHostRpc for tests/modules that import before a DOM window exists.
+ensureRpcListener();
+
+export function setActiveSessionId(sessionId: string | undefined): void {
+  activeSessionId = sessionId;
+}
+
 export async function callHostRpc(method: string, params: unknown, timeoutMs = 30000): Promise<unknown> {
   if (typeof window === 'undefined' || !window.parent) {
     throw new Error('host RPC unavailable: not running in surface iframe');
   }
+  ensureRpcListener();
   const id = `rpc-${nextRpcId++}-${Date.now()}`;
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -48,12 +61,14 @@ export async function callHostRpc(method: string, params: unknown, timeoutMs = 3
       resolve: (v) => { clearTimeout(timer); resolve(v); },
       reject: (e) => { clearTimeout(timer); reject(e); },
     });
-    window.parent.postMessage({
+    const message: RpcCallMessage = {
       type: 'rpc.call',
       id,
       method,
       params,
-    } satisfies RpcCallMessage, '*');
+    };
+    if (activeSessionId) message.session_id = activeSessionId;
+    window.parent.postMessage(message, '*');
   });
 }
 

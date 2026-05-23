@@ -46,4 +46,22 @@ describe('callHostRpc', () => {
     assert.equal(first.message.method, 'kernel.v1.capability.invoke');
     assert.deepEqual(first.message.params, { capability_id: 'test/cap', input: { x: 1 } });
   });
+
+  it('attaches active session_id to RPC messages', async () => {
+    const posted: unknown[] = [];
+    const win = window as unknown as { parent: { postMessage: (message: unknown, targetOrigin: string) => void } };
+    const originalPost = win.parent.postMessage;
+    win.parent.postMessage = (message: unknown, targetOrigin: string) => {
+      posted.push({ message, targetOrigin });
+      originalPost(message, targetOrigin);
+    };
+
+    const { callHostRpc, setActiveSessionId } = await import(`../src/host-rpc/index.ts?testSession=${Date.now()}`);
+    setActiveSessionId('sess-test-1');
+    await callHostRpc('kernel.v1.capability.invoke', {}, 1000);
+    setActiveSessionId(undefined);
+
+    const first = posted[0] as { message: { session_id?: string } };
+    assert.equal(first.message.session_id, 'sess-test-1');
+  });
 });

@@ -19,6 +19,7 @@ import {
   SEED_WORLDBOOK,
   type TavernSettings,
 } from '../state/defaults.js';
+import { invokeCapability } from '../host-rpc/index.js';
 import {
   migrateSettingsV1ToV2,
   readBackgroundDisplaySettings,
@@ -71,9 +72,11 @@ export interface TavernRuntimeState {
   readonly input: string;
   readonly activeDrawer: TavernDrawer;
   readonly showDiagnostics: boolean;
+  readonly sessionId: string | undefined;
+  readonly projectId: string | undefined;
   readonly setInput: (value: string) => void;
   readonly setActiveDrawer: (drawer: TavernDrawer) => void;
-  readonly sendMessage: () => void;
+  readonly sendMessage: (text?: string) => Promise<void>;
   readonly generateReply: () => void;
   readonly editFirstMessage: () => void;
   readonly swipeReply: () => void;
@@ -170,6 +173,8 @@ export interface TavernRuntimeState {
 export interface TavernProviderProps {
   readonly chat?: Chat;
   readonly showDiagnostics?: boolean;
+  readonly sessionId?: string;
+  readonly projectId?: string;
   readonly children: ReactNode;
   readonly extensionRecords?: readonly STExtensionRecord[];
   readonly extensionActivationContext?: STActivationContext;
@@ -180,6 +185,8 @@ const TavernContext = createContext<TavernRuntimeState | undefined>(undefined);
 export function TavernProvider({
   chat = sampleChat,
   showDiagnostics = true,
+  sessionId,
+  projectId,
   children,
   extensionRecords = [],
   extensionActivationContext,
@@ -202,7 +209,7 @@ export function TavernProvider({
   const [worldBooks, setWorldBooks] = useState<WorldBookEntry[]>(readWorldBooks);
   const [backgrounds, setBackgrounds] = useState<BackgroundEntry[]>(readBackgrounds);
   const [selection, setSelectionState] = useState<PersistedSelection>(readSelection);
-  const [isGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const theme = useMemo(() => {
     const base = getThemeById(themeSettings.themeId);
@@ -513,14 +520,65 @@ export function TavernProvider({
   void revision;
   const liveChat = ownStore.snapshot();
 
-  const sendMessage = useCallback(() => {
-    const mes = input.trim();
+  const sendMessage = useCallback(async (text?: string) => {
+    const mes = (text ?? input).trim();
     if (mes.length === 0) return;
-    const message = ctx.addOneMessage({ is_user: true, name: ctx.name1, mes });
-    ownStore.pushMessage(message);
+    const userMessage = ctx.addOneMessage({ is_user: true, name: ctx.name1, mes });
+    ownStore.pushMessage(userMessage);
     setInput('');
     setRevision((r) => r + 1);
-  }, [ctx, input, ownStore]);
+
+    if (!connectionState.current.provider || !connectionState.current.secretRef) {
+      const systemMessage = ctx.addOneMessage({
+        is_system: true,
+        name: 'System',
+        mes: 'Configure API in API Connections drawer first.',
+      });
+      ownStore.pushMessage(systemMessage);
+      setRevision((r) => r + 1);
+      return;
+    }
+
+    const assistantMessage = ctx.addOneMessage({
+      is_user: false,
+      name: ctx.name2,
+      mes: '',
+      extra: { ydl_streaming: true },
+    });
+    ownStore.pushMessage(assistantMessage);
+    setIsGenerating(true);
+    setRevision((r) => r + 1);
+
+    try {
+      const provider = normalizeLiveCallSource(connectionState.current.provider);
+      const result = await invokeCapability('ydltavern/engine/model.live_call', {
+        source: provider,
+        model: connectionState.current.model || defaultModelForProvider(provider),
+        messages: buildLiveMessages(ownStore.messages()),
+        settings: buildLiveCallSettings(samplerSettings, settings, connectionState.current, ctx.name1, ctx.name2),
+        stream: false,
+        secret_ref: connectionState.current.secretRef,
+        ...(connectionState.current.baseUrl ? providerEndpointOverrides(provider, connectionState.current.baseUrl) : {}),
+      });
+      const content = extractContentFromResult(result);
+      const reasoning = extractReasoningFromResult(result);
+      const assistantIndex = ownStore.length - 1;
+      ownStore.updateMessage(assistantIndex, {
+        mes: content,
+        extra: { ...(reasoning ? { reasoning } : {}), ydl_streaming: false },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const assistantIndex = ownStore.length - 1;
+      ownStore.updateMessage(assistantIndex, {
+        mes: `Error: ${message}`,
+        extra: { ydl_streaming: false, ydl_error: true },
+      });
+    } finally {
+      setIsGenerating(false);
+      setRevision((r) => r + 1);
+    }
+  }, [connectionState.current, ctx, input, ownStore, samplerSettings, settings]);
 
   const generateReply = useCallback(() => {
     const result = ctx.Generate({ text: 'This is a fake generated reply from the YdlTavern product surface.' });
@@ -654,6 +712,8 @@ export function TavernProvider({
         input,
         activeDrawer,
         showDiagnostics,
+        sessionId,
+        projectId,
         setInput,
         setActiveDrawer,
         sendMessage,
@@ -766,6 +826,172 @@ function upsertById<T extends { readonly id: string }>(entries: T[], entry: T): 
   const index = entries.findIndex((candidate) => candidate.id === entry.id);
   if (index === -1) return [...entries, entry];
   return entries.map((candidate) => candidate.id === entry.id ? entry : candidate);
+}
+
+type LiveCallRole = 'system' | 'user' | 'assistant' | 'tool';
+
+function buildLiveMessages(messages: readonly STChatMessage[]): Array<{ role: LiveCallRole; content: string }> {
+  return messages
+    .map((message) => ({
+      role: roleFromStMessage(message),
+      content: message.mes ?? '',
+    }))
+    .filter((message) => message.content.length > 0 || message.role === 'assistant');
+}
+
+function roleFromStMessage(message: STChatMessage): LiveCallRole {
+  if (message.is_system) return 'system';
+  if (message.is_user) return 'user';
+  return 'assistant';
+}
+
+function normalizeLiveCallSource(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return 'anthropic';
+    case 'custom-openai':
+      return 'openai';
+    default:
+      return provider;
+  }
+}
+
+function defaultModelForProvider(provider: string): string {
+  switch (provider) {
+    case 'anthropic':
+      return 'claude-3-5-haiku-latest';
+    case 'deepseek':
+      return 'deepseek-chat';
+    case 'openrouter':
+      return 'openai/gpt-4o-mini';
+    case 'gemini':
+      return 'gemini-1.5-flash';
+    default:
+      return 'gpt-4o-mini';
+  }
+}
+
+function providerEndpointOverrides(provider: string, baseUrl: string): Record<string, string> {
+  try {
+    const url = new URL(baseUrl);
+    return {
+      destination_host_override: url.host,
+      api_path_override: `${url.pathname}${url.search}` || '/v1/chat/completions',
+    };
+  } catch {
+    if (provider === 'openai') {
+      return { api_path_override: baseUrl };
+    }
+    return {};
+  }
+}
+
+function buildLiveCallSettings(
+  sampler: SamplerSettings,
+  settings: TavernSettings,
+  connection: ConnectionSettings,
+  userName: string,
+  characterName: string,
+): Record<string, unknown> {
+  return {
+    temp_openai: sampler.temperature,
+    freq_pen_openai: sampler.frequencyPenalty,
+    pres_pen_openai: sampler.presencePenalty,
+    top_p_openai: sampler.topP,
+    top_k: sampler.topK,
+    min_p: sampler.minP,
+    top_a: sampler.topA,
+    repetition_penalty: sampler.repetitionPenalty,
+    openai_max_tokens: sampler.maxTokens,
+    openai_model: connection.model,
+    stream_openai: false,
+    user_name: userName,
+    char_name: characterName,
+    custom_url: connection.baseUrl,
+    reverse_proxy: connection.baseUrl,
+    logit_bias: parseLogitBias(settings.logitBias),
+    stop: splitLines(settings.bannedTokens),
+  };
+}
+
+function parseLogitBias(value: string): Record<string, number> | undefined {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return undefined;
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined;
+    const out: Record<string, number> = {};
+    for (const [key, raw] of Object.entries(parsed)) {
+      if (typeof raw === 'number' && Number.isFinite(raw)) out[key] = raw;
+    }
+    return Object.keys(out).length > 0 ? out : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function splitLines(value: string): string[] | undefined {
+  const lines = value.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
+  return lines.length > 0 ? lines : undefined;
+}
+
+export function extractContentFromResult(result: unknown): string {
+  if (typeof result === 'string') return result;
+  if (!result || typeof result !== 'object') return '(empty response)';
+  const r = result as Record<string, unknown>;
+
+  if (typeof r.text === 'string') return r.text;
+  if (typeof r.output === 'string') return r.output;
+  if (r.output !== undefined) return extractContentFromResult(r.output);
+  if (r.body_shape !== undefined) return extractContentFromResult(r.body_shape);
+
+  const choices = r.choices;
+  if (Array.isArray(choices)) {
+    const choice = choices[0] as Record<string, unknown> | undefined;
+    const message = choice?.message as Record<string, unknown> | undefined;
+    if (typeof message?.content === 'string') return message.content;
+    if (typeof choice?.text === 'string') return choice.text;
+  }
+
+  const content = r.content;
+  if (Array.isArray(content)) {
+    const text = content
+      .map((part) => typeof part === 'object' && part !== null && typeof (part as { text?: unknown }).text === 'string' ? (part as { text: string }).text : '')
+      .join('');
+    if (text) return text;
+  } else if (typeof content === 'string') {
+    return content;
+  }
+
+  const candidates = r.candidates;
+  if (Array.isArray(candidates)) {
+    const candidate = candidates[0] as Record<string, unknown> | undefined;
+    const candidateContent = candidate?.content as Record<string, unknown> | undefined;
+    const parts = candidateContent?.parts;
+    if (Array.isArray(parts)) {
+      const text = parts
+        .map((part) => typeof part === 'object' && part !== null && typeof (part as { text?: unknown }).text === 'string' ? (part as { text: string }).text : '')
+        .join('');
+      if (text) return text;
+    }
+  }
+
+  return '(empty response)';
+}
+
+function extractReasoningFromResult(result: unknown): string | undefined {
+  if (!result || typeof result !== 'object') return undefined;
+  const r = result as Record<string, unknown>;
+  if (typeof r.reasoning === 'string') return r.reasoning;
+  if (r.output !== undefined) return extractReasoningFromResult(r.output);
+  if (r.body_shape !== undefined) return extractReasoningFromResult(r.body_shape);
+  const choices = r.choices;
+  if (Array.isArray(choices)) {
+    const choice = choices[0] as Record<string, unknown> | undefined;
+    const message = choice?.message as Record<string, unknown> | undefined;
+    if (typeof message?.reasoning_content === 'string') return message.reasoning_content;
+  }
+  return undefined;
 }
 
 function resolveMessageIndex(chat: Chat, id: string | number): number | null {

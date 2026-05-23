@@ -8,8 +8,10 @@ import {
   defaultSecretName,
   deleteSecret,
   listSecrets,
+  secretRefForProject,
   secretRefForStore,
   secretStoreHealth,
+  storeProjectSecret,
   storeSecret,
 } from '../../../state/secrets.js';
 
@@ -127,6 +129,7 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
       <APIKeySection
         provider={tavern.connectionSettings.provider}
         currentSecretRef={tavern.connectionSettings.secretRef ?? ''}
+        projectId={tavern.projectId}
         onSecretRefChange={(ref) => tavern.updateConnectionSettings({ secretRef: ref })}
       />
 
@@ -180,12 +183,14 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
   );
 }
 
-function APIKeySection({ provider, currentSecretRef, onSecretRefChange }: {
+export function APIKeySection({ provider, currentSecretRef, projectId, onSecretRefChange }: {
   provider: string;
   currentSecretRef: string;
+  projectId?: string;
   onSecretRefChange: (ref: string) => void;
 }) {
   const defaultName = defaultSecretName(provider);
+  const [scope, setScope] = useState<'platform' | 'project'>(currentSecretRef.startsWith('secret_ref:project:') ? 'project' : 'platform');
   const [secretName, setSecretName] = useState(defaultName);
   const [keyValue, setKeyValue] = useState('');
   const [savedKeys, setSavedKeys] = useState<string[]>([]);
@@ -208,20 +213,26 @@ function APIKeySection({ provider, currentSecretRef, onSecretRefChange }: {
 
   useEffect(() => { setSecretName(defaultSecretName(provider)); }, [provider]);
 
+  useEffect(() => {
+    setScope(currentSecretRef.startsWith('secret_ref:project:') ? 'project' : 'platform');
+  }, [currentSecretRef]);
+
   const onSave = async () => {
     if (!keyValue.trim() || !secretName.trim()) return;
     const trimmedName = secretName.trim();
     setBusy(true);
     setStatus({ kind: 'idle', message: '' });
     try {
-      const result = await storeSecret(trimmedName, keyValue);
+      const result = scope === 'project'
+        ? await storeProjectSecret(projectId, trimmedName, keyValue)
+        : await storeSecret(trimmedName, keyValue);
       setKeyValue('');
       setStatus({
         kind: 'ok',
-        message: result.created ? `Saved key as ${trimmedName}` : `Updated key ${trimmedName}`,
+        message: result.created ? `Saved ${scope} key as ${trimmedName}` : `Updated ${scope} key ${trimmedName}`,
       });
-      onSecretRefChange(secretRefForStore(trimmedName));
-      await refresh();
+      onSecretRefChange(scope === 'project' ? secretRefForProject(trimmedName) : secretRefForStore(trimmedName));
+      if (scope === 'platform') await refresh();
     } catch (err) {
       setStatus({ kind: 'err', message: (err as Error).message });
     } finally {
@@ -266,6 +277,29 @@ function APIKeySection({ provider, currentSecretRef, onSecretRefChange }: {
           in your host profile.
         </div>
       )}
+
+      <div className="range-block">
+        <label>
+          <input
+            type="radio"
+            name="api-key-scope"
+            value="platform"
+            checked={scope === 'platform'}
+            onChange={() => setScope('platform')}
+          />
+          <span>Platform-wide (shared with all projects)</span>
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="api-key-scope"
+            value="project"
+            checked={scope === 'project'}
+            onChange={() => setScope('project')}
+          />
+          <span>This project only</span>
+        </label>
+      </div>
 
       <div className="range-block">
         <label>
@@ -365,7 +399,8 @@ function StatusSection({ secretRef }: { secretRef: string }) {
       .catch(() => setStoreStatus({ kind: 'err' }));
   }, []);
 
-  const hasSecret = secretRef.startsWith('secret_ref:store:');
+  const hasSecret = secretRef.startsWith('secret_ref:store:') || secretRef.startsWith('secret_ref:project:');
+  const hasProjectSecret = secretRef.startsWith('secret_ref:project:');
 
   return (
     <section className="drawer-section">
@@ -386,7 +421,7 @@ function StatusSection({ secretRef }: { secretRef: string }) {
             <>
               Secret store ready ({storeStatus.secretCount} stored, key via {storeStatus.keySource}).
               {!hasSecret && ' No API key selected for this profile.'}
-              {hasSecret && ' API key configured.'}
+              {hasSecret && (hasProjectSecret ? ' Project API key configured.' : ' API key configured.')}
             </>
           )}
         </span>

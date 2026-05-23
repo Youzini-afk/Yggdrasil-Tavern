@@ -247,6 +247,11 @@ permissions:
     - secret_ref:env:ANTHROPIC_API_KEY
     - secret_ref:env:OPENROUTER_API_KEY
     - secret_ref:env:GEMINI_API_KEY
+    - secret_ref:project:OPENAI_API_KEY
+    - secret_ref:project:DEEPSEEK_API_KEY
+    - secret_ref:project:ANTHROPIC_API_KEY
+    - secret_ref:project:OPENROUTER_API_KEY
+    - secret_ref:project:GEMINI_API_KEY
 sandbox_policy:
   cpu_quota_ms_per_invoke: 10000
   memory_mb: 256

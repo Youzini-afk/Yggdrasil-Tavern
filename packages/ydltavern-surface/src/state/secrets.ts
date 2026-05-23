@@ -5,6 +5,7 @@ const HAS = 'official/secret-store-lab/has_secret';
 const LIST = 'official/secret-store-lab/list_secrets';
 const DEL = 'official/secret-store-lab/delete_secret';
 const HEALTH = 'official/secret-store-lab/health';
+const PUT_PROJECT = 'official/secret-store-lab/put_project_secret';
 
 export interface StoredSecret {
   name: string;
@@ -13,6 +14,11 @@ export interface StoredSecret {
 
 export async function storeSecret(name: string, value: string): Promise<{ name: string; created: boolean }> {
   const out = await invokeCapability(PUT, { name, value }) as { name: string; created: boolean };
+  return out;
+}
+
+export async function storeProjectSecret(projectId: string | undefined, name: string, value: string): Promise<{ name: string; created: boolean }> {
+  const out = await invokeCapability(PUT_PROJECT, { project_id: projectId, name, value }) as { name: string; created: boolean };
   return out;
 }
 
@@ -47,6 +53,10 @@ export async function secretStoreHealth(): Promise<{
 
 export function secretRefForStore(name: string): string {
   return `secret_ref:store:${name}`;
+}
+
+export function secretRefForProject(name: string): string {
+  return `secret_ref:project:${name}`;
 }
 
 /** Default secret name for a provider (used by API Connections drawer) */

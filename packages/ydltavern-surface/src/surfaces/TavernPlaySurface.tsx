@@ -7,14 +7,16 @@ export interface TavernPlaySurfaceProps {
   readonly chat?: Chat;
   readonly showDiagnostics?: boolean;
   readonly className?: string;
+  readonly sessionId?: string;
+  readonly projectId?: string;
 }
 
 const SURFACE_ROOT_CLASSES = ['ydltavern-surface', 'tavern-surface', 'tavern-surface-play'];
 
-export function TavernPlaySurface({ chat = sampleChat, showDiagnostics = true, className }: TavernPlaySurfaceProps): JSX.Element {
+export function TavernPlaySurface({ chat = sampleChat, showDiagnostics = true, className, sessionId, projectId }: TavernPlaySurfaceProps): JSX.Element {
   return (
     <div className={composeClass(SURFACE_ROOT_CLASSES, className)}>
-      <TavernProvider chat={chat} showDiagnostics={showDiagnostics}>
+      <TavernProvider chat={chat} showDiagnostics={showDiagnostics} sessionId={sessionId} projectId={projectId}>
         <TavernShell />
       </TavernProvider>
     </div>

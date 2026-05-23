@@ -1,7 +1,5 @@
 import { normalizeQuickReplySets } from '@ydltavern/extensions';
 import type { STExtensionRecord } from '@ydltavern/extensions';
-import { useRef } from 'react';
-import { flushSync } from 'react-dom';
 import { SendForm } from '../components/product/Composer/SendForm.js';
 import { MessageList } from '../components/product/MessageList.js';
 import { QuickReplyBar } from '../components/product/QuickReplyBar.js';
@@ -24,8 +22,6 @@ import {
 
 export function TavernShell(): JSX.Element {
   const tavern = useTavern();
-  const tavernRef = useRef(tavern);
-  tavernRef.current = tavern;
   const drawers = useDrawers();
 
   // Build quick reply sets from demo/extension data
@@ -57,10 +53,7 @@ export function TavernShell(): JSX.Element {
           <MessageList />
           <QuickReplyBar sets={qrSets} onTrigger={handleQuickReply} />
           <SendForm
-            onSend={async (text) => {
-              flushSync(() => tavern.setInput(text));
-              tavernRef.current.sendMessage();
-            }}
+            onSend={(text) => tavern.sendMessage(text)}
             onContinue={() => tavern.continueLastReply()}
             onImpersonate={() => tavern.impersonate()}
             onStop={() => tavern.cancelGeneration()}
