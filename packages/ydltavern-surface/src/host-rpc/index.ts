@@ -46,6 +46,10 @@ export function setActiveSessionId(sessionId: string | undefined): void {
   activeSessionId = sessionId;
 }
 
+export function getActiveSessionId(): string | undefined {
+  return activeSessionId;
+}
+
 export async function callHostRpc(method: string, params: unknown, timeoutMs = 30000): Promise<unknown> {
   if (typeof window === 'undefined' || !window.parent) {
     throw new Error('host RPC unavailable: not running in surface iframe');
@@ -79,3 +83,5 @@ export async function invokeCapability(capabilityId: string, input: unknown): Pr
   }) as { output: unknown };
   return result.output;
 }
+
+export { streamCapability, type StreamFrame, type StreamHandle } from './stream.js';
