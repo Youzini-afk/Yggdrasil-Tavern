@@ -2,7 +2,7 @@
 
 > [English](./ARCHITECTURE.en.md) · [中文](./ARCHITECTURE.md)
 
-YdlTavern is a product that runs on top of [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil). It consumes the platform through Yggdrasil's public protocol, on equal footing with any other third-party project.
+YdlTavern is a product that runs on top of [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil). It consumes the platform through Yggdrasil's public protocol, on equal footing with any other third-party project. The YdlTavern engine / surface manifests participate as kernel v1 Path A packages (`entry.contract: "v1"`), consuming platform authority through bindings and `@yggdrasil/kernel-sdk` / the subprocess SDK.
 
 ```text
 ┌──────────────────────────────────────────────┐
@@ -60,7 +60,7 @@ some-parent/
 
 YdlTavern talks to Yggdrasil through a local host: start one with `ygg host serve --http 127.0.0.1:8787`. YdlTavern's engine package consumes the platform through `/rpc` and SSE; YdlTavern's frontend is delivered as `@ydltavern/surface` for the Yggdrasil shell to mount.
 
-YdlTavern doesn't depend on the Yggdrasil source path or import Yggdrasil internals — only the protocol.
+YdlTavern doesn't depend on the Yggdrasil source path or import Yggdrasil internals — only the protocol. During development it may consume the generated `@yggdrasil/kernel-sdk` by workspace path; distribution can use the npm package.
 
 ### Presentation model
 

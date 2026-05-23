@@ -2,7 +2,7 @@
 
 > [English](./ARCHITECTURE.en.md) · [中文](./ARCHITECTURE.md)
 
-YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 之上的产品。它通过 Yggdrasil 的公开协议消费平台，跟其他第三方项目享有同样待遇。
+YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 之上的产品。它通过 Yggdrasil 的公开协议消费平台，跟其他第三方项目享有同样待遇。YdlTavern engine / surface manifest 按内核 v1 契约作为路径 A 包参与（`entry.contract: "v1"`），通过 bindings 和 `@yggdrasil/kernel-sdk` / subprocess SDK 消费平台能力。
 
 ```text
 ┌──────────────────────────────────────────────┐
@@ -60,7 +60,7 @@ some-parent/
 
 YdlTavern 调用 Yggdrasil 时走本地 host：用 Yggdrasil 的 CLI 起一个 `ygg host serve --http 127.0.0.1:8787`。YdlTavern 的 engine 包通过 `/rpc` + SSE 消费平台；YdlTavern 的 frontend 以 `@ydltavern/surface` 形式交给 Yggdrasil shell 挂载。
 
-YdlTavern 不依赖 Yggdrasil 的源码路径，也不直接 import Yggdrasil 的内部模块——只通过协议。
+YdlTavern 不依赖 Yggdrasil 的源码路径，也不直接 import Yggdrasil 的内部模块——只通过协议。开发期可通过 workspace path 使用生成的 `@yggdrasil/kernel-sdk`，发行期可改用 npm 包。
 
 ### 呈现方式
 
