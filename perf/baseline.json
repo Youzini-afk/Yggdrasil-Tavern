@@ -1,0 +1,700 @@
+{
+  "schema": "yggdrasil.bench.v1",
+  "created_at": 1779515210004,
+  "repo": "YdlTavern",
+  "node_version": "v24.15.0",
+  "git": {
+    "commit": "1901f4416be434d2f615d3fe29450172c5a19d72",
+    "branch": "main",
+    "dirty": true
+  },
+  "env": {
+    "os": "linux",
+    "arch": "x64",
+    "num_cpus": 14
+  },
+  "packages": {
+    "@ydltavern/engine-core": {
+      "schema": "yggdrasil.bench.v1",
+      "created_at": 1779515158934,
+      "package": "@ydltavern/engine-core",
+      "node_version": "v24.15.0",
+      "git": {
+        "commit": "1901f4416be434d2f615d3fe29450172c5a19d72",
+        "branch": "main",
+        "dirty": true
+      },
+      "env": {
+        "os": "linux",
+        "arch": "x64",
+        "num_cpus": 14
+      },
+      "benchmarks": [
+        {
+          "name": "prompt_manager.compile.small",
+          "iterations": 533269,
+          "samples": 533269,
+          "min_ms": 0.0015819999998711864,
+          "p50_ms": 0.0016720000003260793,
+          "p95_ms": 0.0024730000004637986,
+          "p99_ms": 0.003576000000066415,
+          "max_ms": 17.247714000000087,
+          "mean_ms": 0.0018752285338167894,
+          "rsd_pct": 3.428347939194269,
+          "throughput": {
+            "value": 577667,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "prompt_manager.compile.medium",
+          "iterations": 34601,
+          "samples": 34601,
+          "min_ms": 0.02171399999951973,
+          "p50_ms": 0.025179999999636493,
+          "p95_ms": 0.040473000000019965,
+          "p99_ms": 0.05001799999990908,
+          "max_ms": 11.166607999999542,
+          "mean_ms": 0.028901578220284663,
+          "rsd_pct": 2.2757235719389133,
+          "throughput": {
+            "value": 37085,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "prompt_manager.compile.large",
+          "iterations": 4451,
+          "samples": 4451,
+          "min_ms": 0.1948630000006233,
+          "p50_ms": 0.21390299999984563,
+          "p95_ms": 0.26102699999955803,
+          "p99_ms": 0.6866964999999254,
+          "max_ms": 1.0902210000003834,
+          "mean_ms": 0.22468106987193412,
+          "rsd_pct": 0.8633138626926024,
+          "throughput": {
+            "value": 4576,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "world_info.evaluate.small",
+          "iterations": 18891,
+          "samples": 18891,
+          "min_ms": 0.04771400000026915,
+          "p50_ms": 0.04999800000041432,
+          "p95_ms": 0.06460100000003877,
+          "p99_ms": 0.08092999999971646,
+          "max_ms": 0.8687140000001818,
+          "mean_ms": 0.052936260335607416,
+          "rsd_pct": 0.5117998550760894,
+          "throughput": {
+            "value": 19330,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "world_info.evaluate.medium",
+          "iterations": 1671,
+          "samples": 1671,
+          "min_ms": 0.5537340000009863,
+          "p50_ms": 0.5839909999995143,
+          "p95_ms": 0.6400979999998526,
+          "p99_ms": 1.0646792000010459,
+          "max_ms": 1.3246859999999288,
+          "mean_ms": 0.5986717025733185,
+          "rsd_pct": 0.567994849219639,
+          "throughput": {
+            "value": 1684,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "world_info.evaluate.large",
+          "iterations": 113,
+          "samples": 113,
+          "min_ms": 8.450021000000561,
+          "p50_ms": 8.741504999999961,
+          "p95_ms": 9.62617599999976,
+          "p99_ms": 10.149414560000295,
+          "max_ms": 10.616269000000102,
+          "mean_ms": 8.88020479646012,
+          "rsd_pct": 0.7896386548025254,
+          "throughput": {
+            "value": 113,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "macros.expand.short",
+          "iterations": 33776,
+          "samples": 33776,
+          "min_ms": 0.02428899999904388,
+          "p50_ms": 0.026842999999644235,
+          "p95_ms": 0.043798999999125954,
+          "p99_ms": 0.05424450000100478,
+          "max_ms": 0.7102780000004714,
+          "mean_ms": 0.02960778496565737,
+          "rsd_pct": 0.6251430940214403,
+          "throughput": {
+            "value": 35528,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "macros.expand.long",
+          "iterations": 50,
+          "samples": 50,
+          "min_ms": 28.439360999998826,
+          "p50_ms": 33.23499599999923,
+          "p95_ms": 36.8645319999996,
+          "p99_ms": 88.9228186399994,
+          "max_ms": 136.10401899999852,
+          "mean_ms": 34.900737519999815,
+          "rsd_pct": 12.066832818634786,
+          "throughput": {
+            "value": 30,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "tokenizer.gpt.encode.short",
+          "iterations": 239839,
+          "samples": 239839,
+          "min_ms": 0.002253000000564498,
+          "p50_ms": 0.0024640000010549556,
+          "p95_ms": 0.003837000000203261,
+          "p99_ms": 0.004727000001366832,
+          "max_ms": 202.11416400000053,
+          "mean_ms": 0.004169467638709204,
+          "rsd_pct": 48.30371943220874,
+          "throughput": {
+            "value": 389836,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "tokenizer.gpt.encode.long",
+          "iterations": 3816,
+          "samples": 3816,
+          "min_ms": 0.2350669999996171,
+          "p50_ms": 0.2523240000000442,
+          "p95_ms": 0.28266099999927974,
+          "p99_ms": 0.6349722499996457,
+          "max_ms": 10.801918999999543,
+          "mean_ms": 0.2621060888364779,
+          "rsd_pct": 2.1467841885233763,
+          "throughput": {
+            "value": 3910,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "tokenizer.llama3.encode.short",
+          "iterations": 27866,
+          "samples": 27866,
+          "min_ms": 0.026581000000078348,
+          "p50_ms": 0.03328299999884621,
+          "p95_ms": 0.052552000001014676,
+          "p99_ms": 0.07806500000006047,
+          "max_ms": 1.6862810000002355,
+          "mean_ms": 0.03588623254144853,
+          "rsd_pct": 0.7150924769435049,
+          "throughput": {
+            "value": 29454,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "tokenizer.llama3.encode.long",
+          "iterations": 174,
+          "samples": 174,
+          "min_ms": 3.4515749999991385,
+          "p50_ms": 4.659813500000382,
+          "p95_ms": 13.055744000001141,
+          "p99_ms": 21.183611040000105,
+          "max_ms": 22.784851000000344,
+          "mean_ms": 5.779572149425426,
+          "rsd_pct": 8.732076943501427,
+          "throughput": {
+            "value": 202,
+            "unit": "ops/s"
+          }
+        }
+      ]
+    },
+    "@ydltavern/importers": {
+      "schema": "yggdrasil.bench.v1",
+      "created_at": 1779515167048,
+      "package": "@ydltavern/importers",
+      "node_version": "v24.15.0",
+      "git": {
+        "commit": "1901f4416be434d2f615d3fe29450172c5a19d72",
+        "branch": "main",
+        "dirty": true
+      },
+      "env": {
+        "os": "linux",
+        "arch": "x64",
+        "num_cpus": 14
+      },
+      "benchmarks": [
+        {
+          "name": "import.character.png.small",
+          "iterations": 80524,
+          "samples": 80524,
+          "min_ms": 0.010596000000077765,
+          "p50_ms": 0.011567999999897438,
+          "p95_ms": 0.017468000000008033,
+          "p99_ms": 0.021974000000227534,
+          "max_ms": 1.2837220000001253,
+          "mean_ms": 0.012418662709254139,
+          "rsd_pct": 0.7082749604801221,
+          "throughput": {
+            "value": 83365,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "import.character.png.large",
+          "iterations": 78684,
+          "samples": 78684,
+          "min_ms": 0.010736000000179047,
+          "p50_ms": 0.011568000000352185,
+          "p95_ms": 0.01816899999994348,
+          "p99_ms": 0.023930530000006896,
+          "max_ms": 4.774858000000222,
+          "mean_ms": 0.012709116427737716,
+          "rsd_pct": 1.3839336667237057,
+          "throughput": {
+            "value": 82786,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "import.world_book.small",
+          "iterations": 64445,
+          "samples": 64445,
+          "min_ms": 0.014081999999689288,
+          "p50_ms": 0.01458299999967494,
+          "p95_ms": 0.021823999999924126,
+          "p99_ms": 0.02580504000026847,
+          "max_ms": 1.4298299999995834,
+          "mean_ms": 0.015517193451780544,
+          "rsd_pct": 0.43396929033969545,
+          "throughput": {
+            "value": 66085,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "import.world_book.large",
+          "iterations": 634,
+          "samples": 634,
+          "min_ms": 1.4517960000002859,
+          "p50_ms": 1.540573000000677,
+          "p95_ms": 1.7898119999999835,
+          "p99_ms": 2.2286150699999956,
+          "max_ms": 2.5295670000004975,
+          "mean_ms": 1.5782256608832683,
+          "rsd_pct": 0.6547009733938858,
+          "throughput": {
+            "value": 637,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "import.jsonl.small",
+          "iterations": 6561,
+          "samples": 6561,
+          "min_ms": 0.13501199999973323,
+          "p50_ms": 0.147820999999567,
+          "p95_ms": 0.175944000000527,
+          "p99_ms": 0.19977600000020168,
+          "max_ms": 0.675293999999667,
+          "mean_ms": 0.15242487258039392,
+          "rsd_pct": 0.4252022243274517,
+          "throughput": {
+            "value": 6641,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "import.jsonl.large",
+          "iterations": 66,
+          "samples": 66,
+          "min_ms": 14.106605000000854,
+          "p50_ms": 14.934846500000276,
+          "p95_ms": 17.230727000000115,
+          "p99_ms": 17.530992450000255,
+          "max_ms": 17.775695999999698,
+          "mean_ms": 15.226915106060622,
+          "rsd_pct": 1.485859096496196,
+          "throughput": {
+            "value": 66,
+            "unit": "ops/s"
+          }
+        }
+      ]
+    },
+    "@ydltavern/st-compat": {
+      "schema": "yggdrasil.bench.v1",
+      "created_at": 1779515195293,
+      "package": "@ydltavern/st-compat",
+      "node_version": "v24.15.0",
+      "git": {
+        "commit": "1901f4416be434d2f615d3fe29450172c5a19d72",
+        "branch": "main",
+        "dirty": true
+      },
+      "env": {
+        "os": "linux",
+        "arch": "x64",
+        "num_cpus": 14
+      },
+      "benchmarks": [
+        {
+          "name": "chat.proxy.read",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 1.171006000000034,
+          "p50_ms": 1.212720999999874,
+          "p95_ms": 1.6812221199998933,
+          "p99_ms": 1.6812221199998933,
+          "max_ms": 1.9222789999998895,
+          "mean_ms": 1.2460435056039836,
+          "rsd_pct": 0.5351066719804501,
+          "throughput": {
+            "value": 806,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "chat.proxy.write",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 4.896357999999964,
+          "p50_ms": 5.429438999999547,
+          "p95_ms": 6.408540660000363,
+          "p99_ms": 6.408540660000363,
+          "max_ms": 8.217358000000786,
+          "mean_ms": 5.483179896174908,
+          "rsd_pct": 0.92168437842134,
+          "throughput": {
+            "value": 183,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "chat.proxy.iterate",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.9403470000006564,
+          "p50_ms": 0.9885019999992437,
+          "p95_ms": 1.4583244000005653,
+          "p99_ms": 1.4583244000005653,
+          "max_ms": 2.0485259999995833,
+          "mean_ms": 1.0263436984615373,
+          "rsd_pct": 0.6880426026532214,
+          "throughput": {
+            "value": 983,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "eventSource.emit.no_listeners",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.0000289999989036005,
+          "p50_ms": 0.00004000000080850441,
+          "p95_ms": 0.00005100000089441892,
+          "p99_ms": 0.00005100000089441892,
+          "max_ms": 0.15052600000035454,
+          "mean_ms": 0.000043902040281387506,
+          "rsd_pct": 0.09648994698464639,
+          "throughput": {
+            "value": 23522845,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "eventSource.emit.10_listeners",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.00007999999797903001,
+          "p50_ms": 0.00009100000170292333,
+          "p95_ms": 0.00015100000018719584,
+          "p99_ms": 0.00015100000018719584,
+          "max_ms": 44.39138399999865,
+          "mean_ms": 0.00010569361473207733,
+          "rsd_pct": 8.701639133507113,
+          "throughput": {
+            "value": 10399895,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "eventSource.emit.100_listeners",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.0004399999997986015,
+          "p50_ms": 0.0005899999996472616,
+          "p95_ms": 0.001021999996737577,
+          "p99_ms": 0.001021999996737577,
+          "max_ms": 22.503091000002314,
+          "mean_ms": 0.0006506246489070347,
+          "rsd_pct": 4.433894302711073,
+          "throughput": {
+            "value": 1666854,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "slash.parse.simple",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.0005610000007436611,
+          "p50_ms": 0.0006509999984700698,
+          "p95_ms": 0.0016019999966374598,
+          "p99_ms": 0.0016019999966374598,
+          "max_ms": 1.442829999999958,
+          "mean_ms": 0.0007336458722169634,
+          "rsd_pct": 0.7016183276038918,
+          "throughput": {
+            "value": 1471833,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "slash.parse.pipe",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.00046999999904073775,
+          "p50_ms": 0.0005410000012489036,
+          "p95_ms": 0.0014520000004267786,
+          "p99_ms": 0.0014520000004267786,
+          "max_ms": 1.2393239999983052,
+          "mean_ms": 0.0006186375131759018,
+          "rsd_pct": 0.662699718718556,
+          "throughput": {
+            "value": 1753021,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "slash.execute.simple",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.0006299999986367766,
+          "p50_ms": 0.0006920000014360994,
+          "p95_ms": 0.0017220000008819625,
+          "p99_ms": 0.0017220000008819625,
+          "max_ms": 18.557055000001128,
+          "mean_ms": 0.0008147595687307694,
+          "rsd_pct": 4.076787033906188,
+          "throughput": {
+            "value": 1355459,
+            "unit": "ops/s"
+          }
+        }
+      ]
+    },
+    "@ydltavern/extensions": {
+      "schema": "yggdrasil.bench.v1",
+      "created_at": 1779515202324,
+      "package": "@ydltavern/extensions",
+      "node_version": "v24.15.0",
+      "git": {
+        "commit": "1901f4416be434d2f615d3fe29450172c5a19d72",
+        "branch": "main",
+        "dirty": true
+      },
+      "env": {
+        "os": "linux",
+        "arch": "x64",
+        "num_cpus": 14
+      },
+      "benchmarks": [
+        {
+          "name": "sandbox.bootstrap",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.13424899999972695,
+          "p50_ms": 0.14141600000004928,
+          "p95_ms": 0.21694420000000256,
+          "p99_ms": 0.21694420000000256,
+          "max_ms": 4.293235999999979,
+          "mean_ms": 0.14923047448523252,
+          "rsd_pct": 1.135832188794019,
+          "throughput": {
+            "value": 6831,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "sandbox.invoke.simple",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.002453999999943335,
+          "p50_ms": 0.0026840000000447617,
+          "p95_ms": 0.004896999999800755,
+          "p99_ms": 0.004896999999800755,
+          "max_ms": 3.19690700000001,
+          "mean_ms": 0.002947461902586571,
+          "rsd_pct": 0.784425247487062,
+          "throughput": {
+            "value": 357537,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "regex.apply.short",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.003435000000081345,
+          "p50_ms": 0.003936999999496038,
+          "p95_ms": 0.011728999999832013,
+          "p99_ms": 0.011728999999832013,
+          "max_ms": 16.107344999999896,
+          "mean_ms": 0.004611402842464388,
+          "rsd_pct": 3.3511061760094107,
+          "throughput": {
+            "value": 239631,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "regex.apply.long",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 1.2442809999993187,
+          "p50_ms": 1.2922600000001694,
+          "p95_ms": 1.7762801099996972,
+          "p99_ms": 1.7762801099996972,
+          "max_ms": 2.5478039999998146,
+          "mean_ms": 1.3347444146666538,
+          "rsd_pct": 0.5929104013975135,
+          "throughput": {
+            "value": 753,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "loader.parse_manifest",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.0038949999998294516,
+          "p50_ms": 0.0041659999997136765,
+          "p95_ms": 0.008611399999935786,
+          "p99_ms": 0.008611399999935786,
+          "max_ms": 1.0380400000003647,
+          "mean_ms": 0.004518573758862571,
+          "rsd_pct": 0.49422107716922836,
+          "throughput": {
+            "value": 230900,
+            "unit": "ops/s"
+          }
+        }
+      ]
+    },
+    "@ydltavern/surface": {
+      "schema": "yggdrasil.bench.v1",
+      "created_at": 1779515209869,
+      "package": "@ydltavern/surface",
+      "node_version": "v24.15.0",
+      "git": {
+        "commit": "1901f4416be434d2f615d3fe29450172c5a19d72",
+        "branch": "main",
+        "dirty": true
+      },
+      "env": {
+        "os": "linux",
+        "arch": "x64",
+        "num_cpus": 14
+      },
+      "benchmarks": [
+        {
+          "name": "formatting.markdown.short",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.24184699999977965,
+          "p50_ms": 0.29971900000009555,
+          "p95_ms": 0.5536111000000113,
+          "p99_ms": 0.5536111000000113,
+          "max_ms": 5.91565700000001,
+          "mean_ms": 0.3304752969937215,
+          "rsd_pct": 3.250383971565703,
+          "throughput": {
+            "value": 3275,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "formatting.markdown.long",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 15.342642999999953,
+          "p50_ms": 16.848214999999982,
+          "p95_ms": 30.06433137999994,
+          "p99_ms": 30.06433137999994,
+          "max_ms": 30.066800000000057,
+          "mean_ms": 20.095570379999984,
+          "rsd_pct": 7.26924572719828,
+          "throughput": {
+            "value": 53,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "formatting.markdown.with_xss",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.2417459999996936,
+          "p50_ms": 0.29607300000043324,
+          "p95_ms": 0.5612826999997921,
+          "p99_ms": 0.5612826999997921,
+          "max_ms": 8.07875200000035,
+          "mean_ms": 0.3291685995393209,
+          "rsd_pct": 3.5156263785588067,
+          "throughput": {
+            "value": 3287,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "formatting.regex_hooks.10",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 0.21776999999929103,
+          "p50_ms": 0.2637219999996887,
+          "p95_ms": 0.5599226000001184,
+          "p99_ms": 0.5599226000001184,
+          "max_ms": 7.93443600000046,
+          "mean_ms": 0.30573902690308036,
+          "rsd_pct": 4.238094898701693,
+          "throughput": {
+            "value": 3637,
+            "unit": "ops/s"
+          }
+        },
+        {
+          "name": "formatting.full_pipeline.100msg",
+          "iterations": 4,
+          "samples": 4,
+          "min_ms": 24.71583399999963,
+          "p50_ms": 32.394820999999865,
+          "p95_ms": 53.33839535000024,
+          "p99_ms": 53.33839535000024,
+          "max_ms": 55.466850000000704,
+          "mean_ms": 32.92585986000002,
+          "rsd_pct": 6.0467729990964125,
+          "throughput": {
+            "value": 32,
+            "unit": "ops/s"
+          }
+        }
+      ]
+    }
+  }
+}
