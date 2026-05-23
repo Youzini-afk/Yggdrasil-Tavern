@@ -40,6 +40,7 @@ function makeMockKernel(responses) {
   const calls = [];
   return {
     calls,
+    v1: { calls },
     sendKernelRequest: async (method, params) => {
       calls.push({ method, params });
       const next = responses.shift();
