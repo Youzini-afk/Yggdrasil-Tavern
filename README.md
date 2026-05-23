@@ -20,12 +20,15 @@ yg install github.com/Youzini-afk/Yggdrasil-Tavern
 API key 配置走 Yggdrasil 的密钥存储 — 在 API Connections 抽屉里粘贴一次即可。
 详见 [Yggdrasil 密钥管理指南](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.md)。
 
+SendForm 已接到 Yggdrasil engine：点 Send 会调用 `ydltavern/engine/model.live_call`，再由 Yggdrasil host 通过 live outbound executor 访问真实 provider API。API key 可以保存为平台级或项目级 `secret_ref`。
+
 项目 id 使用稳定形态 `youzini-afk__YdlTavern__d2a47e5c`：前缀来自发布者与项目名，后缀是 canonical name `Youzini-afk/Yggdrasil-Tavern` 的 SHA-256 前 8 位。
 
 ## 它做什么
 
 - 直接导入 SillyTavern 的角色卡（V1 / V2 / V3）、世界书、提示词预设、聊天历史。
 - 兼容 SillyTavern 扩展 API（`getContext()`、`eventSource`、slash commands 等），让大量扩展能直接跑起来。
+- SendForm 真实调用 engine `model.live_call`，可经 Yggdrasil host outbound 调 OpenAI / Anthropic / Gemini 等 provider API。
 - UI 结构和操作流程对老用户保持熟悉，前端代码全新写一遍。
 - 引擎层走 Yggdrasil：模型接入、`secret_ref`、流式生命周期、提案审批、外发审计、记忆/检索、agent 框架，都来自平台。
 

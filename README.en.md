@@ -20,12 +20,15 @@ Click Play to enter the chat surface.
 API key configuration uses Yggdrasil's secret store — paste once in the API Connections drawer.
 See the [Yggdrasil secret management guide](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md).
 
+SendForm is now wired to the Yggdrasil engine: clicking Send invokes `ydltavern/engine/model.live_call`, and the Yggdrasil host reaches real provider APIs through the live outbound executor. API keys can be saved as platform-level or project-level `secret_ref`s.
+
 The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the prefix comes from publisher and project name, and the suffix is the first 8 characters of the SHA-256 of the canonical name `Youzini-afk/Yggdrasil-Tavern`.
 
 ## What it does
 
 - Imports SillyTavern character cards (V1 / V2 / V3), world books, prompt presets, and chat history directly.
 - Supports SillyTavern's extension API (`getContext()`, `eventSource`, slash commands, etc.) so existing extensions can run.
+- SendForm actually invokes engine `model.live_call`, which can call OpenAI / Anthropic / Gemini and other provider APIs through Yggdrasil host outbound.
 - Keeps the UI structure and interaction flow familiar to longtime SillyTavern users, with the frontend rewritten from scratch.
 - Uses Yggdrasil for the engine layer: model integration, `secret_ref`, streaming lifecycle, proposal approval, outbound audit, memory / retrieval, and agent infrastructure all come from the platform.
 
