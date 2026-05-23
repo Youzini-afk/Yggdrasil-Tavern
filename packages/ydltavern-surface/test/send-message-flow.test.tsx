@@ -6,8 +6,16 @@ import { flushSync } from 'react-dom';
 import type { Chat } from '@ydltavern/types';
 import { installTestDom } from './formatting/test-dom.ts';
 import { extractContentFromResult } from '../src/app/TavernProvider.tsx';
+import { STORAGE_KEYS } from '../src/state/persistence.ts';
 
 installTestDom();
+
+class MemoryStorage {
+  private readonly data = new Map<string, string>();
+  getItem(key: string): string | null { return this.data.get(key) ?? null; }
+  setItem(key: string, value: string): void { this.data.set(key, value); }
+  clear(): void { this.data.clear(); }
+}
 
 type PostedMessage = {
   readonly type: string;
@@ -33,6 +41,8 @@ afterEach(() => {
 describe('TavernProvider sendMessage flow', () => {
   it('appends a user turn, invokes model.live_call, and writes assistant response', async () => {
     const posted: PostedMessage[] = [];
+    Object.defineProperty(globalThis, 'localStorage', { value: window.localStorage ?? new MemoryStorage(), configurable: true });
+    localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({ streaming: false }));
     installRpcHostMock(posted, { text: 'Mock assistant response' });
 
     const { TavernProvider, useTavern } = await import(`../src/app/TavernProvider.tsx?sendFlow=${Date.now()}`);

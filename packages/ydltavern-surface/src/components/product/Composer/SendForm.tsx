@@ -79,15 +79,27 @@ export function SendForm(props: SendFormProps) {
         />
 
         <div id="rightSendForm" data-extension-territory>
-          <button
-            type="submit"
-            id="send_but"
-            className="send_but mes_button"
-            disabled={!text.trim() || props.disabled || props.isGenerating}
-            aria-label="Send message"
-          >
-            <i className="fa-solid fa-paper-plane" aria-hidden="true" />
-          </button>
+          {props.isGenerating ? (
+            <button
+              type="button"
+              id="send_but"
+              className="send_but composer_stop_button mes_button"
+              onClick={props.onStop}
+              aria-label="Stop generation"
+            >
+              <i className="fa-solid fa-circle-stop" aria-hidden="true" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              id="send_but"
+              className="send_but mes_button"
+              disabled={!text.trim() || props.disabled}
+              aria-label="Send message"
+            >
+              <i className="fa-solid fa-paper-plane" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
     </form>

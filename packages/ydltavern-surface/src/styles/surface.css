@@ -3421,6 +3421,14 @@
   color: var(--tavern-em-color);
 }
 
+.ydltavern-surface .composer_stop_button {
+  background: var(--tavern-warning);
+}
+
+.ydltavern-surface .composer_stop_button:hover {
+  background: #b84b4b;
+}
+
 /* === Streaming indicator === */
 .ydltavern-surface .streaming_indicator {
   display: flex;

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Chat, STChatMessage } from '@ydltavern/types';
 import { createSTContext, createTurnStore, type STContextRuntime } from '@ydltavern/st-compat';
 import { type STExtensionRecord, type STActivationContext } from '@ydltavern/extensions';
@@ -19,7 +19,7 @@ import {
   SEED_WORLDBOOK,
   type TavernSettings,
 } from '../state/defaults.js';
-import { invokeCapability } from '../host-rpc/index.js';
+import { invokeCapability, setActiveSessionId, streamCapability, type StreamHandle } from '../host-rpc/index.js';
 import {
   migrateSettingsV1ToV2,
   readBackgroundDisplaySettings,
@@ -154,7 +154,7 @@ export interface TavernRuntimeState {
   readonly resetSettings: (scope?: 'all' | 'sampler' | 'connection' | 'formatting' | 'theme') => void;
 
   readonly isGenerating: boolean;
-  readonly cancelGeneration: () => void;
+  readonly cancelGeneration: () => Promise<void>;
   readonly continueLastReply: () => void;
   readonly impersonate: () => void;
   readonly editMessage: (id: string | number, text: string) => void;
@@ -210,6 +210,12 @@ export function TavernProvider({
   const [backgrounds, setBackgrounds] = useState<BackgroundEntry[]>(readBackgrounds);
   const [selection, setSelectionState] = useState<PersistedSelection>(readSelection);
   const [isGenerating, setIsGenerating] = useState(false);
+  const activeStreamRef = useRef<StreamHandle | null>(null);
+
+  useLayoutEffect(() => {
+    setActiveSessionId(sessionId);
+    return () => setActiveSessionId(undefined);
+  }, [sessionId]);
 
   const theme = useMemo(() => {
     const base = getThemeById(themeSettings.themeId);
@@ -520,7 +526,117 @@ export function TavernProvider({
   void revision;
   const liveChat = ownStore.snapshot();
 
+  const updateAssistantMessage = useCallback((assistantIndex: number, update: {
+    readonly content: string;
+    readonly streaming: boolean;
+    readonly isError?: boolean;
+    readonly reasoning?: string;
+  }) => {
+    const current = ownStore.messageAt(assistantIndex);
+    ownStore.updateMessage(assistantIndex, {
+      mes: update.content,
+      extra: {
+        ...(current?.extra ?? {}),
+        ...(update.reasoning ? { reasoning: update.reasoning } : {}),
+        ydl_streaming: update.streaming,
+        ...(update.isError !== undefined ? { ydl_error: update.isError } : {}),
+      },
+    });
+    setRevision((r) => r + 1);
+  }, [ownStore]);
+
+  const sendNonStreaming = useCallback(async (assistantIndex: number, baseInput: Record<string, unknown>) => {
+    try {
+      const result = await invokeCapability('ydltavern/engine/model.live_call', {
+        ...baseInput,
+        stream: false,
+      });
+      const content = extractContentFromResult(result);
+      const reasoning = extractReasoningFromResult(result);
+      updateAssistantMessage(assistantIndex, {
+        content,
+        reasoning,
+        streaming: false,
+        isError: false,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateAssistantMessage(assistantIndex, {
+        content: `Error: ${message}`,
+        streaming: false,
+        isError: true,
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [updateAssistantMessage]);
+
+  const sendStreaming = useCallback(async (assistantIndex: number, baseInput: Record<string, unknown>) => {
+    let handle: StreamHandle | null = null;
+    let accumulated = '';
+
+    try {
+      handle = await streamCapability('ydltavern/engine/model.live_call.stream', {
+        ...baseInput,
+        stream: true,
+      });
+      activeStreamRef.current = handle;
+      setIsGenerating(true);
+
+      for await (const frame of handle.frames) {
+        const kind = frame.kind as string;
+        if (kind === 'started' || kind === 'progress') {
+          continue;
+        }
+        if (kind === 'chunk') {
+          const delta = extractStreamChunkDelta(frame.payload);
+          if (delta) {
+            accumulated += delta;
+            updateAssistantMessage(assistantIndex, { content: accumulated, streaming: true });
+          }
+          continue;
+        }
+        if (kind === 'ended' || kind === 'final') {
+          const finalText = extractStreamFinalText(frame.payload);
+          if (finalText) accumulated = finalText;
+          break;
+        }
+        if (kind === 'error') {
+          const errMsg = extractStreamErrorMessage(frame.payload);
+          updateAssistantMessage(assistantIndex, {
+            content: accumulated || `Error: ${errMsg}`,
+            streaming: false,
+            isError: !accumulated,
+          });
+          return;
+        }
+        if (kind === 'cancelled' || kind === 'timeout') {
+          updateAssistantMessage(assistantIndex, {
+            content: accumulated || `(${kind})`,
+            streaming: false,
+          });
+          return;
+        }
+      }
+
+      updateAssistantMessage(assistantIndex, { content: accumulated, streaming: false });
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      updateAssistantMessage(assistantIndex, {
+        content: accumulated || `Error: ${errMsg}`,
+        streaming: false,
+        isError: !accumulated,
+      });
+    } finally {
+      if (activeStreamRef.current === handle) {
+        activeStreamRef.current = null;
+      }
+      setIsGenerating(false);
+    }
+  }, [updateAssistantMessage]);
+
   const sendMessage = useCallback(async (text?: string) => {
+    if (isGenerating) return;
     const mes = (text ?? input).trim();
     if (mes.length === 0) return;
     const userMessage = ctx.addOneMessage({ is_user: true, name: ctx.name1, mes });
@@ -546,39 +662,26 @@ export function TavernProvider({
       extra: { ydl_streaming: true },
     });
     ownStore.pushMessage(assistantMessage);
+    const assistantIndex = ownStore.length - 1;
     setIsGenerating(true);
     setRevision((r) => r + 1);
 
-    try {
-      const provider = normalizeLiveCallSource(connectionState.current.provider);
-      const result = await invokeCapability('ydltavern/engine/model.live_call', {
-        source: provider,
-        model: connectionState.current.model || defaultModelForProvider(provider),
-        messages: buildLiveMessages(ownStore.messages()),
-        settings: buildLiveCallSettings(samplerSettings, settings, connectionState.current, ctx.name1, ctx.name2),
-        stream: false,
-        secret_ref: connectionState.current.secretRef,
-        ...(connectionState.current.baseUrl ? providerEndpointOverrides(provider, connectionState.current.baseUrl) : {}),
-      });
-      const content = extractContentFromResult(result);
-      const reasoning = extractReasoningFromResult(result);
-      const assistantIndex = ownStore.length - 1;
-      ownStore.updateMessage(assistantIndex, {
-        mes: content,
-        extra: { ...(reasoning ? { reasoning } : {}), ydl_streaming: false },
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const assistantIndex = ownStore.length - 1;
-      ownStore.updateMessage(assistantIndex, {
-        mes: `Error: ${message}`,
-        extra: { ydl_streaming: false, ydl_error: true },
-      });
-    } finally {
-      setIsGenerating(false);
-      setRevision((r) => r + 1);
+    const provider = normalizeLiveCallSource(connectionState.current.provider);
+    const baseInput = {
+      source: provider,
+      model: connectionState.current.model || defaultModelForProvider(provider),
+      messages: buildLiveMessages(ownStore.messages()),
+      settings: buildLiveCallSettings(samplerSettings, settings, connectionState.current, ctx.name1, ctx.name2),
+      secret_ref: connectionState.current.secretRef,
+      ...(connectionState.current.baseUrl ? providerEndpointOverrides(provider, connectionState.current.baseUrl) : {}),
+    };
+
+    if (settings.streaming) {
+      await sendStreaming(assistantIndex, baseInput);
+    } else {
+      await sendNonStreaming(assistantIndex, baseInput);
     }
-  }, [connectionState.current, ctx, input, ownStore, samplerSettings, settings]);
+  }, [connectionState.current, ctx, input, isGenerating, ownStore, samplerSettings, sendNonStreaming, sendStreaming, settings]);
 
   const generateReply = useCallback(() => {
     const result = ctx.Generate({ text: 'This is a fake generated reply from the YdlTavern product surface.' });
@@ -603,9 +706,12 @@ export function TavernProvider({
     setRevision((r) => r + 1);
   }, [ctx, ownStore]);
 
-  const cancelGeneration = useCallback(() => {
-    // TODO Phase B: wire to host capability
-    console.info('[YdlTavern] cancelGeneration');
+  const cancelGeneration = useCallback(async () => {
+    const handle = activeStreamRef.current;
+    if (!handle) return;
+    await handle.cancel();
+    activeStreamRef.current = null;
+    setIsGenerating(false);
   }, []);
 
   const continueLastReply = useCallback(() => {
@@ -977,6 +1083,69 @@ export function extractContentFromResult(result: unknown): string {
   }
 
   return '(empty response)';
+}
+
+export function extractStreamChunkDelta(payload: unknown): string {
+  if (typeof payload === 'string') return payload;
+  if (!payload || typeof payload !== 'object') return '';
+  const p = payload as Record<string, unknown>;
+
+  if (typeof p.text === 'string') return p.text;
+  if (typeof p.delta === 'string') return p.delta;
+  if (typeof p.delta_text === 'string') return p.delta_text;
+
+  if (p.output !== undefined) return extractStreamChunkDelta(p.output);
+  if (p.frame !== undefined) return extractStreamChunkDelta(p.frame);
+
+  const choices = p.choices;
+  if (Array.isArray(choices)) {
+    const choice = choices[0] as Record<string, unknown> | undefined;
+    const delta = choice?.delta as Record<string, unknown> | undefined;
+    if (typeof delta?.content === 'string') return delta.content;
+    if (typeof choice?.text === 'string') return choice.text;
+  }
+
+  const delta = p.delta;
+  if (delta && typeof delta === 'object' && typeof (delta as { text?: unknown }).text === 'string') {
+    return (delta as { text: string }).text;
+  }
+
+  const content = p.content;
+  if (Array.isArray(content)) {
+    const first = content[0] as Record<string, unknown> | undefined;
+    if (typeof first?.text === 'string') return first.text;
+  }
+
+  const candidates = p.candidates;
+  if (Array.isArray(candidates)) {
+    const candidate = candidates[0] as Record<string, unknown> | undefined;
+    const candidateContent = candidate?.content as Record<string, unknown> | undefined;
+    const parts = candidateContent?.parts;
+    if (Array.isArray(parts)) {
+      const first = parts[0] as Record<string, unknown> | undefined;
+      if (typeof first?.text === 'string') return first.text;
+    }
+  }
+
+  return '';
+}
+
+function extractStreamFinalText(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') return '';
+  const p = payload as Record<string, unknown>;
+  if (typeof p.text === 'string') return p.text;
+  if (p.output !== undefined) return extractStreamFinalText(p.output);
+  if (p.frame !== undefined) return extractStreamFinalText(p.frame);
+  return '';
+}
+
+function extractStreamErrorMessage(payload: unknown): string {
+  if (payload && typeof payload === 'object') {
+    const p = payload as Record<string, unknown>;
+    if (typeof p.message === 'string') return p.message;
+    if (typeof p.error === 'string') return p.error;
+  }
+  return 'stream error';
 }
 
 function extractReasoningFromResult(result: unknown): string | undefined {
