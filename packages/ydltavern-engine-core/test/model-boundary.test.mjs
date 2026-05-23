@@ -41,7 +41,7 @@ test('model call plan allows fake-local without secretRef and remains plan-only'
   assert.equal(plan.requiresHostExecution, true);
   assert.equal(plan.network, false);
   assert.equal(plan.stream, true);
-  assert.equal(plan.envelope.method, 'kernel.outbound.execute');
+  assert.equal(plan.envelope.method, 'kernel.v1.outbound.execute');
   assert.equal(plan.envelope.destination_host, 'fake-local');
   assert.deepEqual(plan.envelope.secret_refs, []);
   assert.deepEqual(plan.envelope.request, { prompt: 'hello' });

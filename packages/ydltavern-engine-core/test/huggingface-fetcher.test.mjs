@@ -66,9 +66,9 @@ test('fetchHuggingFaceTokenizer hf-hub builds correct outbound.execute params', 
     cacheKey: 'test:hf-params',
   });
 
-  assert.equal(kernel.calls.length, 2);
-  const { method, params } = kernel.calls[0];
-  assert.equal(method, 'kernel.outbound.execute');
+  assert.equal(kernel.v1.calls.length, 2);
+  const { method, params } = kernel.v1.calls[0];
+  assert.equal(method, 'kernel.v1.outbound.execute');
   assert.equal(params.capability_id, 'pkg/tokenizer.fetch');
   assert.equal(params.destination_host, 'huggingface.co');
   assert.equal(params.method, 'GET');
@@ -91,9 +91,9 @@ test("fetchHuggingFaceTokenizer source='url' uses provided URL", async () => {
     cacheKey: 'test:url-source',
   });
 
-  assert.equal(kernel.calls.length, 1);
-  assert.equal(kernel.calls[0].params.destination_host, 'cdn.example.test');
-  assert.equal(kernel.calls[0].params.path, '/models/tokenizer.json?download=1');
+  assert.equal(kernel.v1.calls.length, 1);
+  assert.equal(kernel.v1.calls[0].params.destination_host, 'cdn.example.test');
+  assert.equal(kernel.v1.calls[0].params.path, '/models/tokenizer.json?download=1');
   assert.equal(result.url, 'https://cdn.example.test/models/tokenizer.json?download=1');
   assert.equal(result.source, 'url');
 });
@@ -109,10 +109,10 @@ test('fetchHuggingFaceTokenizer adds Authorization secret_header when hfTokenSec
     hfTokenSecretRef: 'secret_ref:env:HF_TOKEN',
   });
 
-  assert.deepEqual(kernel.calls[0].params.secret_headers, {
+  assert.deepEqual(kernel.v1.calls[0].params.secret_headers, {
     Authorization: { secret_ref: 'secret_ref:env:HF_TOKEN', scheme: 'bearer' },
   });
-  assert.deepEqual(kernel.calls[0].params.secret_refs, ['secret_ref:env:HF_TOKEN']);
+  assert.deepEqual(kernel.v1.calls[0].params.secret_refs, ['secret_ref:env:HF_TOKEN']);
 });
 
 test('fetchHuggingFaceTokenizer omits Authorization when no token', async () => {
@@ -125,8 +125,8 @@ test('fetchHuggingFaceTokenizer omits Authorization when no token', async () => 
     cacheKey: 'test:no-auth-header',
   });
 
-  assert.deepEqual(kernel.calls[0].params.secret_headers, {});
-  assert.equal('secret_refs' in kernel.calls[0].params, false);
+  assert.deepEqual(kernel.v1.calls[0].params.secret_headers, {});
+  assert.equal('secret_refs' in kernel.v1.calls[0].params, false);
 });
 
 test("fetchHuggingFaceTokenizer cache hit short-circuits second call", async () => {
@@ -142,7 +142,7 @@ test("fetchHuggingFaceTokenizer cache hit short-circuits second call", async () 
   const first = await fetchHuggingFaceTokenizer(options);
   const second = await fetchHuggingFaceTokenizer(options);
 
-  assert.equal(kernel.calls.length, 1);
+  assert.equal(kernel.v1.calls.length, 1);
   assert.strictEqual(second, first);
 });
 
@@ -267,7 +267,7 @@ test("fetchHuggingFaceTokenizer revision defaults to 'main'", async () => {
     cacheKey: 'test:revision-default',
   });
 
-  assert.equal(kernel.calls[0].params.path, '/default/revision-model/resolve/main/tokenizer.json');
+  assert.equal(kernel.v1.calls[0].params.path, '/default/revision-model/resolve/main/tokenizer.json');
   assert.equal(result.revision, 'main');
 });
 
@@ -283,7 +283,7 @@ test('fetchHuggingFaceTokenizer revision can be a commit sha', async () => {
     cacheKey: 'test:revision-commit',
   });
 
-  assert.equal(kernel.calls[0].params.path, `/commit/revision-model/resolve/${revision}/tokenizer.json`);
+  assert.equal(kernel.v1.calls[0].params.path, `/commit/revision-model/resolve/${revision}/tokenizer.json`);
   assert.equal(result.revision, revision);
 });
 

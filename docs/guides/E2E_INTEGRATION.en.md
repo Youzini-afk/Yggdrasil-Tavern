@@ -11,8 +11,8 @@ YdlTavern does not ship an independent web app. `packages/ydltavern-surface` bui
 ```text
 Yggdrasil host (Rust)         clients/web (TS)              YdlTavern surface bundle
 ┌──────────────────┐         ┌──────────────────┐          ┌──────────────────────┐
-│ kernel.surface.* │ ←HTTP→ │ surface-host.ts  │ ←iframe→ │ bundle.mjs           │
-│ /rpc /kernel/*   │         │ + bundle resolver│          │ (mount adapters)      │
+│ kernel.v1.surface.* │ ←HTTP→ │ surface-host.ts  │ ←iframe→ │ bundle.mjs           │
+│ /rpc /kernel/v1/*   │         │ + bundle resolver│          │ (mount adapters)      │
 │ /surface-bundles │ ←──────┘                  │          │                       │
 └──────────────────┘ static  └──────────────────┘          └──────────────────────┘
 ```

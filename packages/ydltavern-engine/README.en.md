@@ -27,9 +27,9 @@ Current phase: deep-port complete, with an opt-in live model call path added. In
 
 ## Recent additions
 
-- `model.live_call`: builds the provider request body with `buildChatRequest`, then calls Yggdrasil `kernel.outbound.execute` through the subprocess `kernelClient`.
-- `model.live_call.stream`: reads SSE chunks through `kernel.outbound.stream` and normalizes them into stream frames (delta text, reasoning, tool_calls, final/error/cancelled/timeout).
-- `model.live_realtime`: opens provider WebSockets through `kernelClient.openWebSocket` / Yggdrasil `kernel.outbound.websocket.*`; OpenAI Realtime is the real path, while Gemini Live is a best-effort stub.
+- `model.live_call`: builds the provider request body with `buildChatRequest`, then calls Yggdrasil `kernel.v1.outbound.execute` through the subprocess `kernelClient`.
+- `model.live_call.stream`: reads SSE chunks through `kernel.v1.outbound.stream` and normalizes them into stream frames (delta text, reasoning, tool_calls, final/error/cancelled/timeout).
+- `model.live_realtime`: opens provider WebSockets through `kernelClient.openWebSocket` / Yggdrasil `kernel.v1.outbound.websocket.*`; OpenAI Realtime is the real path, while Gemini Live is a best-effort stub.
 - `manifest.yaml` declares provider network hosts (OpenAI, DeepSeek, Anthropic, OpenRouter, Gemini), WEBSOCKET methods (OpenAI/Gemini), and `secret_refs`.
 - Raw keys never enter YdlTavern; inputs carry only `secret_ref`, resolved/redacted/audited by the Yggdrasil host.
 - Requires a Yggdrasil live outbound profile (for example `profiles/forge-with-live-models.example.yaml`) and environment variables such as `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, and `GEMINI_API_KEY`; Realtime also requires the host profile to enable `outbound.websocket.executor: live`.

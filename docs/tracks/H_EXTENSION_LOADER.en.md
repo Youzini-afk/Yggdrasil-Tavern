@@ -42,7 +42,7 @@ YdlTavern exposes these package surfaces in the main panel (following Yggdrasil 
 Depends on Yggdrasil's git installation capability:
 
 - ST-style extensions: YdlTavern pulls git / zip itself and stores them in `extensions/`
-- Yggdrasil packages: use `kernel.outbound.git_fetch` + `official/package-installer-lab`, writing to the host profile lockfile (already implemented in Yggdrasil)
+- Yggdrasil packages: use `kernel.v1.outbound.git_fetch` + `official/package-installer-lab`, writing to the host profile lockfile (already implemented in Yggdrasil)
 
 ## Dependencies
 

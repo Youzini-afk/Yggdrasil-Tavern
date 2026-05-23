@@ -55,7 +55,7 @@ test("unary OpenAI builds outbound execute params and extracts response", async 
 
   assert.equal(kernel.sendCalls.length, 1);
   const { method, params } = kernel.sendCalls[0];
-  assert.equal(method, "kernel.outbound.execute");
+  assert.equal(method, "kernel.v1.outbound.execute");
   assert.equal(params.capability_id, MODEL_LIVE_CALL_ID);
   assert.equal(params.destination_host, "api.openai.com");
   assert.equal(params.method, "POST");
@@ -128,7 +128,7 @@ test("streaming sends SSE outbound params and accumulates final text", () => {
 
   assert.equal(kernel.streamCalls.length, 1);
   const call = kernel.streamCalls[0];
-  assert.equal(call.method, "kernel.outbound.stream");
+  assert.equal(call.method, "kernel.v1.outbound.stream");
   assert.equal(call.params.capability_id, MODEL_LIVE_CALL_STREAM_ID);
   assert.equal(call.params.stream_format, "sse");
   assert.equal(call.params.body_shape.stream, true);

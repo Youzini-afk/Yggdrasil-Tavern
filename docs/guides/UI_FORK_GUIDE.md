@@ -145,4 +145,4 @@ YdlTavern 在 ST parity 外增加了几项 accessibility hardening：
 
 `packages/ydltavern-surface/manifest.yaml` 与 `surface.manifest.json` 现在都声明 9 个 surface contributions：原有 `ydltavern/play`、`ydltavern/settings`、`ydltavern/extensions`，加上 `ydltavern/character`、`ydltavern/world-info`、`ydltavern/persona`、`ydltavern/ai-response-config`、`ydltavern/user-settings`、`ydltavern/backgrounds`。
 
-Yggdrasil host 可通过 `kernel.surface.contribution.list` 发现这些 surface，并由 SurfaceHost 挂载任意一个。`settings` 保持 generic catch-all；新增 6 个 surface 是 V5 drawers 的具体入口。
+Yggdrasil host 可通过 `kernel.v1.surface.contribution.list` 发现这些 surface，并由 SurfaceHost 挂载任意一个。`settings` 保持 generic catch-all；新增 6 个 surface 是 V5 drawers 的具体入口。

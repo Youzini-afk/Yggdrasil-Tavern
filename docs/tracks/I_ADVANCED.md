@@ -62,7 +62,7 @@ output: 下一个 speaker 选择跟 ST 同种子下完全一致
 
 `packages/ydltavern-engine` 的 `world_info.evaluate`、`world_info.route`、`world_info.match_keys`、`preset.compile`、`turn.generate` 会透传这些结果。`@ydltavern/surface` 会展示 PromptManager order、marker fills、WI routing/group/probability/timed trace。
 
-高级模型 I/O 方面，`model.live_realtime` 已通过 Yggdrasil WebSocket outbound 上线：OpenAI Realtime 走真实 `kernel.outbound.websocket.*`，Gemini Live 当前是 best-effort stub。该能力不改变 WI / 群聊对齐状态。
+高级模型 I/O 方面，`model.live_realtime` 已通过 Yggdrasil WebSocket outbound 上线：OpenAI Realtime 走真实 `kernel.v1.outbound.websocket.*`，Gemini Live 当前是 best-effort stub。该能力不改变 WI / 群聊对齐状态。
 
 这仍是 `partial`。仍待完成：完整 ST persona lock、群聊轮换、字节级对齐。
 

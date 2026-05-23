@@ -199,7 +199,7 @@ function deriveManifestPermissions(
     ...DEFAULT_PERMISSIONS,
     ...requested,
     // Permission gate exists now, but v0 intentionally never exposes network or
-    // kernel.outbound.*. Revisit once a threat model and outbound broker land.
+    // kernel.v1.outbound.*. Revisit once a threat model and outbound broker land.
     network: false && (requested?.network === true || reqs.has('network') || reqs.has('internet')),
   };
 }

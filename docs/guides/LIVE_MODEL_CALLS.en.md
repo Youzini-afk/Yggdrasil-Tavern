@@ -6,7 +6,7 @@
 
 Live model calls are YdlTavern's opt-in path for real provider HTTPS requests through a Yggdrasil host. The YdlTavern engine converts Tavern/ST-style settings into a provider request body; the Yggdrasil host owns networking, secrets, audit, cancel, and timeout behavior.
 
-The boundary is strict: the YdlTavern engine never directly `fetch`es a provider and never reads a raw API key. Every real outbound call must go through `kernel.outbound.execute` or `kernel.outbound.stream`.
+The boundary is strict: the YdlTavern engine never directly `fetch`es a provider and never reads a raw API key. Every real outbound call must go through `kernel.v1.outbound.execute` or `kernel.v1.outbound.stream`.
 
 ## Call path
 
@@ -15,7 +15,7 @@ Unary:
 ```text
 YdlTavern model.live_call
   -> buildChatRequest(...)
-  -> subprocess kernelClient.sendKernelRequest("kernel.outbound.execute", ...)
+  -> subprocess kernelClient.sendKernelRequest("kernel.v1.outbound.execute", ...)
   -> Yggdrasil host outbound executor
   -> provider HTTPS
 ```
@@ -25,7 +25,7 @@ Streaming:
 ```text
 YdlTavern model.live_call.stream
   -> buildChatRequest(... stream=true)
-  -> kernelClient.streamKernelRequest("kernel.outbound.stream", ...)
+  -> kernelClient.streamKernelRequest("kernel.v1.outbound.stream", ...)
   -> provider SSE
   -> normalized stream frames via callbacks
 ```
@@ -35,7 +35,7 @@ WebSocket realtime:
 ```text
 YdlTavern model.live_realtime
   -> kernelClient.openWebSocket(...)
-  -> kernel.outbound.websocket.open / send / close
+  -> kernel.v1.outbound.websocket.open / send / close
   -> provider WSS (OpenAI Realtime; Gemini Live best-effort stub)
 ```
 
@@ -107,8 +107,8 @@ Adding a provider means updating the manifest and the live-call source mapping t
 ## Capability surface
 
 - `ydltavern/engine/model.live_call`: unary request/response path. Returns status, body shape, extracted text/reasoning/tool calls/usage when available, redaction state, network flag, and executor kind.
-- `ydltavern/engine/model.live_call.stream`: streaming path. Uses `kernel.outbound.stream` with `stream_format: "sse"` and emits normalized frames through callbacks.
-- `ydltavern/engine/model.live_realtime`: WebSocket realtime path. Uses `kernel.outbound.websocket.*`; OpenAI Realtime is real, while Gemini Live is currently a best-effort stub.
+- `ydltavern/engine/model.live_call.stream`: streaming path. Uses `kernel.v1.outbound.stream` with `stream_format: "sse"` and emits normalized frames through callbacks.
+- `ydltavern/engine/model.live_realtime`: WebSocket realtime path. Uses `kernel.v1.outbound.websocket.*`; OpenAI Realtime is real, while Gemini Live is currently a best-effort stub.
 
 Both capabilities are marked non-deterministic and model-boundary crossing.
 
@@ -130,7 +130,7 @@ All live calls are Yggdrasil outbound events. The recorded purpose uses `ydltave
 
 ## Cancel and timeout
 
-Unary calls pass `timeout_ms` to `kernel.outbound.execute`; if omitted, YdlTavern uses a conservative default. Streaming calls pass `timeout_ms` to `kernel.outbound.stream` and return a handle with `cancel()`. Host cancellation produces a `cancelled` frame; host timeout produces a `timeout` frame.
+Unary calls pass `timeout_ms` to `kernel.v1.outbound.execute`; if omitted, YdlTavern uses a conservative default. Streaming calls pass `timeout_ms` to `kernel.v1.outbound.stream` and return a handle with `cancel()`. Host cancellation produces a `cancelled` frame; host timeout produces a `timeout` frame.
 
 Callers should wire UI stop buttons to `cancel()` for streaming generation. A cancelled stream is not an error; it is a terminal user action.
 

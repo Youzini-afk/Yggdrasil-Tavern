@@ -13,7 +13,7 @@ The YdlTavern capability is `ydltavern/engine/model.live_realtime`. The boundary
 ```text
 YdlTavern model.live_realtime
   -> kernelClient.openWebSocket(...)
-  -> kernel.outbound.websocket.open
+  -> kernel.v1.outbound.websocket.open
   -> Yggdrasil host live ws executor
   -> provider wss endpoint
 ```

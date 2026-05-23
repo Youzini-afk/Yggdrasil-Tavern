@@ -145,4 +145,4 @@ YdlTavern adds accessibility hardening beyond ST parity:
 
 `packages/ydltavern-surface/manifest.yaml` and `surface.manifest.json` now declare 9 surface contributions: the original `ydltavern/play`, `ydltavern/settings`, `ydltavern/extensions`, plus `ydltavern/character`, `ydltavern/world-info`, `ydltavern/persona`, `ydltavern/ai-response-config`, `ydltavern/user-settings`, and `ydltavern/backgrounds`.
 
-The Yggdrasil host can discover these through `kernel.surface.contribution.list` and mount any of them via SurfaceHost. `settings` remains a generic catch-all; the 6 new surfaces are specific entries for V5 drawers.
+The Yggdrasil host can discover these through `kernel.v1.surface.contribution.list` and mount any of them via SurfaceHost. `settings` remains a generic catch-all; the 6 new surfaces are specific entries for V5 drawers.

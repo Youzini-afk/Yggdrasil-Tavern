@@ -22,7 +22,7 @@ YdlTavern 的 Yggdrasil-hosted React surface bundle。它不是独立 Web/Deskto
 
 本包保留两份 manifest，各自面向不同 host 层：
 
-- `manifest.yaml` 是 Yggdrasil-compliant package manifest，供 Yggdrasil host 读取，并通过 `kernel.surface.contribution.list` 暴露 `ydltavern/play`、`ydltavern/settings` 和 `ydltavern/extensions`。
+- `manifest.yaml` 是 Yggdrasil-compliant package manifest，供 Yggdrasil host 读取，并通过 `kernel.v1.surface.contribution.list` 暴露 `ydltavern/play`、`ydltavern/settings` 和 `ydltavern/extensions`。
 - `surface.manifest.json` 是 React-host-side bundle descriptor，保留 export name、wrapper class、fonts、fixtures、sample props 等 framework hints，供 SurfaceHost 挂载 React 组件时使用。
 - 两者会并存一段时间；后续当 Yggdrasil surface loader 语义稳定后，可以考虑合并。
 - `manifest.yaml` 中每个 surface contribution 的 `metadata` 字段携带 SurfaceHost 需要的 React-specific hints，例如 `framework`、`export_name` 和 `wrapper_class`。

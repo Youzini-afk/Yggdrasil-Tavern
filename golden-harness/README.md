@@ -76,7 +76,7 @@ Accuracy levels in tokenizer fixture output:
 
 HF-family tokenizers can now be loaded from caller-supplied `tokenizer.json` or via
 `fetchHuggingFaceTokenizer`, which asks the Yggdrasil host to download the file
-through `kernel.outbound.execute`. The harness tokenizer scenarios remain a
+through `kernel.v1.outbound.execute`. The harness tokenizer scenarios remain a
 self-baseline unless a fixture explicitly wires a real HF source.
 
 ### Compare YdlTavern Output Against Fixtures

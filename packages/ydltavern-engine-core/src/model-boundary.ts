@@ -12,7 +12,7 @@ export interface ModelCallProfile {
 }
 
 export interface YggdrasilOutboundModelEnvelope {
-  readonly method: 'kernel.outbound.execute';
+  readonly method: 'kernel.v1.outbound.execute';
   readonly shape: 'yggdrasil.outbound.model_call.v1';
   readonly capability_id: 'model.execute';
   readonly destination_host: string;
@@ -107,7 +107,7 @@ export function buildModelCallPlan(input: BuildModelCallPlanInput): ModelCallPla
   const secretRefs = isNonEmptyString(profile.secretRef) ? [profile.secretRef] : [];
 
   const envelope: YggdrasilOutboundModelEnvelope = {
-    method: 'kernel.outbound.execute',
+    method: 'kernel.v1.outbound.execute',
     shape: 'yggdrasil.outbound.model_call.v1',
     capability_id: 'model.execute',
     destination_host: destinationHost,

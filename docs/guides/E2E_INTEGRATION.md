@@ -11,8 +11,8 @@ YdlTavern 不提供独立 Web app。`packages/ydltavern-surface` 构建出 brows
 ```text
 Yggdrasil host (Rust)         clients/web (TS)              YdlTavern surface bundle
 ┌──────────────────┐         ┌──────────────────┐          ┌──────────────────────┐
-│ kernel.surface.* │ ←HTTP→ │ surface-host.ts  │ ←iframe→ │ bundle.mjs           │
-│ /rpc /kernel/*   │         │ + bundle resolver│          │ (mount adapters)      │
+│ kernel.v1.surface.* │ ←HTTP→ │ surface-host.ts  │ ←iframe→ │ bundle.mjs           │
+│ /rpc /kernel/v1/*   │         │ + bundle resolver│          │ (mount adapters)      │
 │ /surface-bundles │ ←──────┘                  │          │                       │
 └──────────────────┘ static  └──────────────────┘          └──────────────────────┘
 ```

@@ -199,7 +199,7 @@ async function executeJsonGet(
   const secretHeaders = options.hfTokenSecretRef
     ? { Authorization: { secret_ref: options.hfTokenSecretRef, scheme: 'bearer' } }
     : {};
-  const response = await options.kernelClient.sendKernelRequest<OutboundExecuteResponse>('kernel.outbound.execute', omitUndefined({
+  const response = await options.kernelClient.sendKernelRequest<OutboundExecuteResponse>('kernel.v1.outbound.execute', omitUndefined({
     capability_id: options.capabilityId,
     destination_host: target.destinationHost,
     method: 'GET',

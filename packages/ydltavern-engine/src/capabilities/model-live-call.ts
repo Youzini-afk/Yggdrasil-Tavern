@@ -155,7 +155,7 @@ export async function modelLiveCallUnary(
     redaction_state?: string | Record<string, unknown>;
     network_performed?: boolean;
     executor_kind?: string;
-  }>("kernel.outbound.execute", params);
+  }>("kernel.v1.outbound.execute", params);
 
   const extracted = extractUnaryFields(input.source, response.body_shape ?? {});
   return {
@@ -213,7 +213,7 @@ export function modelLiveCallStream(
   const state = emptyStreamState();
   let usage: ModelLiveCallUnaryOutput["usage"] | undefined;
 
-  const handle = kernel.streamKernelRequest("kernel.outbound.stream", params, {
+  const handle = kernel.streamKernelRequest("kernel.v1.outbound.stream", params, {
     onChunk(chunk) {
       const parsed = parseOutboundStreamChunk(chunk);
       if (parsed === undefined) return;

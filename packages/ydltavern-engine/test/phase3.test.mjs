@@ -270,7 +270,7 @@ test("model capabilities plan calls and consume stream frames", () => {
   assert.equal(planned.plan.live, false);
   assert.equal(planned.plan.requiresHostExecution, true);
   assert.equal(planned.plan.stream, true);
-  assert.equal(planned.plan.envelope.method, "kernel.outbound.execute");
+  assert.equal(planned.plan.envelope.method, "kernel.v1.outbound.execute");
   assert.equal(planned.plan.envelope.destination_host, "fake-local");
 
   const consumed = modelHandlers[`${PACKAGE_ID}/model.consume_stream`]({

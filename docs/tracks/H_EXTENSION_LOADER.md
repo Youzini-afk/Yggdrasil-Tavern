@@ -42,7 +42,7 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 依赖 Yggdrasil 的 git 安装能力：
 
 - ST 风格扩展：YdlTavern 自己拉 git / zip，存到 `extensions/`
-- Yggdrasil 包：走 `kernel.outbound.git_fetch` + `official/package-installer-lab`，写到 host profile lockfile（Yggdrasil 已实现）
+- Yggdrasil 包：走 `kernel.v1.outbound.git_fetch` + `official/package-installer-lab`，写到 host profile lockfile（Yggdrasil 已实现）
 
 ## 依赖
 
