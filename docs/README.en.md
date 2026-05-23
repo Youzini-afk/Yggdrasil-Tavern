@@ -25,6 +25,7 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 - [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.en.md) — generate ST-alignment fixtures with the Node + jsdom golden harness
 - [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.en.md) — make opt-in live model calls through the Yggdrasil outbound executor
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) — use OpenAI Realtime / Gemini Live stub through Yggdrasil WebSocket outbound
+- [Yggdrasil `SECRET_MANAGEMENT.md`](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md) — API Connections writes pasted keys into `official/secret-store-lab`, profiles keep only `secret_ref:store:*`, and env remains a fallback
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.en.md) — opt into loading real SillyTavern ESM extensions in the QuickJS sandbox
 - [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.en.md) — Round 8 same-window ST extension compatibility promise, DOM contract, globals, and URL layout
 - [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.en.md) — run the 5-package, 37-scenario tinybench baseline and use `perf/baseline.json` as the regression reference
@@ -71,6 +72,7 @@ Parallel work by domain, not linear milestones. See [`tracks/README.md`](tracks/
 | Understand the internal data model | [`architecture/TURN_MODEL.md`](architecture/TURN_MODEL.en.md) → [`architecture/COMPAT_PROJECTION.md`](architecture/COMPAT_PROJECTION.en.md) |
 | Generate ST-alignment fixtures | [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.en.md) |
 | Configure live model calls | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.en.md) |
+| Manage API keys | [Yggdrasil `SECRET_MANAGEMENT.md`](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md) |
 | Configure Realtime WebSocket models | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.en.md) |
 | Load real ST extensions | [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.en.md) → [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.en.md) |
 | Run the performance baseline | [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.en.md) |

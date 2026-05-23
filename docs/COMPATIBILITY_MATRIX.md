@@ -152,7 +152,7 @@ Y-track 完成 same-window ST extension host：
 |---|---|---|---|
 | Theme system | ST flat theme JSON + SmartTheme-style values | `importSTTheme` / `exportSTTheme` flat JSON round-trip；29 个 `--tavern-*` token；Dark V 1.0 / Azure / Celestial Macaron | implemented |
 | Settings panel / drawers | 9 个 ST 顶部抽屉入口 | TopBar + DrawerShell + 9 drawers；左侧 8 个，右侧 Characters；`useDrawers` mutual exclusion | implemented |
-| API Connections drawer | Provider/model/base URL/profile 选择 + API keys | 通过 Yggdrasil host RPC 把粘贴的 raw key 保存到加密的 `official/secret-store-lab`，profiles 只保存 `secret_ref:store:NAME`，并显示 secret-store 状态 | implemented |
+| API Connections drawer | Provider/model/base URL/profile 选择 + API keys | 功能可用：paste + save 通过 Yggdrasil host RPC 把 raw key 保存到加密的 `official/secret-store-lab`，profiles 只保存 `secret_ref:store:NAME`，显示 secret-store 状态；env `secret_ref:env:*` 仍可 fallback | implemented |
 | Mobile responsive | ST 1000px mobile breakpoint + 768px tighter breakpoint | `mobile.css`：1000px primary、768px secondary、full-screen sheets、touch target、safe-area、iOS 16px textarea | implemented |
 | Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper 复刻 `.mes` 结构 | implemented |
 | Settings forms / drawers | ST drawer forms backed by shared state | Sampler, connection, formatting, persona, characters, world books, backgrounds, user settings all read/write TavernProvider; schema-versioned localStorage persists state | implemented |

@@ -25,6 +25,7 @@
 - [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.md) —— 使用 Node + jsdom golden harness 生成 ST 对齐 fixtures
 - [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) —— 通过 Yggdrasil outbound executor 发起 opt-in 真实模型调用
 - [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) —— 通过 Yggdrasil WebSocket outbound 使用 OpenAI Realtime / Gemini Live stub
+- [Yggdrasil `SECRET_MANAGEMENT.md`](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.md) —— API Connections 粘贴 key 后写入 `official/secret-store-lab`，profile 只保留 `secret_ref:store:*`；env 路径仍可 fallback
 - [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) —— 在 QuickJS sandbox 中 opt-in 加载真实 SillyTavern ESM 扩展
 - [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.md) —— Round 8 same-window ST 扩展兼容承诺、DOM 契约、globals 与 URL layout
 - [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.md) —— 运行 5 包 37 场景 tinybench baseline，并使用 `perf/baseline.json` 做回归参考
@@ -71,6 +72,7 @@
 | 理解内部数据模型 | [`architecture/TURN_MODEL.md`](architecture/TURN_MODEL.md) → [`architecture/COMPAT_PROJECTION.md`](architecture/COMPAT_PROJECTION.md) |
 | 生成 ST 对齐 fixture | [`guides/GOLDEN_HARNESS.md`](guides/GOLDEN_HARNESS.md) |
 | 配置真实模型调用 | [`guides/LIVE_MODEL_CALLS.md`](guides/LIVE_MODEL_CALLS.md) |
+| 管理 API key | [Yggdrasil `SECRET_MANAGEMENT.md`](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.md) |
 | 配置 Realtime WebSocket 模型 | [`guides/REALTIME_MODELS.md`](guides/REALTIME_MODELS.md) |
 | 加载真实 ST 扩展 | [`guides/EXTENSION_COMPATIBILITY.md`](guides/EXTENSION_COMPATIBILITY.md) → [`guides/REAL_EXTENSION_LOADING.md`](guides/REAL_EXTENSION_LOADING.md) |
 | 运行性能 baseline | [`guides/PERFORMANCE_BASELINE.md`](guides/PERFORMANCE_BASELINE.md) |
