@@ -1,0 +1,210 @@
+{
+  "schema": "yggdrasil.bench.v1",
+  "created_at": 1779514762506,
+  "package": "@ydltavern/engine-core",
+  "node_version": "v24.15.0",
+  "git": {
+    "commit": "64546663d08f7107bd6909c30c017153880c96b7",
+    "branch": "main",
+    "dirty": true
+  },
+  "env": {
+    "os": "linux",
+    "arch": "x64",
+    "num_cpus": 14
+  },
+  "benchmarks": [
+    {
+      "name": "prompt_manager.compile.small",
+      "iterations": 552295,
+      "samples": 552295,
+      "min_ms": 0.0015419999999721767,
+      "p50_ms": 0.0016630000000077416,
+      "p95_ms": 0.0019720000000233995,
+      "p99_ms": 0.0032150000002093295,
+      "max_ms": 6.001560000000154,
+      "mean_ms": 0.0018106287726665704,
+      "rsd_pct": 1.288820669153835,
+      "throughput": {
+        "value": 584729,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "prompt_manager.compile.medium",
+      "iterations": 40243,
+      "samples": 40243,
+      "min_ms": 0.02132499999970605,
+      "p50_ms": 0.02365800000006857,
+      "p95_ms": 0.031710000000202854,
+      "p99_ms": 0.036125579999825276,
+      "max_ms": 1.3878850000000966,
+      "mean_ms": 0.02484936172750439,
+      "rsd_pct": 0.5617784342904653,
+      "throughput": {
+        "value": 41409,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "prompt_manager.compile.large",
+      "iterations": 4331,
+      "samples": 4331,
+      "min_ms": 0.19225099999948725,
+      "p50_ms": 0.20960699999977805,
+      "p95_ms": 0.33564300000034564,
+      "p99_ms": 0.5618436000006045,
+      "max_ms": 1.1266070000001491,
+      "mean_ms": 0.23092704964210778,
+      "rsd_pct": 0.9097216655976295,
+      "throughput": {
+        "value": 4516,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "world_info.evaluate.small",
+      "iterations": 16644,
+      "samples": 16644,
+      "min_ms": 0.04820599999948172,
+      "p50_ms": 0.0551564999996117,
+      "p95_ms": 0.07936500000050728,
+      "p99_ms": 0.09507862999992535,
+      "max_ms": 0.6884140000001935,
+      "mean_ms": 0.060087857846673795,
+      "rsd_pct": 0.5820603249900463,
+      "throughput": {
+        "value": 17363,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "world_info.evaluate.medium",
+      "iterations": 1546,
+      "samples": 1546,
+      "min_ms": 0.5615349999989121,
+      "p50_ms": 0.6103124999990541,
+      "p95_ms": 0.8246060000001307,
+      "p99_ms": 1.1641934500004931,
+      "max_ms": 1.5432270000001154,
+      "mean_ms": 0.6471210924967485,
+      "rsd_pct": 0.8262825788404876,
+      "throughput": {
+        "value": 1575,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "world_info.evaluate.large",
+      "iterations": 106,
+      "samples": 106,
+      "min_ms": 8.410517999998774,
+      "p50_ms": 8.881646500000898,
+      "p95_ms": 13.146054000000731,
+      "p99_ms": 14.517171650000549,
+      "max_ms": 14.605148000000554,
+      "mean_ms": 9.467639273585068,
+      "rsd_pct": 2.8692814437049416,
+      "throughput": {
+        "value": 107,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "macros.expand.short",
+      "iterations": 34700,
+      "samples": 34700,
+      "min_ms": 0.024718999999095104,
+      "p50_ms": 0.027372999998988234,
+      "p95_ms": 0.03731799999877694,
+      "p99_ms": 0.043448090000347314,
+      "max_ms": 0.7948290000003908,
+      "mean_ms": 0.028818570259365354,
+      "rsd_pct": 0.5402066081456609,
+      "throughput": {
+        "value": 35733,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "macros.expand.long",
+      "iterations": 50,
+      "samples": 50,
+      "min_ms": 28.62854100000004,
+      "p50_ms": 31.785044499999458,
+      "p95_ms": 37.63367699999981,
+      "p99_ms": 58.52977604000066,
+      "max_ms": 78.57234600000083,
+      "mean_ms": 33.00237227999987,
+      "rsd_pct": 5.883063613202202,
+      "throughput": {
+        "value": 31,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "tokenizer.gpt.encode.short",
+      "iterations": 219174,
+      "samples": 219174,
+      "min_ms": 0.002244000001155655,
+      "p50_ms": 0.002484000000549713,
+      "p95_ms": 0.0032850000006874325,
+      "p99_ms": 0.004540890001044244,
+      "max_ms": 210.5542349999996,
+      "mean_ms": 0.004562585037457076,
+      "rsd_pct": 56.18234727002681,
+      "throughput": {
+        "value": 392240,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "tokenizer.gpt.encode.long",
+      "iterations": 4049,
+      "samples": 4049,
+      "min_ms": 0.2276449999990291,
+      "p50_ms": 0.24184799999966344,
+      "p95_ms": 0.26050600000053237,
+      "p99_ms": 0.6046634000004997,
+      "max_ms": 1.3008090000002994,
+      "mean_ms": 0.24699783798468852,
+      "rsd_pct": 0.5638538700252115,
+      "throughput": {
+        "value": 4101,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "tokenizer.llama3.encode.short",
+      "iterations": 27271,
+      "samples": 27271,
+      "min_ms": 0.02625100000113889,
+      "p50_ms": 0.033131000000139466,
+      "p95_ms": 0.05771000000095228,
+      "p99_ms": 0.08296600000030588,
+      "max_ms": 1.4911659999997937,
+      "mean_ms": 0.036669930548939154,
+      "rsd_pct": 0.7424850756653059,
+      "throughput": {
+        "value": 29201,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "tokenizer.llama3.encode.long",
+      "iterations": 174,
+      "samples": 174,
+      "min_ms": 3.6575949999987643,
+      "p50_ms": 4.640056999999615,
+      "p95_ms": 13.88500600000043,
+      "p99_ms": 17.41254420999747,
+      "max_ms": 19.28135199999815,
+      "mean_ms": 5.758388356321852,
+      "rsd_pct": 7.876973705409197,
+      "throughput": {
+        "value": 200,
+        "unit": "ops/s"
+      }
+    }
+  ]
+}

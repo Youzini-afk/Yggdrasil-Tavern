@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "bench": "node bench/index.bench.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test test/*.test.mjs"
   },
@@ -21,6 +22,7 @@
     "llama3-tokenizer-js": "^1.2.0"
   },
   "devDependencies": {
+    "tinybench": "^6.0.2",
     "typescript": "^5.9.3"
   }
 }

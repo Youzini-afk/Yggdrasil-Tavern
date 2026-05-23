@@ -1,0 +1,98 @@
+{
+  "schema": "yggdrasil.bench.v1",
+  "created_at": 1779515034456,
+  "package": "@ydltavern/extensions",
+  "node_version": "v24.15.0",
+  "git": {
+    "commit": "64546663d08f7107bd6909c30c017153880c96b7",
+    "branch": "main",
+    "dirty": true
+  },
+  "env": {
+    "os": "linux",
+    "arch": "x64",
+    "num_cpus": 14
+  },
+  "benchmarks": [
+    {
+      "name": "sandbox.bootstrap",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.13181500000018787,
+      "p50_ms": 0.13862699999981487,
+      "p95_ms": 0.24120160000006777,
+      "p99_ms": 0.24120160000006777,
+      "max_ms": 4.488982000000306,
+      "mean_ms": 0.14618799605320948,
+      "rsd_pct": 1.187994106680921,
+      "throughput": {
+        "value": 7000,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "sandbox.invoke.simple",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.0024429999998574203,
+      "p50_ms": 0.0026739999998426356,
+      "p95_ms": 0.005478000000039174,
+      "p99_ms": 0.005478000000039174,
+      "max_ms": 4.173989999999776,
+      "mean_ms": 0.002912944124021086,
+      "rsd_pct": 0.9668246239673004,
+      "throughput": {
+        "value": 361260,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "regex.apply.short",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.00335399999994479,
+      "p50_ms": 0.0038059999997130944,
+      "p95_ms": 0.010865599999670033,
+      "p99_ms": 0.010865599999670033,
+      "max_ms": 13.29269400000021,
+      "mean_ms": 0.004438425301590244,
+      "rsd_pct": 2.8705479466229136,
+      "throughput": {
+        "value": 248472,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "regex.apply.long",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 1.259092999999666,
+      "p50_ms": 1.3499449999999342,
+      "p95_ms": 2.582281650000626,
+      "p99_ms": 2.582281650000626,
+      "max_ms": 9.99079299999994,
+      "mean_ms": 1.4013287647058554,
+      "rsd_pct": 1.9082071678934367,
+      "throughput": {
+        "value": 726,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "loader.parse_manifest",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.0037149999998291605,
+      "p50_ms": 0.003897000000506523,
+      "p95_ms": 0.009087599999475008,
+      "p99_ms": 0.009087599999475008,
+      "max_ms": 0.8107440000003407,
+      "mean_ms": 0.004388646372130331,
+      "rsd_pct": 0.5390721785771275,
+      "throughput": {
+        "value": 242432,
+        "unit": "ops/s"
+      }
+    }
+  ]
+}

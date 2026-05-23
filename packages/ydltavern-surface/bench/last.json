@@ -1,0 +1,98 @@
+{
+  "schema": "yggdrasil.bench.v1",
+  "created_at": 1779515041911,
+  "package": "@ydltavern/surface",
+  "node_version": "v24.15.0",
+  "git": {
+    "commit": "64546663d08f7107bd6909c30c017153880c96b7",
+    "branch": "main",
+    "dirty": true
+  },
+  "env": {
+    "os": "linux",
+    "arch": "x64",
+    "num_cpus": 14
+  },
+  "benchmarks": [
+    {
+      "name": "formatting.markdown.short",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.22983799999974508,
+      "p50_ms": 0.30971850000014456,
+      "p95_ms": 0.6877342499999717,
+      "p99_ms": 0.6877342499999717,
+      "max_ms": 9.568145000000186,
+      "mean_ms": 0.35243982875263696,
+      "rsd_pct": 4.253507069122207,
+      "throughput": {
+        "value": 3175,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "formatting.markdown.long",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 14.93984300000011,
+      "p50_ms": 16.209393999999975,
+      "p95_ms": 30.202570500000093,
+      "p99_ms": 30.202570500000093,
+      "max_ms": 30.68931900000007,
+      "mean_ms": 19.6111259803922,
+      "rsd_pct": 7.36113565955669,
+      "throughput": {
+        "value": 54,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "formatting.markdown.with_xss",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.23385599999983242,
+      "p50_ms": 0.2821645000001354,
+      "p95_ms": 0.5427120900000455,
+      "p99_ms": 0.5427120900000455,
+      "max_ms": 8.30423299999984,
+      "mean_ms": 0.3085093537939591,
+      "rsd_pct": 3.2893803568371953,
+      "throughput": {
+        "value": 3483,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "formatting.regex_hooks.10",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 0.21743900000001304,
+      "p50_ms": 0.25761099999999715,
+      "p95_ms": 0.5704552500003501,
+      "p99_ms": 0.5704552500003501,
+      "max_ms": 6.860270999999557,
+      "mean_ms": 0.29189152101576327,
+      "rsd_pct": 3.7874647117285267,
+      "throughput": {
+        "value": 3759,
+        "unit": "ops/s"
+      }
+    },
+    {
+      "name": "formatting.full_pipeline.100msg",
+      "iterations": 4,
+      "samples": 4,
+      "min_ms": 24.816219000000274,
+      "p50_ms": 28.965064500000153,
+      "p95_ms": 58.45019050999947,
+      "p99_ms": 58.45019050999947,
+      "max_ms": 71.66034599999966,
+      "mean_ms": 30.80677562000005,
+      "rsd_pct": 6.607633391659867,
+      "throughput": {
+        "value": 34,
+        "unit": "ops/s"
+      }
+    }
+  ]
+}
