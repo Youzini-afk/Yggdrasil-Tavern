@@ -6,7 +6,7 @@
 
 ## 接下来会推进的工作
 
-下面这些不构成新阶段，是已知该做、也会真实推进的事项。
+下面这些是已知该做、也会真实推进的事项。
 
 ### 扩展生态托管
 
@@ -24,7 +24,7 @@
 
 ### Surface hosting 与 marketplace
 
-- **生产 bundle hosting**：在 Yggdrasil host 上实现 package static route，把已安装 package 的 `bundle.mjs`、styles、fonts、ST compatibility shims 与 extension files 作为 same-origin URLs 暴露。
+- **已收敛基础**：YdlTavern 可通过 Yggdrasil 原生项目安装进入 profile/project registry；installed project surface bundle 由 host 以 `/surface-bundles/projects/<id>/...` same-origin route 暴露；host bridge 使用 typed `allowed_capability_ids` 与 allowlist 限制 surface 可调用能力。
 - **Cross-origin allowlist**：为社区 marketplace 设计 surface bundle allowlist、integrity pin、version pin 与 audit metadata；默认仍要求 same-origin。
 - **多挂载 surface**：把当前单一 outlet 扩展为可管理多个 iframe surface，同时保留 sandbox 与 lifecycle isolation。
 
@@ -37,4 +37,4 @@
 
 - 为真实第三方扩展维护单独兼容记录：可加载、可初始化、核心功能可用、需要 patch、不支持。
 - 随社区扩展暴露继续补 legacy lib shims 与 ST module URL shims。
-- 扩展安装走 Yggdrasil git package channel；加载能力不等同于安装 UX 完成。
+- 扩展安装走 Yggdrasil git package channel；基础项目安装/host bridge 已可用，但社区扩展分发、marketplace allowlist 与安装 UX 仍需单独完成。

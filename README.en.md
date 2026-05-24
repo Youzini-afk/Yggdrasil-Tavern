@@ -14,6 +14,12 @@ YdlTavern installs through Yggdrasil's project mechanism:
 yg install github.com/Youzini-afk/Yggdrasil-Tavern
 ```
 
+For local dogfood:
+
+```bash
+yg install ../YdlTavern --data-dir <data-dir> --profile <profile> -y
+```
+
 After installation, YdlTavern appears on Home as a `yggdrasil_native` project. Click Play to enter the chat surface. API keys are saved through Yggdrasil's secret store — paste once in the API Connections drawer. See the [Yggdrasil secret management guide](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md).
 
 The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the prefix comes from publisher and project name, and the suffix is the first 8 characters of the SHA-256 of the canonical name `Youzini-afk/Yggdrasil-Tavern`.
@@ -28,7 +34,7 @@ The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the pre
 
 ## Relationship to Yggdrasil
 
-YdlTavern is an integration project on top of Yggdrasil. It consumes the platform through the public protocol (HTTP `/rpc` plus SSE) and provides its own Tavern frontend as a surface bundle for Yggdrasil to host. Yggdrasil owns the platform shell; YdlTavern owns the product UI.
+YdlTavern is an integration project on top of Yggdrasil. It consumes the platform through the public protocol (HTTP `/rpc` plus SSE) and provides its own Tavern frontend as a static `surface_bundle` for Yggdrasil to host. After install, the host exposes the bundle under `/surface-bundles/projects/<project_id>/...`; Yggdrasil owns the platform shell, and YdlTavern owns the product UI.
 
 - It does not live in the Yggdrasil repo. Platform and product stay separate.
 - It gets the same treatment as any third-party project: same manifest, same permissions, same audit boundary.

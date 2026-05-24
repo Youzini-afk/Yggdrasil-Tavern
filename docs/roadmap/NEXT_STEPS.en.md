@@ -6,7 +6,7 @@ This document is about where YdlTavern goes next. For completed state and compat
 
 ## What's actively in flight
 
-These don't form new phases — they're known to-dos that will get done.
+These are known to-dos that will get done.
 
 ### Extension ecosystem hosting
 
@@ -24,7 +24,7 @@ The performance baseline lives in [`../guides/PERFORMANCE_BASELINE.md`](../guide
 
 ### Surface hosting and marketplace
 
-- **Production bundle hosting**: implement a package static route on the Yggdrasil host so installed package `bundle.mjs`, styles, fonts, ST compatibility shims, and extension files are exposed as same-origin URLs.
+- **Converged foundation**: YdlTavern can install as a Yggdrasil native project into the profile/project registry; installed project surface bundles are exposed by the host under `/surface-bundles/projects/<id>/...` as same-origin routes; the host bridge uses typed `allowed_capability_ids` and allowlists to restrict callable surface capabilities.
 - **Cross-origin allowlist**: design surface bundle allowlists, integrity pins, version pins, and audit metadata for community marketplaces; same-origin remains the default.
 - **Multiple mounted surfaces**: expand the current single outlet to manage multiple iframe surfaces while preserving sandbox and lifecycle isolation.
 
@@ -37,4 +37,4 @@ The performance baseline lives in [`../guides/PERFORMANCE_BASELINE.md`](../guide
 
 - Maintain separate compatibility records for real third-party extensions: loadable, initializes, core functionality works, needs patch, unsupported.
 - Add legacy library shims and ST module URL shims as community extensions reveal gaps.
-- Extension installation uses the Yggdrasil git package channel; loading capability does not mean installation UX is complete.
+- Extension installation uses the Yggdrasil git package channel; basic project install/host bridge support is available, but community extension distribution, marketplace allowlists, and installation UX still need separate work.

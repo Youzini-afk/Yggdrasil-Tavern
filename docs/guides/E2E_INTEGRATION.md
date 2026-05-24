@@ -2,7 +2,7 @@
 
 > [English](./E2E_INTEGRATION.en.md) · [中文](./E2E_INTEGRATION.md)
 
-本指南记录 YdlTavern surface bundle 如何被 Yggdrasil `clients/web` 消费。它覆盖开发期路径、bundle URL 解析、iframe mount 流程与当前限制。
+本指南记录 YdlTavern surface bundle 如何被 Yggdrasil `clients/web` 消费。它覆盖开发期路径、已安装项目路径、bundle URL 解析、iframe mount 流程与当前限制。
 
 ## Overview
 
@@ -36,13 +36,19 @@ npm run build --prefix packages/ydltavern-surface
 
 `clients/web` 不直接猜测文件系统路径。它通过 bundle resolver 把 `(packageId, surfaceId)` 和 manifest metadata 映射为：
 
-- bundle URL，例如 `/surface-bundles/ydltavern/bundle.mjs`；
+- bundle URL，例如开发期 `/surface-bundles/ydltavern/bundle.mjs`，或已安装项目 `/surface-bundles/projects/<project_id>/bundle.mjs`；
 - mount export，例如 `mountTavernPlaySurface`。
 
-当前 demo mapping 仍是硬编码，只覆盖 YdlTavern bundle：
+开发期同级仓库调试路径通常解析为：
 
 ```text
 ydltavern/surface → /surface-bundles/ydltavern/bundle.mjs
+```
+
+通过 `yg install` 安装为原生项目后，host 从项目 dist 提供静态 bundle，解析结果使用项目命名空间：
+
+```text
+ydltavern/play → /surface-bundles/projects/<project_id>/bundle.mjs
 ```
 
 manifest 中每个 contribution 的 `metadata.export_name` 指向对应 mount adapter。
@@ -57,13 +63,21 @@ manifest 中每个 contribution 的 `metadata.export_name` 指向对应 mount ad
 
 该路由从 sibling YdlTavern 仓库的 `packages/ydltavern-surface/dist/` 读取文件。因此本地调试前必须先在 YdlTavern 仓库运行 surface build。
 
-## Production
+## Installed project path
 
-生产期还需要 Yggdrasil host 提供真实静态文件路由，把已安装 package 的 bundle、styles 和 fonts 暴露成 same-origin URLs。这个 host static route 仍待补齐；当前只证明 `clients/web` 开发路径能挂载 demo bundle。
+安装后的 YdlTavern 是 `yggdrasil_native` 项目。`yg install` 复制 source 到 store，解析 engine/surface package manifest，写入 profile autoload，注册 project registry，并复制 surface dist。`host serve --profile <data-dir>/profiles/<profile>.yaml` 加载这些 manifest 后，把项目 bundle、styles 和 fonts 暴露为 same-origin static URLs：
+
+```text
+/surface-bundles/projects/<project_id>/bundle.mjs
+/surface-bundles/projects/<project_id>/styles/surface.css
+/surface-bundles/projects/<project_id>/fonts/...
+```
+
+`surface_bundle` 是 static browser bundle，不是 engine 执行入口，也不走 wasm sentinel。
 
 ## Mount flow
 
-1. 用户在 Play 页面点击 YdlTavern surface card 的 **Mount surface**。
+1. 用户在 Home 点击已安装 YdlTavern 项目的 **Play**（开发页也可手动 mount surface）。
 2. `main.ts` 根据 package / surface metadata 解析 bundle URL 和 export name，然后调用 `mountSurface()`。
 3. `SurfaceHost` 创建 iframe，sandbox 使用 `allow-scripts`。
 4. frame bootstrap 加载 stylesheets，dynamic import `bundle.mjs`，读取指定 mount adapter。
@@ -75,7 +89,7 @@ manifest 中每个 contribution 的 `metadata.export_name` 指向对应 mount ad
 - iframe sandbox 只允许 `allow-scripts`；不授予 same-origin、forms 或 popups。
 - frame CSP 使用 `default-src 'self'; script-src 'self'`。
 - bundle 必须是 same-origin URL；开发期由 Vite middleware 提供。
-- postMessage RPC 只暴露 public protocol surface，不开放 host privileged methods。
+- postMessage RPC 只暴露 public protocol surface，不开放 host privileged methods；可调用 capability 由 manifest/metadata 中 typed `allowed_capability_ids` 和 host allowlist 精确约束。
 - YdlTavern 只传 `secret_ref`；raw keys 和 outbound 执行仍归 Yggdrasil host 管理。
 
 ## Available mount adapters
@@ -122,13 +136,12 @@ manifest 中每个 contribution 的 `metadata.export_name` 指向对应 mount ad
    http://127.0.0.1:1420
    ```
 
-5. 进入 Play 页面，在 YdlTavern surface card 上点击 **Mount surface**。
+5. 在 Home 点击 YdlTavern 项目的 **Play**；开发调试页也可在 surface card 上点击 **Mount surface**。
 
 成功后，iframe 中会加载 YdlTavern surface bundle，并显示 Tavern UI。
 
-## Limitations (v0)
+## Limitations
 
-- Demo bundle mapping 是硬编码，不是完整 package registry resolver。
-- Production 需要 Yggdrasil host 的 package static fileserver route。
 - 当前只支持单个 surface outlet；不支持多个 surface 同时挂载。
 - 当前 bundle 只包含 Noto Sans / Noto Sans Mono Latin subset；CJK/emoji/更完整 Unicode 覆盖仍需后续字体 subset 策略。
+- 跨源 marketplace bundle 仍需要 allowlist、integrity pin、version pin 与 audit metadata；默认路径保持 same-origin。

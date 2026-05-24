@@ -8,7 +8,7 @@ entry:
   command:
     - node
     - --experimental-vm-modules
-    - dist/index.js
+    - dist/runtime-bundle.js
   transport: json_rpc_stdio
 provides:
   - id: ydltavern/engine/describe

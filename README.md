@@ -14,6 +14,12 @@ YdlTavern 通过 Yggdrasil 的项目机制安装：
 yg install github.com/Youzini-afk/Yggdrasil-Tavern
 ```
 
+本地 dogfood 可使用：
+
+```bash
+yg install ../YdlTavern --data-dir <data-dir> --profile <profile> -y
+```
+
 安装后，YdlTavern 会作为 `yggdrasil_native` 项目出现在 Home 屏幕上，点击 Play 进入聊天界面。API key 配置走 Yggdrasil 的密钥存储——在 API Connections 抽屉里粘贴一次即可。详见 [Yggdrasil 密钥管理指南](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.md)。
 
 项目 id 使用稳定形态 `youzini-afk__YdlTavern__d2a47e5c`：前缀来自发布者与项目名，后缀是 canonical name `Youzini-afk/Yggdrasil-Tavern` 的 SHA-256 前 8 位。
@@ -28,7 +34,7 @@ yg install github.com/Youzini-afk/Yggdrasil-Tavern
 
 ## 跟 Yggdrasil 的关系
 
-YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + SSE）消费平台，并通过 surface bundle 向 Yggdrasil 提供自己的 Tavern 前端。Yggdrasil 负责平台壳，YdlTavern 负责产品 UI。
+YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + SSE）消费平台，并通过 static `surface_bundle` 向 Yggdrasil 提供自己的 Tavern 前端。安装后 bundle 由 host 以 `/surface-bundles/projects/<project_id>/...` 暴露；Yggdrasil 负责平台壳，YdlTavern 负责产品 UI。
 
 - 它不在 Yggdrasil 仓库里。平台与产品分开。
 - 它跟其他第三方项目享有同样的待遇：同一份清单、同一套权限、同一道审计闸门。

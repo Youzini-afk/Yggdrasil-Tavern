@@ -2,7 +2,7 @@
 
 > [English](./ARCHITECTURE.en.md) · [中文](./ARCHITECTURE.md)
 
-YdlTavern is a product that runs on top of [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil). It consumes the platform through Yggdrasil's public protocol, on equal footing with any other third-party project. The YdlTavern engine / surface manifests participate as kernel v1 Path A packages (`entry.contract: "v1"`), consuming platform authority through bindings and `@yggdrasil/kernel-sdk` / the subprocess SDK.
+YdlTavern is a product that runs on top of [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil). It consumes the platform through Yggdrasil's public protocol, on equal footing with any other third-party project. The YdlTavern engine is a subprocess Path A package (`entry.contract: "v1"`) that consumes platform authority through bindings and `@yggdrasil/kernel-sdk` / the subprocess SDK; the YdlTavern surface is a `surface_bundle` static browser bundle loaded by Yggdrasil SurfaceHost in a sandboxed iframe and limited to allowed public-protocol capability calls through the host bridge.
 
 ```text
 ┌──────────────────────────────────────────────┐
@@ -69,6 +69,7 @@ The YdlTavern frontend is not an independent app. It is a surface bundle:
 - `packages/ydltavern-surface` provides React components, styles, and a draft surface descriptor.
 - Yggdrasil's web / desktop / app shell discovers, loads, and mounts those surfaces.
 - YdlTavern surfaces own the Tavern product UI; the Yggdrasil shell owns navigation, windows, permission dialogs, installation, audit, and platform lifecycle.
+- `allowed_capability_ids` in the surface manifest is a typed field that precisely declares which capabilities the bridge may call. It feeds the SurfaceHost bridge allowlist and does not grant authority beyond manifest permissions, capability handles, or host policy.
 
 Future bundled local installs can ship the Yggdrasil host and YdlTavern packages together, but the shell still belongs to Yggdrasil and the product frontend still belongs to YdlTavern.
 
@@ -81,6 +82,8 @@ End users obtain the YdlTavern package family through Yggdrasil's install/load m
 ### Model calls
 
 YdlTavern does not connect to OpenAI / Anthropic / Gemini directly. Live model calls enter Yggdrasil through `ydltavern/engine/model.live_call` and `ydltavern/engine/model.live_call.stream`: the YdlTavern engine builds the provider request body with `buildChatRequest`, calls `kernel.v1.outbound.execute` or `kernel.v1.outbound.stream` through the subprocess SDK `kernelClient`, and the host live outbound executor performs provider HTTPS. YdlTavern passes only `secret_ref` strings and manifest declarations, not raw keys; audit, redaction, cancel, and timeout behavior are owned by the Yggdrasil outbound event path.
+
+Engine and surface authority are separate: the engine is an executable subprocess package with manifest-declared capabilities and outbound authority; the surface is a static browser bundle with no direct kernel access and can only call capabilities listed in `allowed_capability_ids` through the host bridge.
 
 ### Realtime via Yggdrasil WebSocket outbound
 
@@ -120,14 +123,14 @@ The World Info pipeline continues to target ST `checkWorldInfo` behavior. Budget
 
 YdlTavern provides its own Tavern UI: chat, message rendering, world books, presets, extension management, and settings panels. These live in `@ydltavern/surface`, not `clients/desktop` or a standalone SPA. Yggdrasil only places the surfaces inside platform containers such as Home / Play / Forge / Assistant. The current surface is a product UI: `react-virtuoso` virtualized chat list, dark/light/parchment theme system, Connection/Sampler/Persona/Theme settings, ExtensionsDrawer driven by loader-st state, QuickReplyBar, mobile responsive layout, and a complete TavernProvider state layer.
 
-Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/manifest.yaml` is the Yggdrasil package manifest consumed by the host and exposed through `kernel.v1.surface.contribution.list` for 9 contributions (`ydltavern/play`, `ydltavern/settings`, `ydltavern/extensions`, plus 6 drawer-specific entries); `packages/ydltavern-surface/surface.manifest.json` is the React bundle descriptor with framework hints such as export name, wrapper class, fonts, fixtures, and sample props for SurfaceHost when mounting the React bundle.
+Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/manifest.yaml` is the Yggdrasil package manifest consumed by the host and exposed through `kernel.v1.surface.contribution.list` for 9 contributions (`ydltavern/play`, `ydltavern/settings`, `ydltavern/extensions`, plus 6 drawer-specific entries), with typed `allowed_capability_ids` declaring the bridge-callable capabilities; `packages/ydltavern-surface/surface.manifest.json` is the React bundle descriptor with framework hints such as export name, wrapper class, fonts, fixtures, and sample props for SurfaceHost when mounting the React bundle.
 
 #### Surface bundle build pipeline
 
 `packages/ydltavern-surface` has two build outputs:
 
 - `tsc` emits `dist/index.js` and `.d.ts` files for TypeScript / package consumers.
-- Vite library mode emits `dist/bundle.mjs`, the browser-ready ESM bundle that Yggdrasil iframe SurfaceHost can dynamic import; React and surface runtime dependencies are bundled so the iframe does not see bare imports.
+- Vite library mode emits `dist/bundle.mjs`, the browser-ready ESM `surface_bundle` that Yggdrasil iframe SurfaceHost can dynamic import; React and surface runtime dependencies are bundled so the iframe does not see bare imports. It is a static browser entry, not the engine execution entry.
 - `scripts/copy-assets.mjs` copies `src/styles/*.css` into `dist/styles/` and copies 4 Latin-subset woff2 files from `@fontsource/noto-sans@5.2.10` and `@fontsource/noto-sans-mono@5.2.10` into `dist/fonts/`. The `@font-face` declarations in `surface.css` use `../fonts/`, so `dist/styles/surface.css` references `dist/fonts/`.
 
 The font strategy is self-hosted Noto Sans + Noto Sans Mono (SIL OFL 1.1, AGPL-compatible), with Inter / system fallback. Fonts are bundled via @fontsource (Noto Sans Regular/Medium/Bold plus Noto Sans Mono Regular, Latin subset, ~50KB), so the build no longer depends on manually placed `public/fonts/` files.

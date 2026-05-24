@@ -6,6 +6,12 @@
 
 YdlTavern 在 [`perf/baseline.json`](../../perf/baseline.json) 中保留一份已提交的性能基线。每个 YdlTavern 包都有自己的 `bench/` 目录和 tinybench 场景。优化前后应本地运行它们，用同一台机器上的 JSON 结果判断趋势。
 
+当前聚合基线入口是：
+
+```bash
+node scripts/run-all-benches.mjs
+```
+
 这不是 CI 预算，也不是跨机器可比的绝对分数。它是一个可复现、schema 友好的本地参考点，用来避免在 multi-agent、MCP、vector RAG、ToolManager 等后续工作里无意引入明显回归。
 
 ## 如何运行
@@ -180,7 +186,7 @@ tinybench 本身没有内置 compare 命令。YdlTavern 使用 schema 友好的 
 perf/baseline.json
 ```
 
-它对应 B5 聚合提交 `5671700`，来自 Linux 开发机，不是 CI budget。跨机器比较没有意义；请在自己的机器上重新运行，并把同机前后结果作为判断依据。
+它来自 Linux 开发机，不是 CI budget。当前 evidence 是 5 个包、37 个 tinybench 场景的聚合 JSON，覆盖 engine-core、importers、st-compat、extensions 与 surface 热路径。跨机器比较没有意义；请在自己的机器上重新运行，并把同机前后结果作为判断依据。
 
 推荐流程：
 

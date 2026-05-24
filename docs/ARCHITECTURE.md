@@ -2,7 +2,7 @@
 
 > [English](./ARCHITECTURE.en.md) · [中文](./ARCHITECTURE.md)
 
-YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 之上的产品。它通过 Yggdrasil 的公开协议消费平台，跟其他第三方项目享有同样待遇。YdlTavern engine / surface manifest 按内核 v1 契约作为路径 A 包参与（`entry.contract: "v1"`），通过 bindings 和 `@yggdrasil/kernel-sdk` / subprocess SDK 消费平台能力。
+YdlTavern 是一个跑在 [Yggdrasil](https://github.com/Youzini-afk/Yggdrasil) 之上的产品。它通过 Yggdrasil 的公开协议消费平台，跟其他第三方项目享有同样待遇。YdlTavern engine 是 subprocess Path A 包（`entry.contract: "v1"`），通过 bindings 和 `@yggdrasil/kernel-sdk` / subprocess SDK 消费平台能力；YdlTavern surface 是 `surface_bundle` static browser bundle，由 Yggdrasil SurfaceHost 以 sandboxed iframe 加载，并通过受限 host bridge 调用允许的公开协议能力。
 
 ```text
 ┌──────────────────────────────────────────────┐
@@ -69,6 +69,7 @@ YdlTavern 前端不是一个独立 app。它是 surface bundle：
 - `packages/ydltavern-surface` 提供 React components、样式和 surface descriptor 草案。
 - Yggdrasil 的 Web / Desktop / App shell 负责发现、加载、挂载这些 surface。
 - YdlTavern surface 负责 Tavern 产品 UI；Yggdrasil shell 负责导航、窗口、权限弹窗、安装、审计和平台生命周期。
+- Surface manifest 里的 `allowed_capability_ids` 是 typed 字段，精确声明 bridge 可调用的能力集合。它是 surface-host bridge allowlist 的输入，不授予超出 manifest 权限、capability handle 或 host policy 的额外权威。
 
 未来的本地一体安装可以把 Yggdrasil host 与 YdlTavern 包族打在同一个发行包里，但壳仍归 Yggdrasil，产品前端仍归 YdlTavern。
 
@@ -81,6 +82,8 @@ YdlTavern 前端不是一个独立 app。它是 surface bundle：
 ### 模型调用
 
 YdlTavern 不自己接 OpenAI / Anthropic / Gemini。真实模型调用通过 `ydltavern/engine/model.live_call` 和 `ydltavern/engine/model.live_call.stream` 进入 Yggdrasil：YdlTavern engine 用 `buildChatRequest` 组 provider 请求体，经 subprocess SDK `kernelClient` 调用 `kernel.v1.outbound.execute` 或 `kernel.v1.outbound.stream`，再由 host 的 live outbound executor 访问 provider HTTPS。YdlTavern 只传 `secret_ref` 字符串和 manifest 声明，不读取 raw key；审计、脱敏、取消和超时由 Yggdrasil outbound 事件链负责。
+
+Engine 与 surface 的权威边界分开：engine 是可执行 subprocess 包，持有 manifest 声明的 capability 与出站权限；surface 是静态浏览器 bundle，没有直接 kernel access，只能通过 host bridge 调用 `allowed_capability_ids` 中列出的能力。
 
 ### Realtime via Yggdrasil WebSocket outbound
 
@@ -120,14 +123,14 @@ World Info pipeline 仍以 ST `checkWorldInfo` 行为为对齐目标。预算成
 
 YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。当前 surface 已是产品 UI：`react-virtuoso` 虚拟聊天列表、dark/light/parchment 主题系统、Connection/Sampler/Persona/Theme 设置、loader-st 状态驱动的 ExtensionsDrawer、QuickReplyBar、移动响应式布局，以及完整 TavernProvider 状态层。
 
-Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manifest.yaml` 是 Yggdrasil package manifest，由 host 读取并通过 `kernel.v1.surface.contribution.list` 暴露 9 个 contributions（`ydltavern/play`、`ydltavern/settings`、`ydltavern/extensions`，以及 6 个具体抽屉入口）；`packages/ydltavern-surface/surface.manifest.json` 是 React bundle descriptor，保留 export name、wrapper class、fonts、fixtures/sample props 等 framework hints，供 SurfaceHost 挂载 React bundle 时使用。
+Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manifest.yaml` 是 Yggdrasil package manifest，由 host 读取并通过 `kernel.v1.surface.contribution.list` 暴露 9 个 contributions（`ydltavern/play`、`ydltavern/settings`、`ydltavern/extensions`，以及 6 个具体抽屉入口），并用 typed `allowed_capability_ids` 声明 bridge 可调用能力；`packages/ydltavern-surface/surface.manifest.json` 是 React bundle descriptor，保留 export name、wrapper class、fonts、fixtures/sample props 等 framework hints，供 SurfaceHost 挂载 React bundle 时使用。
 
 #### Surface bundle build pipeline
 
 `packages/ydltavern-surface` 有两类构建产物：
 
 - `tsc` 输出 `dist/index.js` 与 `.d.ts`，供 TypeScript / package consumers 使用。
-- Vite library mode 输出 `dist/bundle.mjs`，这是 browser-ready ESM bundle，可在 Yggdrasil iframe SurfaceHost 中 dynamic import；React 与 surface runtime 依赖被打入 bundle，避免 iframe 里出现 bare imports。
+- Vite library mode 输出 `dist/bundle.mjs`，这是 browser-ready ESM `surface_bundle`，可在 Yggdrasil iframe SurfaceHost 中 dynamic import；React 与 surface runtime 依赖被打入 bundle，避免 iframe 里出现 bare imports。它是静态浏览器入口，不是 engine 执行入口。
 - `scripts/copy-assets.mjs` 把 `src/styles/*.css` 复制到 `dist/styles/`，并从 `@fontsource/noto-sans@5.2.10` 与 `@fontsource/noto-sans-mono@5.2.10` 复制 4 个 Latin subset woff2 到 `dist/fonts/`。`surface.css` 中的 `@font-face` 使用 `../fonts/` 路径，因此 `dist/styles/surface.css` 会引用 `dist/fonts/`。
 
 字体策略是 self-hosted Noto Sans + Noto Sans Mono（SIL OFL 1.1，AGPL-compatible），并保留 Inter / system fallback。字体由 @fontsource 打包（Noto Sans Regular/Medium/Bold + Noto Sans Mono Regular，Latin subset，约 50KB），不依赖手工放置 `public/fonts/` 文件。

@@ -6,6 +6,12 @@
 
 YdlTavern keeps a committed performance baseline at [`perf/baseline.json`](../../perf/baseline.json). Each YdlTavern package has its own `bench/` directory with tinybench scenarios. Run them locally before and after optimization work to detect trend-level regressions on the same machine.
 
+The current aggregate baseline entrypoint is:
+
+```bash
+node scripts/run-all-benches.mjs
+```
+
 This is not a CI budget and not an absolute score that can be compared across machines. It is a reproducible, schema-friendly local reference for avoiding accidental regressions while working on multi-agent flows, MCP, vector RAG, ToolManager, and related follow-up work.
 
 ## How to run
@@ -180,7 +186,7 @@ The committed reference baseline lives at:
 perf/baseline.json
 ```
 
-It corresponds to B5 aggregation commit `5671700`, was produced on a Linux developer machine, and is not a CI budget. Cross-machine comparison is not meaningful; rerun on your machine and compare same-machine before/after results.
+It was produced on a Linux developer machine and is not a CI budget. Current evidence is the aggregate JSON for 5 packages and 37 tinybench scenarios, covering engine-core, importers, st-compat, extensions, and surface hot paths. Cross-machine comparison is not meaningful; rerun on your machine and compare same-machine before/after results.
 
 Recommended flow:
 

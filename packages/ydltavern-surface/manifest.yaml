@@ -16,6 +16,15 @@ contributes:
       slot: experience_entry
       title: "YdlTavern Play"
       description: "Tavern-compatible play surface for chat-style interactions"
+      allowed_capability_ids:
+        - ydltavern/engine/model.live_call
+        - ydltavern/engine/model.live_call.stream
+        - official/secret-store-lab/put_secret
+        - official/secret-store-lab/has_secret
+        - official/secret-store-lab/list_secrets
+        - official/secret-store-lab/delete_secret
+        - official/secret-store-lab/health
+        - official/secret-store-lab/put_project_secret
       activation:
         launch_capability_id: null
         session_template: null

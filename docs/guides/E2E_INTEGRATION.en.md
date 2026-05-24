@@ -2,7 +2,7 @@
 
 > [English](./E2E_INTEGRATION.en.md) · [中文](./E2E_INTEGRATION.md)
 
-This guide documents how the YdlTavern surface bundle is consumed by Yggdrasil `clients/web`. It covers the development path, bundle URL resolution, iframe mount flow, and current limitations.
+This guide documents how the YdlTavern surface bundle is consumed by Yggdrasil `clients/web`. It covers the development path, installed-project path, bundle URL resolution, iframe mount flow, and current limitations.
 
 ## Overview
 
@@ -36,13 +36,19 @@ The build outputs are:
 
 `clients/web` does not guess filesystem paths directly. It uses the bundle resolver to map `(packageId, surfaceId)` plus manifest metadata to:
 
-- a bundle URL, for example `/surface-bundles/ydltavern/bundle.mjs`;
+- a bundle URL, for example development `/surface-bundles/ydltavern/bundle.mjs`, or installed-project `/surface-bundles/projects/<project_id>/bundle.mjs`;
 - a mount export, for example `mountTavernPlaySurface`.
 
-The current demo mapping is still hardcoded and only covers the YdlTavern bundle:
+The sibling-repo development path usually resolves to:
 
 ```text
 ydltavern/surface → /surface-bundles/ydltavern/bundle.mjs
+```
+
+After `yg install` installs YdlTavern as a native project, the host serves static bundle files from the project dist and the resolved URL uses the project namespace:
+
+```text
+ydltavern/play → /surface-bundles/projects/<project_id>/bundle.mjs
 ```
 
 Each contribution's `metadata.export_name` in the manifest points at its mount adapter.
@@ -57,13 +63,21 @@ During development, the `clients/web` Vite server exposes a static route:
 
 The route reads files from the sibling YdlTavern repository at `packages/ydltavern-surface/dist/`. Build the surface package in the YdlTavern repo before starting local integration testing.
 
-## Production
+## Installed project path
 
-Production still needs a real Yggdrasil host static route that exposes installed package bundles, styles, and fonts as same-origin URLs. That host static route remains to be done; the current implementation only proves the `clients/web` development path can mount the demo bundle.
+Installed YdlTavern is a `yggdrasil_native` project. `yg install` copies source into the store, resolves engine/surface package manifests, writes profile autoload entries, registers the project, and copies surface dist. After `host serve --profile <data-dir>/profiles/<profile>.yaml` loads those manifests, it exposes the project bundle, styles, and fonts as same-origin static URLs:
+
+```text
+/surface-bundles/projects/<project_id>/bundle.mjs
+/surface-bundles/projects/<project_id>/styles/surface.css
+/surface-bundles/projects/<project_id>/fonts/...
+```
+
+`surface_bundle` is a static browser bundle. It is not the engine execution entry and does not use the wasm sentinel.
 
 ## Mount flow
 
-1. The user clicks **Mount surface** on a YdlTavern surface card in the Play page.
+1. The user clicks **Play** on the installed YdlTavern project in Home; development pages may also mount a surface card manually.
 2. `main.ts` resolves the bundle URL and export name from package / surface metadata, then calls `mountSurface()`.
 3. `SurfaceHost` creates an iframe with `sandbox="allow-scripts"`.
 4. The frame bootstrap loads stylesheets, dynamically imports `bundle.mjs`, and reads the selected mount adapter.
@@ -75,7 +89,7 @@ Production still needs a real Yggdrasil host static route that exposes installed
 - The iframe sandbox only grants `allow-scripts`; it does not grant same-origin, forms, or popups.
 - The frame CSP uses `default-src 'self'; script-src 'self'`.
 - The bundle must use a same-origin URL; the Vite middleware provides that URL during development.
-- postMessage RPC is limited to the public protocol surface and does not expose privileged host methods.
+- postMessage RPC is limited to the public protocol surface and does not expose privileged host methods; callable capabilities are constrained precisely by typed `allowed_capability_ids` in manifest/metadata plus the host allowlist.
 - YdlTavern passes only `secret_ref`; raw keys and outbound execution remain owned by the Yggdrasil host.
 
 ## Available mount adapters
@@ -122,13 +136,12 @@ Assume `Yggdrasil/` and `YdlTavern/` are sibling repositories.
    http://127.0.0.1:1420
    ```
 
-5. Navigate to Play and click **Mount surface** on a YdlTavern surface card.
+5. Click **Play** on the YdlTavern project in Home; development pages may also click **Mount surface** on a surface card.
 
 If successful, the iframe loads the YdlTavern surface bundle and renders the Tavern UI.
 
-## Limitations (v0)
+## Limitations
 
-- The demo bundle mapping is hardcoded rather than a full package registry resolver.
-- Production needs a Yggdrasil host package static-fileserver route.
 - Only one surface outlet is supported; multiple simultaneously mounted surfaces are not supported yet.
 - The current bundle includes only the Noto Sans / Noto Sans Mono Latin subset; CJK/emoji/broader Unicode coverage still needs a future font-subset strategy.
+- Cross-origin marketplace bundles still need allowlists, integrity pins, version pins, and audit metadata; the default path remains same-origin.
