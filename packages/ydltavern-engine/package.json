@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json --noEmit && node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsc -w -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.mjs"
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.19.19",
+    "esbuild": "^0.28.0",
     "typescript": "^5.8.3"
   }
 }
