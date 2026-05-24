@@ -33,12 +33,6 @@
 - [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.md) —— Yggdrasil clients/web 如何解析、iframe 挂载并通过 RPC bridge 运行 YdlTavern surface bundle
 
 
-## Research archives
-
-- [`research/round8/EXTENSION_FORK_RESEARCH.md`](research/round8/EXTENSION_FORK_RESEARCH.md) —— Round 8 same-window ST DOM fork 决策归档
-- [`research/round8/ST_DOM_CONTRACT.md`](research/round8/ST_DOM_CONTRACT.md) —— ST DOM IDs/classes、messageFormatting、DOMPurify hooks 与 ESM/globals 台账
-- [`research/round8/MESSAGE_FORMATTING_PIPELINE.md`](research/round8/MESSAGE_FORMATTING_PIPELINE.md) —— YdlTavern messageFormatting 实现说明
-
 ## ST 源码 inventory（机械扫描，ground truth）
 
 按域机械扫 SillyTavern 源码产出，作为后续实现的对齐基准。这些是英文文件（以 ST 源码字面量为主），不做中文镜像。

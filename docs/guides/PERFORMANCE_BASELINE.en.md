@@ -208,5 +208,5 @@ Phase B optimizations should:
 1. Use `perf/baseline.json` as the before/after regression reference.
 2. Re-run the relevant package bench after each significant change; run the full aggregate before merging.
 3. Check both `mean_ms` and `p95_ms` so mean improvements do not hide worse tail latency.
-4. Update `docs/research/round8/` if an optimization changes behavior shape, fixture shape, or ST-alignment assumptions.
+4. Update `docs/COMPATIBILITY_MATRIX.md` and the related guides if an optimization changes behavior shape, fixture shape, or ST-alignment assumptions.
 5. Do not bypass ST compatibility layers, the Yggdrasil capability boundary, permissions, audit, or AGPL obligations in the name of performance.

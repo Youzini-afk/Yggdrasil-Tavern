@@ -208,5 +208,5 @@ Phase B 优化应：
 1. 把 `perf/baseline.json` 作为 before/after regression reference。
 2. 每个显著改动后重跑相关包 bench；合并前至少重跑全量聚合。
 3. 同时查看 `mean_ms` 与 `p95_ms`，避免只优化均值却拉高尾延迟。
-4. 如果优化改变行为形状、fixture 形状或 ST 对齐假设，同步更新 `docs/research/round8/` 的相关归档。
+4. 如果优化改变行为形状、fixture 形状或 ST 对齐假设，同步更新 `docs/COMPATIBILITY_MATRIX.md` 与相关 guide。
 5. 不为性能绕过 ST 兼容层、Yggdrasil capability boundary、权限、审计或 AGPL 义务。

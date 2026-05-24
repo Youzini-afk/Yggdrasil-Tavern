@@ -213,7 +213,7 @@ curl http://127.0.0.1:1420/script.js | head -10
 
 见：
 
-- `docs/research/round8/`：架构决策与 audit 数据；
+- `docs/ARCHITECTURE.md` 与 `docs/COMPATIBILITY_MATRIX.md`：扩展兼容的体系结构与覆盖矩阵；
 - `packages/ydltavern-surface/src/formatting/`：messageFormatting pipeline；
 - `packages/ydltavern-st-compat/src/window-bootstrap.ts`：global mounting；
 - `packages/ydltavern-surface/public/st-compat/`：ESM shim files。

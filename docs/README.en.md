@@ -33,12 +33,6 @@ Documentation grouped by topic. Every doc has a Chinese and an English version; 
 - [`guides/E2E_INTEGRATION.md`](guides/E2E_INTEGRATION.en.md) — how Yggdrasil clients/web resolves, iframe-mounts, and RPC-bridges the YdlTavern surface bundle
 
 
-## Research archives
-
-- [`research/round8/EXTENSION_FORK_RESEARCH.md`](research/round8/EXTENSION_FORK_RESEARCH.en.md) — Round 8 same-window ST DOM fork decision archive
-- [`research/round8/ST_DOM_CONTRACT.md`](research/round8/ST_DOM_CONTRACT.en.md) — ST DOM IDs/classes, messageFormatting, DOMPurify hooks, ESM/globals ledger
-- [`research/round8/MESSAGE_FORMATTING_PIPELINE.md`](research/round8/MESSAGE_FORMATTING_PIPELINE.en.md) — YdlTavern messageFormatting implementation notes
-
 ## ST source inventory (mechanical scan, ground truth)
 
 Mechanical per-domain scans of the SillyTavern source, used as the alignment baseline for future implementation. These are English files (dominated by literal ST source identifiers); no Chinese mirror.

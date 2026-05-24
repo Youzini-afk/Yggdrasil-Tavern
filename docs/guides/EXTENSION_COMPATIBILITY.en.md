@@ -213,7 +213,7 @@ When filing an issue, include the extension URL, the import that failed, the DOM
 
 See:
 
-- `docs/research/round8/` for architecture decisions and audit data;
+- `docs/ARCHITECTURE.md` and `docs/COMPATIBILITY_MATRIX.md` for the extension-compat architecture and coverage matrix;
 - `packages/ydltavern-surface/src/formatting/` for the messageFormatting pipeline;
 - `packages/ydltavern-st-compat/src/window-bootstrap.ts` for global mounting;
 - `packages/ydltavern-surface/public/st-compat/` for ESM shim files.
