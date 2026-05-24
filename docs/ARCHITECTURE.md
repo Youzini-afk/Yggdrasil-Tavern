@@ -94,7 +94,7 @@ Realtime 模型调用使用单独的 WebSocket 路径：`ydltavern/engine/model.
 
 ST 扩展与 React shell 运行在同一个 window 中。React 渲染 ST-compatible DOM IDs，并明确让出 jQuery territories。`messageFormatting()` 走 showdown → DOMPurify，并带 extension hooks。Window globals 通过 `mountSTGlobals()` bootstrap。ESM relative imports 解析到 `/script.js` shims；开发期由 Vite middleware 提供，生产期由 host static route 提供。
 
-该模型有意遵循 ST 的信任边界：扩展拥有页面级 DOM/storage/network 访问；YdlTavern 通过错误处理隔离 callback failure，并将在 Round 9 增加透明 Activity Drawer diagnostics。旧 QuickJS sandbox 仍可用于受限 synthetic tests 与 capability experiments，但 Round 8 的兼容承诺是让未修改 ST 扩展 same-window 执行。
+该模型有意遵循 ST 的信任边界：扩展拥有页面级 DOM/storage/network 访问；YdlTavern 通过错误处理隔离 callback failure，并计划在后续工作中增加透明 Activity Drawer diagnostics。旧 QuickJS sandbox 仍可用于受限 synthetic tests 与 capability experiments，但兼容承诺是让未修改 ST 扩展 same-window 执行。
 
 ### QuickJS 扩展 sandbox
 
@@ -114,11 +114,11 @@ Browser stub 是显式审计过的最小集合：`document`、`window`、`localS
 
 ### World Info alignment
 
-World Info pipeline 仍以 ST `checkWorldInfo` 行为为对齐目标。Round 4 后预算成本使用 ST fallback 风格 token approximation（UTF-8/3.35 近似，而不是字符长度），预算上限按 context budget 百分比计算；概率门与随机路径使用 seedrandom 注入，保证 golden harness 与 engine-core 在 fixture 中稳定一致。当前 world-info 4/4 scenarios 为 byte-perfect，但这只覆盖现有 fixtures，不代表所有 WI 边角行为都已全域声明 implemented。
+World Info pipeline 仍以 ST `checkWorldInfo` 行为为对齐目标。预算成本使用 ST fallback 风格 token approximation（UTF-8/3.35 近似，而不是字符长度），预算上限按 context budget 百分比计算；概率门与随机路径使用 seedrandom 注入，保证 golden harness 与 engine-core 在 fixture 中稳定一致。当前 world-info 4/4 scenarios 为 byte-perfect，但这只覆盖现有 fixtures，不代表所有 WI 边角行为都已全域声明 implemented。
 
 ### 前端 surface
 
-YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。当前 surface 已从诊断页升级为产品 UI：`react-virtuoso` 虚拟聊天列表、dark/light/parchment 主题系统、Connection/Sampler/Persona/Theme 设置、loader-st 状态驱动的 ExtensionsDrawer、QuickReplyBar、移动响应式布局，以及完整 TavernProvider 状态层。
+YdlTavern 自己提供 Tavern UI：聊天界面、消息渲染、世界书、预设、扩展管理和设置面板。这些 UI 放在 `@ydltavern/surface`，不是 `clients/desktop` 或独立 SPA。Yggdrasil 只负责把 surface 放进 Home / Play / Forge / Assistant 等平台容器。当前 surface 已是产品 UI：`react-virtuoso` 虚拟聊天列表、dark/light/parchment 主题系统、Connection/Sampler/Persona/Theme 设置、loader-st 状态驱动的 ExtensionsDrawer、QuickReplyBar、移动响应式布局，以及完整 TavernProvider 状态层。
 
 Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manifest.yaml` 是 Yggdrasil package manifest，由 host 读取并通过 `kernel.v1.surface.contribution.list` 暴露 9 个 contributions（`ydltavern/play`、`ydltavern/settings`、`ydltavern/extensions`，以及 6 个具体抽屉入口）；`packages/ydltavern-surface/surface.manifest.json` 是 React bundle descriptor，保留 export name、wrapper class、fonts、fixtures/sample props 等 framework hints，供 SurfaceHost 挂载 React bundle 时使用。
 
@@ -130,11 +130,11 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 - Vite library mode 输出 `dist/bundle.mjs`，这是 browser-ready ESM bundle，可在 Yggdrasil iframe SurfaceHost 中 dynamic import；React 与 surface runtime 依赖被打入 bundle，避免 iframe 里出现 bare imports。
 - `scripts/copy-assets.mjs` 把 `src/styles/*.css` 复制到 `dist/styles/`，并从 `@fontsource/noto-sans@5.2.10` 与 `@fontsource/noto-sans-mono@5.2.10` 复制 4 个 Latin subset woff2 到 `dist/fonts/`。`surface.css` 中的 `@font-face` 使用 `../fonts/` 路径，因此 `dist/styles/surface.css` 会引用 `dist/fonts/`。
 
-字体策略是 self-hosted Noto Sans + Noto Sans Mono（SIL OFL 1.1，AGPL-compatible），并保留 Inter / system fallback。Round 7 后字体由 @fontsource 打包（Noto Sans Regular/Medium/Bold + Noto Sans Mono Regular，Latin subset，约 50KB），不再依赖手工放置 `public/fonts/` 文件。
+字体策略是 self-hosted Noto Sans + Noto Sans Mono（SIL OFL 1.1，AGPL-compatible），并保留 Inter / system fallback。字体由 @fontsource 打包（Noto Sans Regular/Medium/Bold + Noto Sans Mono Regular，Latin subset，约 50KB），不依赖手工放置 `public/fonts/` 文件。
 
 #### TavernProvider state architecture
 
-`TavernProvider` 是 surface UI 的单一状态源。Round 6 后，它包含：
+`TavernProvider` 是 surface UI 的单一状态源，包含：
 
 - settings slices：sampler、connection、formatting、background display，以及 active preset / connection profile 等 selection state；
 - library collections：characters、personas、world books、backgrounds，以及 active / selected ids；
@@ -145,13 +145,13 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 
 #### Shell architecture
 
-Round 5 V-track 后，`packages/ydltavern-surface/src/components/shell/` 使用 SillyTavern-like shell：`TopBar` 提供 9 个 Font Awesome 图标入口，`DrawerShell` 统一抽屉容器与 backdrop click-to-close，`Sheld` 是 50vw 居中主聊天列，`drawer-rail` layout 负责左右侧抽屉布局。左侧承载 AI Config、API Connections、Advanced Formatting、World Info、User Settings、Backgrounds、Extensions、Persona 8 个抽屉；右侧承载 Characters。
+`packages/ydltavern-surface/src/components/shell/` 使用 SillyTavern-like shell：`TopBar` 提供 9 个 Font Awesome 图标入口，`DrawerShell` 统一抽屉容器与 backdrop click-to-close，`Sheld` 是 50vw 居中主聊天列，`drawer-rail` layout 负责左右侧抽屉布局。左侧承载 AI Config、API Connections、Advanced Formatting、World Info、User Settings、Backgrounds、Extensions、Persona 8 个抽屉；右侧承载 Characters。
 
 抽屉状态由 `useDrawers` hook 维护：单一 `openId` 保证 mutual exclusion，同一图标再次点击关闭，backdrop 点击清空 open state。Yggdrasil `clients/web` / Desktop / App 仍拥有 iframe `SurfaceHost`、导航、权限、安装和平台生命周期；`@ydltavern/surface` 只是 React component library，不是 standalone app，也不拥有平台壳。
 
 #### Visual design system
 
-`src/styles/surface.css` 定义 scoped visual system。Round 5 增加 29 个 ST-aligned `--tavern-*` tokens，覆盖背景、文字、accent、chat tint、message tint、shadow、border、font scale、animation、Sheld width、avatar 和 icon sizing。ST theme JSON importer/exporter 位于 `src/components/product/themes/st-theme-importer.ts`，在 ST flat JSON 与 YdlTavern `TavernTheme` 之间转换。
+`src/styles/surface.css` 定义 scoped visual system，包含 29 个 ST-aligned `--tavern-*` tokens，覆盖背景、文字、accent、chat tint、message tint、shadow、border、font scale、animation、Sheld width、avatar 和 icon sizing。ST theme JSON importer/exporter 位于 `src/components/product/themes/st-theme-importer.ts`，在 ST flat JSON 与 YdlTavern `TavernTheme` 之间转换。
 
 内置主题共 6 个：3 个 YdlTavern native（dark、light、parchment）和 3 个 ST classic（Dark V 1.0、Azure、Celestial Macaron）。全局 text-shadow 只在 `.tavern-themed-root` 范围内启用，避免污染 Yggdrasil host 页面。
 
@@ -163,7 +163,7 @@ Round 5 V-track 后，`packages/ydltavern-surface/src/components/shell/` 使用 
 
 ### Golden harness
 
-`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；Round 6 W-track 后当前 compare 覆盖 20 个 scenarios（20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error），其中 chat 4/4 已由 cosmetic 收敛为 golden-harness verified。
+`golden-harness/` 是 Node + jsdom fixture generator。它把 SillyTavern 源码作为只读 sibling（通过 `YDLTAVERN_ST_PATH`）加载，用 shims 拦住 DOM、fetch、随机数和时间，从 ST ESM 模块提取 chat、world-info、macro、instruct、tokenizer fixtures。fixture 作为 YdlTavern 深度移植模块的对齐基准；当前 compare 覆盖 20 个 scenarios（20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error）。
 
 ### 扩展生态分发
 
@@ -195,4 +195,6 @@ Round 5 V-track 后，`packages/ydltavern-surface/src/components/shell/` 使用 
 
 ## 当前状态
 
-YdlTavern 的主要开发面已完成一轮系统推进、一轮深度移植、Round 3 T-track tightening、Round 4 U-track closure、Round 5 V-track UI parity、Round 6 W-track 收敛、Round 7 X-track slash/font 完成和 Round 8 Y-track same-window ST extension compatibility 完成：资产导入/导出、ST 兼容运行时、STScript 运行时、约 150+ 个 slash commands（A-N，覆盖 199 个 ST canonical commands）、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher、深宏引擎）、内置扩展逻辑、ESM-capable sandbox extension loader、live model call / realtime boundary、产品 surface shell、9 个 provider-backed drawers、browser-ready bundle、9 个 mount adapters、clients/web E2E demo 路径和诊断 inspector 都已落到可测试代码。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，ST 扩展已能在 same-window DOM fork 中通过 globals 与 ESM shims bootstrap，QuickJS sandbox 仍可用于受限 synthetic tests，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error）；但这些都还不是全域字节级 ST 对齐，provider-specific I/O、更多真实扩展功能路径和更多 fixture 场景仍需继续补齐。
+YdlTavern 已经完成 ST 核心运行时的一对一算法移植：资产导入/导出、ST 兼容运行时、STScript 运行时、约 150+ 个 slash commands（A-N，覆盖 199 个 ST canonical commands）、引擎核心（PromptManager、World Info、chat/text completion 适配器、instruct mode、tokenizer registry + HF runtime fetcher、深宏引擎）、内置扩展逻辑、ESM-capable sandbox extension loader、live model call / realtime boundary、产品 surface shell、9 个 provider-backed drawers、browser-ready bundle、9 个 mount adapters、clients/web E2E 集成路径与诊断 inspector 都在可测试代码中。深度移植模块从 ST 源码逐函数移植，内嵌文件/行号引用。
+
+当前状态仍是 `partial`：真实 tokenizer 覆盖已有 OpenAI/GPT-2/Llama/Llama3/Claude/HF families，ST 扩展能在 same-window DOM fork 中通过 globals 与 ESM shims bootstrap，QuickJS sandbox 仍可用于受限 synthetic tests，真实模型调用已能 opt-in 走 Yggdrasil outbound，surface descriptor 已有 Yggdrasil-compliant `manifest.yaml`，golden harness `compare.mjs` 已跑通 20 个 scenarios（20 perfect、0 cosmetic、0 structural、0 unverifiable、0 error）。但这些都还不是全域字节级 ST 对齐——provider-specific I/O、更多真实扩展功能路径和更多 fixture 场景仍需继续补齐。

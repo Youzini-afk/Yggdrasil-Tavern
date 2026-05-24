@@ -2,7 +2,7 @@
 
 > [English](./E2E_INTEGRATION.en.md) · [中文](./E2E_INTEGRATION.md)
 
-本指南记录 Round 6 W6 后 YdlTavern surface bundle 如何被 Yggdrasil `clients/web` 消费。它覆盖开发期路径、bundle URL 解析、iframe mount 流程与当前限制。
+本指南记录 YdlTavern surface bundle 如何被 Yggdrasil `clients/web` 消费。它覆盖开发期路径、bundle URL 解析、iframe mount 流程与当前限制。
 
 ## Overview
 
@@ -39,7 +39,7 @@ npm run build --prefix packages/ydltavern-surface
 - bundle URL，例如 `/surface-bundles/ydltavern/bundle.mjs`；
 - mount export，例如 `mountTavernPlaySurface`。
 
-Round 6 的 demo mapping 仍是硬编码，只覆盖 YdlTavern bundle：
+当前 demo mapping 仍是硬编码，只覆盖 YdlTavern bundle：
 
 ```text
 ydltavern/surface → /surface-bundles/ydltavern/bundle.mjs
@@ -59,7 +59,7 @@ manifest 中每个 contribution 的 `metadata.export_name` 指向对应 mount ad
 
 ## Production
 
-生产期还需要 Yggdrasil host 提供真实静态文件路由，把已安装 package 的 bundle、styles 和 fonts 暴露成 same-origin URLs。这个 host static route 属于 Phase C；当前 W6 只证明 `clients/web` 开发路径能挂载 demo bundle。
+生产期还需要 Yggdrasil host 提供真实静态文件路由，把已安装 package 的 bundle、styles 和 fonts 暴露成 same-origin URLs。这个 host static route 仍待补齐；当前只证明 `clients/web` 开发路径能挂载 demo bundle。
 
 ## Mount flow
 

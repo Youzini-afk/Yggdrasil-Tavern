@@ -50,7 +50,7 @@ Side effects of ST commands such as `/echo`, `/inject`, and `/listinjects` must 
 - expanded `substituteParams` for user/char, character fields, persona, time/date, dynamic overrides, and trace;
 - slash registry / parser / executor;
 - built-in `/gen`, `/continue`, `/swipe`, `/setvar`, `/getvar`, `/if`, and `/run` minimum behavior.
-- R2-R5 filled in batches C/D/E/F; Round 7 X-track added H-N. Together with the existing A/B/G batches, 14 batches (A-N) now provide ~150+ slash command registrations covering 199 ST canonical commands through real implementations, plan-only descriptors, and explicit unsupported sentinels.
+- Earlier batches added C/D/E/F; later work added H-N. Together with the existing A/B/G batches, 14 batches (A-N) now provide ~150+ slash command registrations covering 199 ST canonical commands through real implementations, plan-only descriptors, and explicit unsupported sentinels.
 
 This is still `partial`. The full STScript runtime (scope chain, closures, pipe injection, abort/break, compareValues, registry + alias resolution), full macro engine, and batches A-N canonical command coverage are now in place. Still pending: moving plan-only / unsupported commands to executable paths when safe, autocomplete/debugger, and byte-level STScript behavior alignment.
 

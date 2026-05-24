@@ -14,14 +14,7 @@ YdlTavern installs through Yggdrasil's project mechanism:
 yg install github.com/Youzini-afk/Yggdrasil-Tavern
 ```
 
-After installation, YdlTavern appears on the Home screen as a `yggdrasil_native` project.
-Click Play to enter the chat surface.
-
-API key configuration uses Yggdrasil's secret store — paste once in the API Connections drawer.
-See the [Yggdrasil secret management guide](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md).
-
-SendForm is now wired to the Yggdrasil engine: clicking Send invokes `ydltavern/engine/model.live_call`, and the Yggdrasil host reaches real provider APIs through the live outbound executor. API keys can be saved as platform-level or project-level `secret_ref`s.
-The chat UI now supports streaming responses: with streaming enabled, it updates the assistant message chunk by chunk and Stop cancels the active generation.
+After installation, YdlTavern appears on Home as a `yggdrasil_native` project. Click Play to enter the chat surface. API keys are saved through Yggdrasil's secret store — paste once in the API Connections drawer. See the [Yggdrasil secret management guide](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md).
 
 The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the prefix comes from publisher and project name, and the suffix is the first 8 characters of the SHA-256 of the canonical name `Youzini-afk/Yggdrasil-Tavern`.
 
@@ -29,49 +22,37 @@ The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the pre
 
 - Imports SillyTavern character cards (V1 / V2 / V3), world books, prompt presets, and chat history directly.
 - Supports SillyTavern's extension API (`getContext()`, `eventSource`, slash commands, etc.) so existing extensions can run.
-- SendForm actually invokes engine `model.live_call` / `model.live_call.stream`, which can call OpenAI / Anthropic / Gemini and other provider APIs through Yggdrasil host outbound and stream responses in the chat UI.
+- SendForm actually invokes engine `model.live_call` / `model.live_call.stream`, which can call OpenAI / Anthropic / Gemini and other provider APIs through Yggdrasil host outbound and stream responses in the chat UI; Stop cancels the active generation.
 - Keeps the UI structure and interaction flow familiar to longtime SillyTavern users, with the frontend rewritten from scratch.
 - Uses Yggdrasil for the engine layer: model integration, `secret_ref`, streaming lifecycle, proposal approval, outbound audit, memory / retrieval, and agent infrastructure all come from the platform.
 
 ## Relationship to Yggdrasil
 
-YdlTavern is an integration project on top of Yggdrasil. It consumes the platform through the public protocol (HTTP `/rpc` plus SSE), and provides its own Tavern frontend as a surface bundle for Yggdrasil to host. Yggdrasil owns the platform shell; YdlTavern owns the product UI.
+YdlTavern is an integration project on top of Yggdrasil. It consumes the platform through the public protocol (HTTP `/rpc` plus SSE) and provides its own Tavern frontend as a surface bundle for Yggdrasil to host. Yggdrasil owns the platform shell; YdlTavern owns the product UI.
 
 - It does not live in the Yggdrasil repo. Platform and product stay separate.
 - It gets the same treatment as any third-party project: same manifest, same permissions, same audit boundary.
 - It uses what Yggdrasil already provides: model integration, `secret_ref`, streaming and cancel lifecycle, proposals and approval, memory, sharing, outbound audit, git package install.
 - It runs as a kernel v1 Path A package (`entry.contract: "v1"`) and calls platform authority through bindings / the subprocess SDK; the generated `@yggdrasil/kernel-sdk` can be consumed from npm or a sibling workspace path (`file:../Yggdrasil/sdk/typescript/kernel-sdk`).
-- Once published, it can be installed with `yg install github.com/Youzini-afk/Yggdrasil-Tavern`.
 
-For Yggdrasil's side of the boundary, see [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.en.md).
+For the boundary in detail, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.en.md); for Yggdrasil's side, see [Yggdrasil/docs/tavern/TAVERN_COMPAT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/tavern/TAVERN_COMPAT.en.md).
 
 ## Status
 
-The main development surface has completed a systematic pass and a deep-port pass. YdlTavern now has one-to-one algorithm ports of ST core runtime: PromptManager, World Info, STScript, macro engine, chat/text completion adapters (25/15 providers), instruct mode, tokenizer registry, extension logic, ST API surface, and extension loader. Algorithms are ported function-by-function from ST source with file/line references baked in.
+YdlTavern has one-to-one algorithm ports of ST's core runtime: PromptManager, World Info, STScript, the macro engine, chat/text completion adapters (25/15 providers), instruct mode, the tokenizer registry, built-in extension logic, the ST API surface, and the extension loader. Algorithms are ported function-by-function from ST source with file/line references baked in. Same-window ST extension compatibility is in: `messageFormatting()` (showdown + DOMPurify + hooks), React DOM territory cession, `mountSTGlobals()`, ST URL layout shims, and BME/shujuku real-extension smoke all run. The golden harness is currently 20/20 perfect; slash commands cover all 199 ST canonical commands.
 
-- **Mechanical inventory of ST source**: 99 event_types, 199 ST canonical slash commands, 80+ macros, 26 chat completion sources, 17 text completion sources, 80+ sampler parameters, 32 world info triggers, 14 built-in extensions. Under [`docs/inventory/`](docs/inventory/).
-- **Internal data model and compatibility projection**: the Turn model plus the projection rules for ST `chat[]` / `eventSource` / `getContext()`. Under [`docs/architecture/`](docs/architecture/).
-- **Eight parallel implementation tracks**: B assets / C engine core / D ST API / E STScript / F built-in extensions / G UI / H extension loader / I advanced. Under [`docs/tracks/`](docs/tracks/).
-- **Shared types package**: [`packages/ydltavern-types/`](packages/ydltavern-types/) — Turn model plus ST event/slash/macro/connector/sampler/world-info/prompt-manager constants.
-- **Asset importers**: [`packages/ydltavern-importers/`](packages/ydltavern-importers/) — character JSON/PNG, world book, JSONL chat, preset, persona, theme, quick reply, regex, and instruct import/export skeletons backed by ST-like fixture tests.
-- **ST compatibility runtime**: [`packages/ydltavern-st-compat/`](packages/ydltavern-st-compat/) — live `chat[]` Proxy, Turn store, full `getContext()` shape (state / bridges / functions / legacy aliases / symbols / deprecated stubs), `eventSource`, `Generate`, macro re-exports (the deep implementation now lives in engine-core), STScript runtime (scope chain / closure / abort+break+debug / pipe injection / lintPipeValue / compareValues / registry + alias resolution), and ~150+ batches A-N slash commands; all 199 ST canonical commands are covered by real implementations, plan-only descriptors, or explicit unsupported sentinels.
-- **Engine core**: [`packages/ydltavern-engine-core/`](packages/ydltavern-engine-core/) — sampler normalization, 25 chat completion request shapes, 15 text completion request shapes, stream chunk state machine, PromptManager, World Info, instruct mode, the deep macro engine, and tokenizer registry. World Info now uses token-approximation budget accounting and seeded probability gates. The tokenizer runtime exposes `countTokens(text, options)` with OpenAI/GPT-2 (`gpt-tokenizer`, cl100k/o200k/p50k/r50k), Llama 1/2 (`llama-tokenizer-js`), Llama 3 (`llama3-tokenizer-js`), Claude (`@anthropic-ai/tokenizer`, local approximation), HF generic (`@huggingface/tokenizers` for Mistral/Gemma/Qwen2/DeepSeek/Yi/Jamba/Nemo/Command R/A), and `fetchHuggingFaceTokenizer` to runtime-fetch `tokenizer.json` through the Yggdrasil host; UTF-8/3.35 guesstimate remains as fallback when no real source is available.
-- **Built-in extensions package**: [`packages/ydltavern-extensions/`](packages/ydltavern-extensions/) — regex (full engine), memory, vectors, quick-reply, token-counter, caption, TTS, translate, expressions, attachments, connection-manager, stable-diffusion, extension loader, and the QuickJS sandbox (`src/sandbox/` runtime / bridge / loader / permissions / audit). The sandbox supports constrained ST extension JS execution, ESM relative imports, virtual ST host module mapping, browser stubs, a host bridge, timeout/memory/permission limits, and audit. Real extension loading is gated by the `realExtensionLoad` permission flag; network/fetch/XHR remain blocked. See [`docs/guides/REAL_EXTENSION_LOADING.md`](docs/guides/REAL_EXTENSION_LOADING.en.md).
-- **Compatibility matrix**: [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — B/C/D/E/F/G/H/I are `partial`; deep-port covers PromptManager / World Info / STScript / macros / chat+text completion / instruct / tokenizer / extensions / ST API / extension loader. After Round 6 W-track, all 8 structural diffs are closed and the golden harness remains 20/20 perfect; after Round 7 X-track, slash commands cover all 199 ST canonical commands.
+For the full compatibility matrix and current state, see [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md); for what's next, see [`docs/roadmap/NEXT_STEPS.md`](docs/roadmap/NEXT_STEPS.en.md).
 
-- **Round 8 complete: ST extensions run unmodified**
-  - Message formatting pipeline (showdown + DOMPurify + hooks) is aligned with the ST path.
-  - DOM territory cession: `#chat`, `#extensions_settings`, `#extensionsMenu`, `#movingDivs`, and related anchors are rendered by React with explicit jQuery let-go zones.
-  - Window globals bootstrap: `mountSTGlobals()` puts `SillyTavern`, `eventSource`, `chat`, and related values on `globalThis`.
-  - ESM compatibility shims at `/script.js`, `/scripts/extensions.js`, and related URLs let extensions keep relative imports unchanged.
-  - Real extension smoke tests cover BME and shujuku bootstrap.
-- **Golden harness**: [`golden-harness/`](golden-harness/) — Node + jsdom extraction harness that runs read-only sibling SillyTavern source and generates canonical chat / world-info / macro / instruct / tokenizer fixtures. The real `compare.mjs` diff workflow is operational: 20 scenarios currently produce 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, and 0 errors; the full test suite is roughly 1290+ tests; at Round 8 close `ydltavern-surface` has 88 passing tests and `ydltavern-st-compat` has 703 passing tests. See [`docs/guides/GOLDEN_HARNESS.md`](docs/guides/GOLDEN_HARNESS.en.md).
-- **YdlTavern frontend surface**: [`packages/ydltavern-surface/`](packages/ydltavern-surface/) — React surface bundle; `TavernPlaySurface` now defaults to a SillyTavern parity product UI with 9 top-bar drawer surfaces, a 50vw `Sheld` main column, ST `.mes` message DOM structure, SendForm/StreamingIndicator/BackgroundLayer, ST theme JSON import/export, 3 YdlTavern native themes + 3 ST classic presets (Dark V 1.0 / Azure / Celestial Macaron), and 1000px + 768px mobile breakpoints. Round 6 completed TavernProvider state slices for sampler / connection / formatting / backgrounds, library collections for characters / personas / world books / backgrounds, CRUD/message operations, schema-versioned localStorage persistence, and v1→v2 migration; all 9 drawer surfaces read/write the same provider state. The Vite library build emits browser-ready `dist/bundle.mjs`, all 9 mount adapters are exported, and the bundle mounts through the `clients/web` E2E demo path; styles and Noto Sans / Noto Sans Mono Latin-subset fonts bundled through @fontsource@5.2.10 ship with the bundle (4 woff2 files, ~50KB). See [`docs/guides/UI_FORK_GUIDE.md`](docs/guides/UI_FORK_GUIDE.en.md) and [`docs/guides/E2E_INTEGRATION.md`](docs/guides/E2E_INTEGRATION.en.md).
-- **API Connections drawer**: now saves API keys for real. After a user pastes a key, the surface writes it through Yggdrasil host RPC into the encrypted `official/secret-store-lab` store, and profiles keep only `secret_ref:store:*`. The environment-variable path remains available as a fallback. Yggdrasil-side details are in [Yggdrasil/docs/guides/SECRET_MANAGEMENT.md](https://github.com/Youzini-afk/Yggdrasil/blob/main/docs/guides/SECRET_MANAGEMENT.en.md).
-- **Engine package**: [`packages/ydltavern-engine/`](packages/ydltavern-engine/) — Yggdrasil subprocess capability package. In addition to the deep-port JSON-RPC capabilities and existing `world_info.evaluate`, `preset.compile`, `turn.generate`, asset import/export, `script.eval`, extension registry, and `model.plan_call`, it now exposes `model.live_call` / `model.live_call.stream` / `model.live_realtime`. Live model calls go through the Yggdrasil public protocol and host outbound executor: HTTP unary uses `kernel.v1.outbound.execute`, SSE uses `kernel.v1.outbound.stream`, and Realtime WebSocket uses `kernel.v1.outbound.websocket.*` / `kernelClient.openWebSocket`. Realtime requires a live host profile with `outbound.websocket.executor: live` and allowed hosts such as `api.openai.com` (plus `generativelanguage.googleapis.com` for Gemini). API keys should be saved through API Connections as `secret_ref:store:*`; `secret_ref:env:*` using variables such as `OPENAI_API_KEY` / `GEMINI_API_KEY` remains a fallback. YdlTavern passes only `secret_ref`, never raw keys. See [`docs/guides/LIVE_MODEL_CALLS.md`](docs/guides/LIVE_MODEL_CALLS.en.md) and [`docs/guides/REALTIME_MODELS.md`](docs/guides/REALTIME_MODELS.en.md).
-- **Performance baseline**: [`perf/baseline.json`](perf/baseline.json) is committed, covering 37 scenarios across 5 packages; run commands and schema are documented in [`docs/guides/PERFORMANCE_BASELINE.md`](docs/guides/PERFORMANCE_BASELINE.en.md).
+## Documentation
 
-Next: complete production extension hosting (`/scripts/extensions/<id>/` host static route), add an Activity Drawer for transparent extension audit, and use `perf/baseline.json` as the regression reference while advancing Phase B pain points (multi-agent orchestration, MCP protocol surface, vector RAG, ToolManager full registration). Full documentation index in [`docs/`](docs/README.en.md).
+- [`docs/CHARTER.md`](docs/CHARTER.en.md) — permanent principles
+- [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.en.md) — SillyTavern resource and extension compatibility scope
+- [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md) — current compatibility coverage
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.en.md) — relationship to Yggdrasil, the extension hosting model, and key mechanisms
+- [`docs/architecture/`](docs/architecture/) — internal Turn model and ST compat projection
+- [`docs/guides/`](docs/guides/) — live model calls, Realtime, extension compatibility, UI fork, performance baseline, E2E integration
+- [`docs/tracks/`](docs/tracks/) — 8 parallel implementation tracks (B assets / C engine / D ST API / E STScript / F built-in extensions / G UI / H extension loader / I advanced)
+- [`docs/inventory/`](docs/inventory/) — mechanical scans of the ST source (machine-read / maintainer reference)
 
 ## Acknowledgements
 

@@ -93,11 +93,10 @@ node compare.mjs --scenario scenarios/instruct/chatml.json
 that produced each fixture, then writes one report per scenario to
 `diff/<category>-<name>.json` plus an aggregate `diff/_summary.json`.
 
-Round 2 R1 made this workflow operational against the current deep-port modules.
-Round 3 T-track tightened the shims. Round 4 U-track closed the remaining
-structural/unverifiable deltas from Round 3; current results are **16/20
-perfect**, **4/20 cosmetic**, **0/20 structural**, **0/20 unverifiable**, and
-**0 errors**.
+The workflow is operational against the current deep-port modules; shims have
+been tightened over time and structural/unverifiable deltas have been closed.
+Current results are **16/20 perfect**, **4/20 cosmetic**, **0/20 structural**,
+**0/20 unverifiable**, and **0 errors**.
 
 The comparator intentionally exits 0 after writing reports, even when structural
 diffs are found. Treat `diff/_summary.json` as the pass/fail source of truth for
@@ -194,17 +193,17 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 | DOM | jsdom instance with jQuery stub |
 | Settings | All ST settings globals pinned to defaults |
 
-### Round 3 shim deepening
+### Shim deepening
 
 - **World Info** executes ST `checkWorldInfo` end-to-end under the harness.
   Scenario entries are loaded into the shimmed WI store, budget accounting is
-  deterministic, and probability/RNG paths use the seeded harness RNG. Round 4
-  aligned YdlTavern's token-approximation budget and seeded probability paths, so
-  current WI scenarios are 4/4 perfect.
+  deterministic, and probability/RNG paths use the seeded harness RNG. Follow-up
+  work aligned YdlTavern's token-approximation budget and seeded probability
+  paths, so current WI scenarios are 4/4 perfect.
 - **Macros** execute ST `evaluateMacros` end-to-end under the harness. Moment/Date
-  are frozen and random macro paths use the seeded harness RNG. Round 4 moved the
-  deep ST-compatible implementation into engine-core, so env-basic, nested,
-  random, and time macro scenarios are 4/4 perfect.
+  are frozen and random macro paths use the seeded harness RNG. Follow-up work
+  moved the deep ST-compatible implementation into engine-core, so env-basic,
+  nested, random, and time macro scenarios are 4/4 perfect.
 
 ## Scenario Categories
 
@@ -220,11 +219,11 @@ The harness uses Node.js `module.register()` to install a custom module resoluti
 
 **20/20 scenarios produce fixtures/diffs.** Determinism verified (byte-identical on repeated runs).
 
-Round 6 comparison currently covers **20/20 scenarios** (14 base + 6 tokenizer):
+The current comparison covers **20/20 scenarios** (14 base + 6 tokenizer):
 20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors. See
 `diff/_summary.json` for the exact current breakdown.
 
-All Round 3 structural/unverifiable diffs and Round 4 chat cosmetic-only diffs
+All earlier structural/unverifiable diffs and chat cosmetic-only diffs
 are now closed. Next steps: keep expanding scenario coverage so the current
 20/20 perfect set is not mistaken for full-domain ST compatibility.
 

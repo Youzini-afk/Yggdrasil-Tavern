@@ -47,7 +47,7 @@ Every track D item in `COMPATIBILITY_MATRIX.en.md` corresponds to a fixture.
 
 ## Current status
 
-The Phase D contract MVP and deep-port have landed in `packages/ydltavern-st-compat`:
+The contract MVP and deep-port have landed in `packages/ydltavern-st-compat`:
 
 - live `chat[]` Proxy writes update an internal Turn store;
 - `getContext()` returns the full ST context shape (`context-st.ts`), including state (chat/characters/groups/characterId/groupId/chatId/name1/name2/mainApi/onlineStatus/maxContext/chatMetadata/menuType/extensionSettings/powerUserSettings/tags/tagMap), bridges (eventSource/extensionPrompts/variables/swipe/toolManager), functions (getCurrentChatId/reloadCurrentChat/saveChat/saveSettingsDebounced/saveMetadata/updateChatMetadata/addOneMessage/deleteLastMessage/generate/generateRaw/substituteParams/setExtensionPrompt/getExtensionPrompt/getRequestHeaders/getTokenCountAsync/isMobile/etc), legacy aliases (event_types/eventTypes, main_api/mainApi, online_status/onlineStatus), symbols (ignore/unset), deprecated stubs;

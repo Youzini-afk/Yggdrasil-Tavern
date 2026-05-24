@@ -11,7 +11,7 @@
 
 ## ST 风格通道
 
-Round 8 后状态为 **perfect ST DOM fork — extensions run unmodified**。加载方式跟 ST 一致：
+当前状态：**perfect ST DOM fork —— 扩展无需修改即可运行**。加载方式跟 ST 一致：
 
 - 扩展放在 `extensions/<name>/` 目录
 - `manifest.json` 声明依赖
@@ -42,20 +42,20 @@ YdlTavern 在主面板暴露这些包的 surface（按 Yggdrasil surface descrip
 安装能力不依赖内核 git 传输：
 
 - ST 风格扩展：YdlTavern 自己拉 git / zip，存到 `extensions/`
-- Yggdrasil 包：等待 Yggdrasil Round 10+ 的普通能力包 `official/git-tools-lab` 提供安装流；不通过内核专用 git 方法
+- Yggdrasil 包：等待 Yggdrasil 的普通能力包 `official/git-tools-lab` 提供安装流；不通过内核专用 git 方法
 
 ## 依赖
 
 - D 轨道（ST 风格扩展用兼容层）
-- Yggdrasil 普通能力包安装通道（Round 10+）
+- Yggdrasil 普通能力包安装通道
 - C 轨道（扩展 generate hook）
 - E 轨道（扩展注册 slash commands / 宏）
 
 ## 当前状态
 
-当前 H 轨道已有 same-window ST DOM fork 与保留的 ESM-capable sandbox loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时、浏览器 stub 和审计。状态为 Round 8 same-window smoke implemented：BME 与 shujuku bootstrap 已有真实扩展 smoke；QuickJS sandbox 仍用于受限 synthetic tests；真实生产 `/scripts/extensions/<id>/` hosting 与安装 UX 留给 Round 9。
+当前 H 轨道已有 same-window ST DOM fork 与保留的 ESM-capable sandbox loader：`loader-st.ts` 仍负责 ST manifest 解析、启用资格和加载计划；`src/sandbox/` 可按计划执行扩展 JS，提供受限 host bridge、权限合并、激活超时、浏览器 stub 和审计。当前已实现 same-window smoke：BME 与 shujuku bootstrap 已有真实扩展 smoke；QuickJS sandbox 仍用于受限 synthetic tests；真实生产 `/scripts/extensions/<id>/` hosting 与安装 UX 仍待补齐。
 
-Round 4 U-track 新增的 loader 能力：
+当前 loader 能力包括：
 
 - ESM module mode 执行，支持入口文件的静态 relative imports 并递归预加载同包文件。
 - ST host import 路径映射到虚拟 host module，例如 `../../../../script.js`、`../../../extensions.js`、`../../../../openai.js`。

@@ -2,7 +2,7 @@
 
 > [English](./EXTENSION_COMPATIBILITY.en.md) · [中文](./EXTENSION_COMPATIBILITY.md)
 
-YdlTavern's Round 8 Y-track changed extension compatibility from a sandbox approximation into a same-window SillyTavern DOM fork. Existing ST extensions should load with their existing files, imports, globals, DOM selectors, and storage assumptions.
+YdlTavern's extension compatibility model is the same-window SillyTavern DOM fork (replacing the older sandbox approximation). Existing ST extensions should load with their existing files, imports, globals, DOM selectors, and storage assumptions.
 
 ## Compatibility Promise
 
@@ -149,7 +149,7 @@ Compatibility does not mean extensions are trusted to be bug-free. YdlTavern sho
 
 The goal is operational resilience, not permission enforcement.
 
-## Activity Drawer (Round 9 work)
+## Activity Drawer (planned)
 
 A future debug panel will show what extensions are doing without blocking them. Candidate signals:
 

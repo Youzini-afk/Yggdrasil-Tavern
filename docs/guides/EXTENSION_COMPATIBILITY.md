@@ -2,7 +2,7 @@
 
 > [English](./EXTENSION_COMPATIBILITY.en.md) · [中文](./EXTENSION_COMPATIBILITY.md)
 
-YdlTavern 的 Round 8 Y-track 把扩展兼容从“受限 sandbox 近似”调整成“同窗口 SillyTavern DOM fork”。现有 ST 扩展应能保留原文件、原 import、原 globals、原 DOM selectors 与原 storage 假设直接加载。
+YdlTavern 的扩展兼容模型是同窗口 SillyTavern DOM fork（取代了更早的受限 sandbox 近似实现）。现有 ST 扩展应能保留原文件、原 import、原 globals、原 DOM selectors 与原 storage 假设直接加载。
 
 ## 兼容承诺
 
@@ -149,7 +149,7 @@ YdlTavern 使用与 ST 相同的信任模型：
 
 目标是运行韧性，不是权限 enforcement。
 
-## Activity Drawer（Round 9 工作）
+## Activity Drawer（计划中）
 
 未来调试面板会展示扩展正在做什么，但不拦截它们。候选信号包括：
 

@@ -2,35 +2,38 @@
 
 > [English](./NEXT_STEPS.en.md) · [中文](./NEXT_STEPS.md)
 
-Round 8 Y-track is complete: same-window ST extension hosting, messageFormatting (showdown + DOMPurify + hooks), React DOM territory cession, `mountSTGlobals()`, ST URL layout shims, Vite dev middleware, and BME/shujuku real-extension smoke tests have landed. This file no longer carries Y-track items; it records Round 9 candidates and forward-looking work.
+This document is about where YdlTavern goes next. For completed state and compatibility coverage, see [`../COMPATIBILITY_MATRIX.md`](../COMPATIBILITY_MATRIX.en.md).
 
-## Round 9 candidates
+## What's actively in flight
+
+These don't form new phases — they're known to-dos that will get done.
+
+### Extension ecosystem hosting
 
 - **Production extension hosting**: implement the host static route for `/scripts/extensions/<id>/`, serving installed extension files and ST compatibility shims.
 - **Activity Drawer**: transparently show extension activity (fetch URL hashes, localStorage writes, slash command registrations, event listeners, DOM mount targets) without blocking.
-- **Phase B pain-point resolution**: use [`../guides/PERFORMANCE_BASELINE.md`](../guides/PERFORMANCE_BASELINE.en.md) and `perf/baseline.json` as the regression reference while advancing protocol boundaries and user paths for multi-agent / MCP / vector RAG / ToolManager.
 
-## Phase B pain-point resolution
+### Performance and alignment
 
-All Phase B items should compare `perf/baseline.json` before and after on the same machine. Use 10% as the advisory threshold for stable scenarios and 20% for more variable E2E / jsdom / WASM scenarios.
+The performance baseline lives in [`../guides/PERFORMANCE_BASELINE.md`](../guides/PERFORMANCE_BASELINE.en.md) and `perf/baseline.json`. Future optimizations use it as the regression reference, with 10% as the advisory threshold for stable scenarios and 20% for more variable E2E / jsdom / WASM scenarios.
 
-- **Multi-agent orchestration**: define how YdlTavern maps ST-style chat flow onto Yggdrasil agent/session collaboration without putting agent logic into the UI.
-- **MCP protocol surface**: define how MCP tools/resources/prompts are exposed to YdlTavern through the Yggdrasil capability boundary.
-- **Vector RAG**: move the memory/vectors extension from plan-only paths to audited vector retrieval while keeping storage and outbound policy host-managed.
+- **Multi-agent orchestration**: define how YdlTavern maps ST-style chat flow onto Yggdrasil agent / session collaboration without putting agent logic into the UI.
+- **MCP protocol surface**: define how MCP tools / resources / prompts are exposed to YdlTavern through the Yggdrasil capability boundary.
+- **Vector RAG**: move the memory / vectors extension from plan-only paths to audited vector retrieval while keeping storage and outbound policy host-managed.
 - **ToolManager full registration**: complete registration, permissions, audit, and UI visibility for ST ToolManager / slash / extension commands.
 
-## Surface hosting and marketplace
+### Surface hosting and marketplace
 
 - **Production bundle hosting**: implement a package static route on the Yggdrasil host so installed package `bundle.mjs`, styles, fonts, ST compatibility shims, and extension files are exposed as same-origin URLs.
 - **Cross-origin allowlist**: design surface bundle allowlists, integrity pins, version pins, and audit metadata for community marketplaces; same-origin remains the default.
 - **Multiple mounted surfaces**: expand the current single outlet to manage multiple iframe surfaces while preserving sandbox and lifecycle isolation.
 
-## Golden harness follow-up
+### Golden harness
 
 - Keep adding WI, macro, instruct, tokenizer, and chat fixtures so the current 20/20 perfect count is not mistaken for full-domain ST compatibility.
 - Keep `_summary.json` as the source for documented numbers.
 
-## Extension ecosystem follow-up
+### Extension ecosystem
 
 - Maintain separate compatibility records for real third-party extensions: loadable, initializes, core functionality works, needs patch, unsupported.
 - Add legacy library shims and ST module URL shims as community extensions reveal gaps.

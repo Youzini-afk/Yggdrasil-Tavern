@@ -11,7 +11,7 @@ Third-party extension loading and runtime environment. Two parallel channels:
 
 ## ST-style channel
 
-After Round 8 the status is **perfect ST DOM fork — extensions run unmodified**. Loading is the same as ST:
+Current status: **perfect ST DOM fork — extensions run unmodified**. Loading is the same as ST:
 
 - Extensions live in the `extensions/<name>/` directory
 - `manifest.json` declares dependencies
@@ -42,20 +42,20 @@ YdlTavern exposes these package surfaces in the main panel (following Yggdrasil 
 Installation does not depend on a kernel git transport:
 
 - ST-style extensions: YdlTavern pulls git / zip itself and stores them in `extensions/`
-- Yggdrasil packages: wait for Yggdrasil Round 10+ `official/git-tools-lab`, an ordinary capability package install flow; no dedicated kernel git method is used
+- Yggdrasil packages: wait for Yggdrasil's ordinary capability package `official/git-tools-lab`, an install flow; no dedicated kernel git method is used
 
 ## Dependencies
 
 - Track D (ST-style extensions use the compatibility layer)
-- Yggdrasil ordinary-package installation channel (Round 10+)
+- Yggdrasil's ordinary-package installation channel
 - Track C (extension generate hooks)
 - Track E (extensions register slash commands / macros)
 
 ## Current status
 
-Track H now has a same-window ST DOM fork plus the retained ESM-capable sandbox loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, browser stubs, and audit. Status is Round 8 same-window smoke implemented: BME and shujuku bootstrap have real-extension smoke coverage; the QuickJS sandbox remains for constrained synthetic tests; production `/scripts/extensions/<id>/` hosting and installation UX remain for Round 9.
+Track H now has a same-window ST DOM fork plus the retained ESM-capable sandbox loader: `loader-st.ts` still handles ST manifest parsing, activation eligibility, and load planning; `src/sandbox/` can execute extension JS from that plan with a constrained host bridge, permission merging, activation timeout, browser stubs, and audit. Same-window smoke is implemented: BME and shujuku bootstrap have real-extension smoke; the QuickJS sandbox remains for constrained synthetic tests; production `/scripts/extensions/<id>/` hosting and installation UX remain to be done.
 
-Round 4 U-track added these loader capabilities:
+Loader capabilities now include:
 
 - ESM module-mode execution with static relative import parsing from the entry file and recursive preloading of same-package files.
 - ST host import paths map to a virtual host module, including `../../../../script.js`, `../../../extensions.js`, and `../../../../openai.js`.

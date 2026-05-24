@@ -47,7 +47,7 @@ YdlTavern 自己的 UI 也消费同一份 contract。这是关键——核心团
 
 ## 当前状态
 
-Phase D contract MVP 和深度移植已落地到 `packages/ydltavern-st-compat`：
+contract MVP 和深度移植已落地到 `packages/ydltavern-st-compat`：
 
 - live `chat[]` Proxy 读写会更新内部 Turn store；
 - `getContext()` 返回完整 ST context shape（`context-st.ts`），包含 state（chat/characters/groups/characterId/groupId/chatId/name1/name2/mainApi/onlineStatus/maxContext/chatMetadata/menuType/extensionSettings/powerUserSettings/tags/tagMap）、bridges（eventSource/extensionPrompts/variables/swipe/toolManager）、functions（getCurrentChatId/reloadCurrentChat/saveChat/saveSettingsDebounced/saveMetadata/updateChatMetadata/addOneMessage/deleteLastMessage/generate/generateRaw/substituteParams/setExtensionPrompt/getExtensionPrompt/getRequestHeaders/getTokenCountAsync/isMobile/etc）、legacy aliases（event_types/eventTypes, main_api/mainApi, online_status/onlineStatus）、symbols（ignore/unset）、deprecated stubs；

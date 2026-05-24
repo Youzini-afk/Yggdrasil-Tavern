@@ -2,7 +2,7 @@
 
 > [English](./UI_FORK_GUIDE.en.md) · [中文](./UI_FORK_GUIDE.md)
 
-This guide documents how `@ydltavern/surface` forks the SillyTavern UI / layout after Round 6 W-track, and where it intentionally diverges. YdlTavern aims for a familiar Tavern interaction model hosted as Yggdrasil surfaces, not a copy of ST's jQuery monolith.
+This guide documents how `@ydltavern/surface` forks the SillyTavern UI / layout and where it intentionally diverges. YdlTavern aims for a familiar Tavern interaction model hosted as Yggdrasil surfaces, not a copy of ST's jQuery monolith.
 
 ## Overview
 
@@ -12,7 +12,7 @@ Intentional divergence: React/TypeScript components, Yggdrasil iframe SurfaceHos
 
 ## Slash command coverage
 
-After Round 7, `@ydltavern/st-compat` registers 14 slash-command batches (A-N) in `createSTContextDeep`, with ~150+ command registrations covering 199 ST canonical commands through real implementations, plan-only descriptors, or explicit unsupported sentinels. The added batches are:
+`@ydltavern/st-compat` registers 14 slash-command batches (A-N) in `createSTContextDeep`, with ~150+ command registrations covering 199 ST canonical commands through real implementations, plan-only descriptors, or explicit unsupported sentinels. The batches are:
 
 - Batch H — Variables/Control/Math (24 commands, all real)
 - Batch I — Chat/Messages Extras (21 commands: 8 real + 6 plan-only + 7 unsupported)
@@ -26,7 +26,7 @@ Plan-only commands return `{ planned: true, action, fields }`; unsupported comma
 
 ## Design tokens
 
-Styles start in `packages/ydltavern-surface/src/styles/surface.css`. Round 5 added 29 ST-aligned CSS variables, all named `--tavern-*` and scoped under `.ydltavern-surface` / `.tavern-themed-root`; the package does not write to host `:root`.
+Styles start in `packages/ydltavern-surface/src/styles/surface.css`. The file defines 29 ST-aligned CSS variables, all named `--tavern-*` and scoped under `.ydltavern-surface` / `.tavern-themed-root`; the package does not write to host `:root`.
 
 The tokens cover backgrounds, text, accent colors, chat tint, user/bot message tint, shadow, border, font scale, animation, Sheld width, avatar size, and top/bottom icon sizing. ST `SmartTheme*` / flat JSON fields map to these tokens through `packages/ydltavern-surface/src/components/product/themes/st-theme-importer.ts`.
 
@@ -63,7 +63,7 @@ Yggdrasil `clients/web` / Desktop / App shells still own iframe SurfaceHost, nav
 
 ## 9 drawer surfaces
 
-After Round 6, all 9 ST-aligned drawers are real forms/lists that read and write the same `TavernProvider`:
+All 9 ST-aligned drawers are real forms/lists that read and write the same `TavernProvider`:
 
 1. **AI Response Configuration**: presets, sampler matrix, banned tokens, logit bias, streaming.
 2. **API Connections**: 19 providers, profile management, status indicator.

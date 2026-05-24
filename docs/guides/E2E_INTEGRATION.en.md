@@ -2,7 +2,7 @@
 
 > [English](./E2E_INTEGRATION.en.md) · [中文](./E2E_INTEGRATION.md)
 
-This guide documents how the YdlTavern surface bundle is consumed by Yggdrasil `clients/web` after Round 6 W6. It covers the development path, bundle URL resolution, iframe mount flow, and current limitations.
+This guide documents how the YdlTavern surface bundle is consumed by Yggdrasil `clients/web`. It covers the development path, bundle URL resolution, iframe mount flow, and current limitations.
 
 ## Overview
 
@@ -39,7 +39,7 @@ The build outputs are:
 - a bundle URL, for example `/surface-bundles/ydltavern/bundle.mjs`;
 - a mount export, for example `mountTavernPlaySurface`.
 
-The Round 6 demo mapping is still hardcoded and only covers the YdlTavern bundle:
+The current demo mapping is still hardcoded and only covers the YdlTavern bundle:
 
 ```text
 ydltavern/surface → /surface-bundles/ydltavern/bundle.mjs
@@ -59,7 +59,7 @@ The route reads files from the sibling YdlTavern repository at `packages/ydltave
 
 ## Production
 
-Production still needs a real Yggdrasil host static route that exposes installed package bundles, styles, and fonts as same-origin URLs. That host static route is deferred to Phase C; W6 only proves the `clients/web` development path can mount the demo bundle.
+Production still needs a real Yggdrasil host static route that exposes installed package bundles, styles, and fonts as same-origin URLs. That host static route remains to be done; the current implementation only proves the `clients/web` development path can mount the demo bundle.
 
 ## Mount flow
 

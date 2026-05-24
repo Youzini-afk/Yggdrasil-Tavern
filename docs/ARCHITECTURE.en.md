@@ -94,7 +94,7 @@ Realtime model calls use a separate WebSocket path: `ydltavern/engine/model.live
 
 ST extensions run in the same window as the React shell. React renders ST-compatible DOM IDs and lets go of explicit jQuery territories. `messageFormatting()` goes through showdown → DOMPurify with extension hooks. Window globals are bootstrapped via `mountSTGlobals()`. ESM relative imports resolve to `/script.js` shims served by Vite middleware in development or by the host static route in production.
 
-This model intentionally follows ST's trust boundary: extensions have page-level DOM/storage/network access, while YdlTavern isolates callback failures with error handling and will add transparent Activity Drawer diagnostics in Round 9. The older QuickJS sandbox remains useful for constrained synthetic tests and capability experiments, but the Round 8 compatibility promise is same-window execution for unmodified ST extensions.
+This model intentionally follows ST's trust boundary: extensions have page-level DOM/storage/network access, while YdlTavern isolates callback failures with error handling and is planned to add a transparent Activity Drawer for diagnostics. The older QuickJS sandbox remains useful for constrained synthetic tests and capability experiments, but the compatibility promise is same-window execution for unmodified ST extensions.
 
 ### QuickJS extension sandbox
 
@@ -114,11 +114,11 @@ The deep ST-compatible macro implementation now lives in `@ydltavern/engine-core
 
 ### World Info alignment
 
-The World Info pipeline continues to target ST `checkWorldInfo` behavior. After Round 4, budget cost uses the ST fallback-style token approximation (UTF-8/3.35 approximation rather than character length), and budget caps follow the context budget percentage. Probability gates and random paths use injected seedrandom so golden harness and engine-core stay deterministic for fixtures. The current world-info set is 4/4 byte-perfect, but that covers the existing fixtures rather than claiming every WI edge case is fully implemented.
+The World Info pipeline continues to target ST `checkWorldInfo` behavior. Budget cost uses the ST fallback-style token approximation (UTF-8/3.35 approximation rather than character length), and budget caps follow the context budget percentage. Probability gates and random paths use injected seedrandom so golden harness and engine-core stay deterministic for fixtures. The current world-info set is 4/4 byte-perfect, but that covers the existing fixtures rather than claiming every WI edge case is fully implemented.
 
 ### Frontend surfaces
 
-YdlTavern provides its own Tavern UI: chat, message rendering, world books, presets, extension management, and settings panels. These live in `@ydltavern/surface`, not `clients/desktop` or a standalone SPA. Yggdrasil only places the surfaces inside platform containers such as Home / Play / Forge / Assistant. The current surface has moved from diagnostics to a product UI: `react-virtuoso` virtualized chat list, dark/light/parchment theme system, Connection/Sampler/Persona/Theme settings, ExtensionsDrawer driven by loader-st state, QuickReplyBar, mobile responsive layout, and a complete TavernProvider state layer.
+YdlTavern provides its own Tavern UI: chat, message rendering, world books, presets, extension management, and settings panels. These live in `@ydltavern/surface`, not `clients/desktop` or a standalone SPA. Yggdrasil only places the surfaces inside platform containers such as Home / Play / Forge / Assistant. The current surface is a product UI: `react-virtuoso` virtualized chat list, dark/light/parchment theme system, Connection/Sampler/Persona/Theme settings, ExtensionsDrawer driven by loader-st state, QuickReplyBar, mobile responsive layout, and a complete TavernProvider state layer.
 
 Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/manifest.yaml` is the Yggdrasil package manifest consumed by the host and exposed through `kernel.v1.surface.contribution.list` for 9 contributions (`ydltavern/play`, `ydltavern/settings`, `ydltavern/extensions`, plus 6 drawer-specific entries); `packages/ydltavern-surface/surface.manifest.json` is the React bundle descriptor with framework hints such as export name, wrapper class, fonts, fixtures, and sample props for SurfaceHost when mounting the React bundle.
 
@@ -130,11 +130,11 @@ Surface descriptors use a dual-manifest pattern: `packages/ydltavern-surface/man
 - Vite library mode emits `dist/bundle.mjs`, the browser-ready ESM bundle that Yggdrasil iframe SurfaceHost can dynamic import; React and surface runtime dependencies are bundled so the iframe does not see bare imports.
 - `scripts/copy-assets.mjs` copies `src/styles/*.css` into `dist/styles/` and copies 4 Latin-subset woff2 files from `@fontsource/noto-sans@5.2.10` and `@fontsource/noto-sans-mono@5.2.10` into `dist/fonts/`. The `@font-face` declarations in `surface.css` use `../fonts/`, so `dist/styles/surface.css` references `dist/fonts/`.
 
-The font strategy is self-hosted Noto Sans + Noto Sans Mono (SIL OFL 1.1, AGPL-compatible), with Inter / system fallback. After Round 7 the fonts are bundled via @fontsource (Noto Sans Regular/Medium/Bold plus Noto Sans Mono Regular, Latin subset, ~50KB), so the build no longer depends on manually placed `public/fonts/` files.
+The font strategy is self-hosted Noto Sans + Noto Sans Mono (SIL OFL 1.1, AGPL-compatible), with Inter / system fallback. Fonts are bundled via @fontsource (Noto Sans Regular/Medium/Bold plus Noto Sans Mono Regular, Latin subset, ~50KB), so the build no longer depends on manually placed `public/fonts/` files.
 
 #### TavernProvider state architecture
 
-`TavernProvider` is the single source of truth for the surface UI. After Round 6 it contains:
+`TavernProvider` is the single source of truth for the surface UI. It contains:
 
 - settings slices: sampler, connection, formatting, background display, plus active preset / connection profile and related selection state;
 - library collections: characters, personas, world books, backgrounds, plus active / selected ids;
@@ -145,13 +145,13 @@ All 9 drawer surfaces (AI Config, API Connections, Advanced Formatting, World In
 
 #### Shell architecture
 
-After Round 5 V-track, `packages/ydltavern-surface/src/components/shell/` uses a SillyTavern-like shell: `TopBar` provides 9 Font Awesome icon entries, `DrawerShell` owns the shared drawer container and backdrop click-to-close, `Sheld` is the centered 50vw main chat column, and the `drawer-rail` layout owns the left/right drawer placement. The left side contains AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, and Persona; the right side contains Characters.
+`packages/ydltavern-surface/src/components/shell/` uses a SillyTavern-like shell: `TopBar` provides 9 Font Awesome icon entries, `DrawerShell` owns the shared drawer container and backdrop click-to-close, `Sheld` is the centered 50vw main chat column, and the `drawer-rail` layout owns the left/right drawer placement. The left side contains AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, and Persona; the right side contains Characters.
 
 Drawer state is maintained by the `useDrawers` hook: a single `openId` enforces mutual exclusion, clicking the already-open icon closes it, and clicking the backdrop clears open state. Yggdrasil `clients/web` / Desktop / App still own iframe `SurfaceHost`, navigation, permissions, installation, and platform lifecycle; `@ydltavern/surface` is a React component library, not a standalone app or platform shell.
 
 #### Visual design system
 
-`src/styles/surface.css` defines the scoped visual system. Round 5 added 29 ST-aligned `--tavern-*` tokens covering background, text, accents, chat tint, message tint, shadow, border, font scale, animation, Sheld width, avatars, and icon sizing. The ST theme JSON importer/exporter lives in `src/components/product/themes/st-theme-importer.ts` and converts between ST flat JSON and YdlTavern `TavernTheme`.
+`src/styles/surface.css` defines the scoped visual system, with 29 ST-aligned `--tavern-*` tokens covering background, text, accents, chat tint, message tint, shadow, border, font scale, animation, Sheld width, avatars, and icon sizing. The ST theme JSON importer/exporter lives in `src/components/product/themes/st-theme-importer.ts` and converts between ST flat JSON and YdlTavern `TavernTheme`.
 
 There are 6 built-in themes: 3 YdlTavern native themes (dark, light, parchment) and 3 ST classic themes (Dark V 1.0, Azure, Celestial Macaron). Global text-shadow is enabled only under `.tavern-themed-root`, avoiding leakage into the Yggdrasil host page.
 
@@ -163,7 +163,7 @@ Mobile styling also handles `env(safe-area-inset-bottom)`, and `send_textarea` u
 
 ### Golden harness
 
-`golden-harness/` is a Node + jsdom fixture generator. It treats SillyTavern source as a read-only sibling (via `YDLTAVERN_ST_PATH`), loads ST ESM modules, and uses shims for DOM, fetch, randomness, and time to extract chat, world-info, macro, instruct, and tokenizer fixtures. Those fixtures are the alignment baseline for YdlTavern deep-port modules. After the Round 6 W-track, compare covers 20 scenarios (20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors), with chat 4/4 converged from cosmetic to golden-harness verified.
+`golden-harness/` is a Node + jsdom fixture generator. It treats SillyTavern source as a read-only sibling (via `YDLTAVERN_ST_PATH`), loads ST ESM modules, and uses shims for DOM, fetch, randomness, and time to extract chat, world-info, macro, instruct, and tokenizer fixtures. Those fixtures are the alignment baseline for YdlTavern deep-port modules. Compare currently covers 20 scenarios (20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors).
 
 ### Extension distribution
 
@@ -195,4 +195,6 @@ No matter how YdlTavern evolves:
 
 ## Status
 
-YdlTavern's main development surface has completed a systematic pass, a deep-port pass, Round 3 T-track tightening, Round 4 U-track closure, Round 5 V-track UI parity, Round 6 W-track convergence, Round 7 X-track slash/font completion, and Round 8 Y-track same-window ST extension compatibility: asset import/export, ST compatibility runtime, STScript runtime, ~150+ slash commands (A-N, covering 199 ST canonical commands), engine core (PromptManager, World Info, chat/text completion adapters, instruct mode, tokenizer registry + HF runtime fetcher, deep macro engine), built-in extension logic, ESM-capable sandbox extension loader, live model call / realtime boundary, product surface shell, 9 provider-backed drawers, browser-ready bundle, 9 mount adapters, the clients/web E2E demo path, and diagnostic inspectors are all in tested code. Deep-port modules are ported function-by-function from ST source with file/line references baked in. Current status is still `partial`: real tokenizer coverage exists for OpenAI/GPT-2/Llama/Llama3/Claude/HF families, ST extensions can bootstrap in the same-window DOM fork through globals and ESM shims, the QuickJS sandbox remains available for constrained synthetic tests, live model calls can opt into Yggdrasil outbound, the surface descriptor has a Yggdrasil-compliant `manifest.yaml`, and golden harness `compare.mjs` runs across 20 scenarios (20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors). None of this claims full byte-level ST alignment across all domains; provider-specific I/O, more real-extension functional paths, and more fixture scenarios still need to be filled in.
+YdlTavern has one-to-one algorithm ports of ST core runtime: asset import/export, ST compatibility runtime, STScript runtime, ~150+ slash commands (A-N, covering 199 ST canonical commands), engine core (PromptManager, World Info, chat/text completion adapters, instruct mode, tokenizer registry + HF runtime fetcher, deep macro engine), built-in extension logic, ESM-capable sandbox extension loader, live model call / realtime boundary, product surface shell, 9 provider-backed drawers, browser-ready bundle, 9 mount adapters, the clients/web E2E integration path, and diagnostic inspectors are all in tested code. Deep-port modules are ported function-by-function from ST source with file/line references baked in.
+
+Current status is still `partial`: real tokenizer coverage exists for OpenAI/GPT-2/Llama/Llama3/Claude/HF families, ST extensions can bootstrap in the same-window DOM fork through globals and ESM shims, the QuickJS sandbox remains available for constrained synthetic tests, live model calls can opt into Yggdrasil outbound, the surface descriptor has a Yggdrasil-compliant `manifest.yaml`, and golden harness `compare.mjs` runs across 20 scenarios (20 perfect, 0 cosmetic, 0 structural, 0 unverifiable, 0 errors). None of this claims full byte-level ST alignment across all domains; provider-specific I/O, more real-extension functional paths, and more fixture scenarios still need to be filled in.

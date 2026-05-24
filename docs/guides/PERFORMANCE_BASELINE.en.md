@@ -4,7 +4,7 @@
 
 ## What this is
 
-YdlTavern keeps a committed performance baseline at [`perf/baseline.json`](../../perf/baseline.json). Each YdlTavern package has its own `bench/` directory with tinybench scenarios. Run them locally before and after Phase B optimization work to detect trend-level regressions on the same machine.
+YdlTavern keeps a committed performance baseline at [`perf/baseline.json`](../../perf/baseline.json). Each YdlTavern package has its own `bench/` directory with tinybench scenarios. Run them locally before and after optimization work to detect trend-level regressions on the same machine.
 
 This is not a CI budget and not an absolute score that can be compared across machines. It is a reproducible, schema-friendly local reference for avoiding accidental regressions while working on multi-agent flows, MCP, vector RAG, ToolManager, and related follow-up work.
 
@@ -195,15 +195,15 @@ node scripts/run-all-benches.mjs
 ## Known limitations
 
 - `@ydltavern/extensions` `sandbox.bootstrap` mostly measures QuickJS WASM initialization, around the 25 ms range; it dominates the extensions package mean.
-- `@ydltavern/surface` long markdown and `formatting.full_pipeline.100msg` are the main Phase B hot-path candidates.
+- `@ydltavern/surface` long markdown and `formatting.full_pipeline.100msg` are the main current hot-path candidates.
 - Surface benches run on jsdom, which adds cost relative to a real browser; treat surface numbers as relative trends, not absolute browser performance.
 - PNG / JSONL importer benches use synthetic fixtures and do not represent the full distribution of real ST exports.
 - tinybench results depend on Node version, CPU governor, background load, GC, and warm state.
 - The current schema records wall-clock and tinybench statistics, not RSS delta; use Node profiling tools separately for memory work.
 
-## Phase B usage
+## Usage
 
-Phase B optimizations should:
+Optimization work should:
 
 1. Use `perf/baseline.json` as the before/after regression reference.
 2. Re-run the relevant package bench after each significant change; run the full aggregate before merging.

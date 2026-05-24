@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-YdlTavern 在 [`perf/baseline.json`](../../perf/baseline.json) 中保留一份已提交的性能基线。每个 YdlTavern 包都有自己的 `bench/` 目录和 tinybench 场景。Phase B 优化前后应本地运行它们，用同一台机器上的 JSON 结果判断趋势。
+YdlTavern 在 [`perf/baseline.json`](../../perf/baseline.json) 中保留一份已提交的性能基线。每个 YdlTavern 包都有自己的 `bench/` 目录和 tinybench 场景。优化前后应本地运行它们，用同一台机器上的 JSON 结果判断趋势。
 
 这不是 CI 预算，也不是跨机器可比的绝对分数。它是一个可复现、schema 友好的本地参考点，用来避免在 multi-agent、MCP、vector RAG、ToolManager 等后续工作里无意引入明显回归。
 
@@ -195,15 +195,15 @@ node scripts/run-all-benches.mjs
 ## 已知限制
 
 - `@ydltavern/extensions` 的 `sandbox.bootstrap` 主要测到 QuickJS WASM 初始化，均值约 25 ms 量级；它会主导 extensions 包的平均成本。
-- `@ydltavern/surface` 的 long markdown 与 `formatting.full_pipeline.100msg` 是 Phase B 的主要热点候选。
+- `@ydltavern/surface` 的 long markdown 与 `formatting.full_pipeline.100msg` 是当前主要热点候选。
 - surface bench 使用 jsdom，比真实浏览器多一层成本；把 surface 数字视为相对趋势，不视为绝对浏览器性能。
 - PNG / JSONL importer 使用合成 fixture，不代表真实 ST 导出文件的全部分布。
 - tinybench 结果受 Node 版本、CPU governor、后台负载、GC 与热启动状态影响。
 - 当前 schema 记录 wall-clock 与 tinybench 统计，不记录 RSS delta；需要内存分析时单独使用 Node profiling 工具。
 
-## Phase B 使用方式
+## 使用方式
 
-Phase B 优化应：
+优化工作应：
 
 1. 把 `perf/baseline.json` 作为 before/after regression reference。
 2. 每个显著改动后重跑相关包 bench；合并前至少重跑全量聚合。
