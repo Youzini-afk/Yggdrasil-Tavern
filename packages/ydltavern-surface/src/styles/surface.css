@@ -2615,6 +2615,11 @@
   color: var(--color-rose);
 }
 
+.ydltavern-surface .settings-help-text {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
 .ydltavern-surface .settings-textarea {
   resize: vertical;
   min-height: 60px;

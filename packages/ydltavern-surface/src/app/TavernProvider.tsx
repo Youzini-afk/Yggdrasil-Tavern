@@ -181,6 +181,7 @@ export interface TavernProviderProps {
 }
 
 const TavernContext = createContext<TavernRuntimeState | undefined>(undefined);
+const SUPPORTED_LIVE_CALL_PROVIDERS = new Set(['openai', 'anthropic', 'deepseek', 'openrouter']);
 
 export function TavernProvider({
   chat = sampleChat,
@@ -655,6 +656,17 @@ export function TavernProvider({
       return;
     }
 
+    if (!isSupportedLiveCallProvider(connectionState.current.provider)) {
+      const systemMessage = ctx.addOneMessage({
+        is_system: true,
+        name: 'System',
+        mes: `Provider "${connectionState.current.provider}" is not supported for live model calls yet. Choose OpenAI, Anthropic, DeepSeek, or OpenRouter.`,
+      });
+      ownStore.pushMessage(systemMessage);
+      setRevision((r) => r + 1);
+      return;
+    }
+
     const assistantMessage = ctx.addOneMessage({
       is_user: false,
       name: ctx.name2,
@@ -673,7 +685,6 @@ export function TavernProvider({
       messages: buildLiveMessages(ownStore.messages()),
       settings: buildLiveCallSettings(samplerSettings, settings, connectionState.current, ctx.name1, ctx.name2),
       secret_ref: connectionState.current.secretRef,
-      ...(connectionState.current.baseUrl ? providerEndpointOverrides(provider, connectionState.current.baseUrl) : {}),
     };
 
     if (settings.streaming) {
@@ -962,6 +973,10 @@ function normalizeLiveCallSource(provider: string): string {
   }
 }
 
+function isSupportedLiveCallProvider(provider: string): boolean {
+  return SUPPORTED_LIVE_CALL_PROVIDERS.has(provider);
+}
+
 function defaultModelForProvider(provider: string): string {
   switch (provider) {
     case 'anthropic':
@@ -974,21 +989,6 @@ function defaultModelForProvider(provider: string): string {
       return 'gemini-1.5-flash';
     default:
       return 'gpt-4o-mini';
-  }
-}
-
-function providerEndpointOverrides(provider: string, baseUrl: string): Record<string, string> {
-  try {
-    const url = new URL(baseUrl);
-    return {
-      destination_host_override: url.host,
-      api_path_override: `${url.pathname}${url.search}` || '/v1/chat/completions',
-    };
-  } catch {
-    if (provider === 'openai') {
-      return { api_path_override: baseUrl };
-    }
-    return {};
   }
 }
 
@@ -1013,8 +1013,6 @@ function buildLiveCallSettings(
     stream_openai: false,
     user_name: userName,
     char_name: characterName,
-    custom_url: connection.baseUrl,
-    reverse_proxy: connection.baseUrl,
     logit_bias: parseLogitBias(settings.logitBias),
     stop: splitLines(settings.bannedTokens),
   };

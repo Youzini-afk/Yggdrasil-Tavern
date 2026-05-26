@@ -47,6 +47,29 @@ describe('ConnectionForm secret_ref validation', () => {
     assert.equal(committed.length, 0);
     assert.match(container.textContent ?? '', /Expected secret_ref:store:NAME/u);
   });
+
+  it('marks unsupported providers disabled and explains base URL is not live override', async () => {
+    const { ConnectionForm } = await import(`../src/components/product/Settings/ConnectionForm.tsx?provider=${Date.now()}`);
+
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+    flushSync(() => {
+      root?.render(
+        <ConnectionForm
+          settings={{ provider: 'openai', model: 'gpt-4o-mini', secretRef: 'secret_ref:store:OPENAI_API_KEY', apiBaseUrl: '', stream: true }}
+          onChange={() => undefined}
+        />,
+      );
+    });
+
+    const unsupported = container.querySelector<HTMLOptionElement>('option[value="custom"]');
+    assert.ok(unsupported);
+    assert.equal(unsupported.disabled, true);
+    assert.match(unsupported.textContent ?? '', /unsupported/u);
+    assert.match(container.textContent ?? '', /not used for live calls/u);
+    assert.match(container.textContent ?? '', /does not override outbound host/u);
+  });
 });
 
 function setInputValue(input: HTMLInputElement, value: string): void {

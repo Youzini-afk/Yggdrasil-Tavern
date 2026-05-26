@@ -17,6 +17,7 @@ export const MODEL_LIVE_CALL_STREAM_ID = `${PACKAGE_ID}/model.live_call.stream`;
 
 type LiveChatCompletionSource = ChatCompletionSource | "anthropic";
 type Tool = Record<string, unknown>;
+type ProviderFinalBody = Record<string, unknown>;
 
 export interface ModelLiveCallInput {
   source: LiveChatCompletionSource;
@@ -77,6 +78,34 @@ const API_PATHS: Partial<Record<LiveChatCompletionSource, string>> = {
   openrouter: "/api/v1/chat/completions",
 };
 
+const SUPPORTED_LIVE_SOURCES: ReadonlySet<string> = new Set(["openai", "deepseek", "openrouter", "claude", "anthropic"]);
+
+const OPENAI_COMPATIBLE_BODY_FIELDS = [
+  "model",
+  "messages",
+  "temperature",
+  "top_p",
+  "frequency_penalty",
+  "presence_penalty",
+  "max_tokens",
+  "max_completion_tokens",
+  "stop",
+  "stream",
+  "tools",
+  "tool_choice",
+  "response_format",
+  "reasoning_effort",
+  "seed",
+  "logprobs",
+  "top_logprobs",
+] as const;
+
+function assertSupportedSource(source: LiveChatCompletionSource): void {
+  if (!SUPPORTED_LIVE_SOURCES.has(source)) {
+    throw new Error(`Unsupported live_call source=${source}`);
+  }
+}
+
 function buildSource(source: LiveChatCompletionSource): ChatCompletionSource {
   return source === "anthropic" ? "claude" : source;
 }
@@ -110,6 +139,74 @@ function staticHeadersForSource(source: LiveChatCompletionSource): Record<string
   }
 }
 
+function buildProviderFinalBody(input: ModelLiveCallInput, stream: boolean): ProviderFinalBody {
+  assertSupportedSource(input.source);
+  const unifiedRequest = buildChatRequest({
+    source: buildSource(input.source),
+    model: input.model,
+    messages: input.messages,
+    settings: { ...input.settings, stream_openai: stream },
+    generationType: input.generationType,
+    bias: input.bias,
+    tools: input.tools,
+    includeTools: Array.isArray(input.tools) && input.tools.length > 0,
+  });
+  const unifiedBody = unifiedRequest.body as Record<string, unknown>;
+  return input.source === "anthropic" || input.source === "claude"
+    ? buildAnthropicFinalBody(unifiedBody, input, stream)
+    : buildOpenAICompatibleFinalBody(unifiedBody, stream);
+}
+
+function buildOpenAICompatibleFinalBody(unifiedBody: Record<string, unknown>, stream: boolean): ProviderFinalBody {
+  const finalBody: ProviderFinalBody = {};
+  for (const key of OPENAI_COMPATIBLE_BODY_FIELDS) {
+    if (unifiedBody[key] !== undefined) finalBody[key] = unifiedBody[key];
+  }
+  finalBody.stream = stream;
+  return finalBody;
+}
+
+function buildAnthropicFinalBody(unifiedBody: Record<string, unknown>, input: ModelLiveCallInput, stream: boolean): ProviderFinalBody {
+  const messages = Array.isArray(unifiedBody["messages"])
+    ? (unifiedBody["messages"] as ChatCompletionMessage[])
+    : input.messages;
+  const systemMessages = messages.filter((message) => message.role === "system").map((message) => message.content).filter((content) => content.length > 0);
+  const providerMessages = messages
+    .filter((message) => message.role !== "system")
+    .map((message) => ({
+      role: message.role === "assistant" ? "assistant" : "user",
+      content: message.content,
+    }));
+
+  const finalBody: ProviderFinalBody = {
+    model: typeof unifiedBody["model"] === "string" ? unifiedBody["model"] : input.model,
+    messages: providerMessages,
+    max_tokens: readPositiveInteger(unifiedBody["max_tokens"]) ?? readPositiveInteger(unifiedBody["max_completion_tokens"]) ?? 300,
+    stream,
+  };
+
+  if (systemMessages.length === 1) {
+    finalBody.system = systemMessages[0];
+  } else if (systemMessages.length > 1) {
+    finalBody.system = systemMessages.map((text) => ({ type: "text", text }));
+  }
+
+  copyIfPresent(unifiedBody, finalBody, "temperature");
+  copyIfPresent(unifiedBody, finalBody, "top_p");
+  if (unifiedBody["stop"] !== undefined) finalBody.stop_sequences = unifiedBody["stop"];
+  copyIfPresent(unifiedBody, finalBody, "tools");
+  copyIfPresent(unifiedBody, finalBody, "tool_choice");
+  return finalBody;
+}
+
+function copyIfPresent(source: Record<string, unknown>, target: Record<string, unknown>, key: string): void {
+  if (source[key] !== undefined) target[key] = source[key];
+}
+
+function readPositiveInteger(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.floor(value) : undefined;
+}
+
 export async function modelLiveCallUnary(
   input: ModelLiveCallInput,
   kernel: KernelClient,
@@ -120,22 +217,13 @@ export async function modelLiveCallUnary(
   }
   const secretRef = assertValidSecretRef(input.secret_ref, "input.secret_ref");
 
-  const destinationHost = input.destination_host_override ?? DESTINATION_HOSTS[input.source];
+  assertSupportedSource(input.source);
+  const destinationHost = DESTINATION_HOSTS[input.source];
   if (!destinationHost) {
-    throw new Error(`No destination_host mapping for source=${input.source}`);
+    throw new Error(`Unsupported live_call source=${input.source}`);
   }
-  const path = input.api_path_override ?? API_PATHS[input.source] ?? "/v1/chat/completions";
-
-  const requestBody = buildChatRequest({
-    source: buildSource(input.source),
-    model: input.model,
-    messages: input.messages,
-    settings: { ...input.settings, stream_openai: false },
-    generationType: input.generationType,
-    bias: input.bias,
-    tools: input.tools,
-    includeTools: Array.isArray(input.tools) && input.tools.length > 0,
-  });
+  const path = API_PATHS[input.source] ?? "/v1/chat/completions";
+  const finalBody = buildProviderFinalBody(input, false);
 
   const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, secretRef);
   const params = {
@@ -147,7 +235,7 @@ export async function modelLiveCallUnary(
     secret_refs: [secretRef],
     secret_headers: { [secretHeaderName]: secretHeaderSpec },
     static_headers: staticHeadersForSource(input.source),
-    body_shape: requestBody.body,
+    body_shape: finalBody,
     timeout_ms: input.timeout_ms ?? 60_000,
   };
 
@@ -181,22 +269,13 @@ export function modelLiveCallStream(
   }
   const secretRef = assertValidSecretRef(input.secret_ref, "input.secret_ref");
 
-  const destinationHost = input.destination_host_override ?? DESTINATION_HOSTS[input.source];
+  assertSupportedSource(input.source);
+  const destinationHost = DESTINATION_HOSTS[input.source];
   if (!destinationHost) {
-    throw new Error(`No destination_host mapping for source=${input.source}`);
+    throw new Error(`Unsupported live_call source=${input.source}`);
   }
-  const path = input.api_path_override ?? API_PATHS[input.source] ?? "/v1/chat/completions";
-
-  const requestBody = buildChatRequest({
-    source: buildSource(input.source),
-    model: input.model,
-    messages: input.messages,
-    settings: { ...input.settings, stream_openai: true },
-    generationType: input.generationType,
-    bias: input.bias,
-    tools: input.tools,
-    includeTools: Array.isArray(input.tools) && input.tools.length > 0,
-  });
+  const path = API_PATHS[input.source] ?? "/v1/chat/completions";
+  const finalBody = buildProviderFinalBody(input, true);
 
   const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, secretRef);
   const params = {
@@ -208,7 +287,7 @@ export function modelLiveCallStream(
     secret_refs: [secretRef],
     secret_headers: { [secretHeaderName]: secretHeaderSpec },
     static_headers: staticHeadersForSource(input.source),
-    body_shape: requestBody.body,
+    body_shape: finalBody,
     timeout_ms: input.timeout_ms ?? 120_000,
     stream_format: "sse",
   };

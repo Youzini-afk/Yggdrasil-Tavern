@@ -49,6 +49,8 @@ const PROVIDER_GROUPS = [
   },
 ];
 
+const ENGINE_SUPPORTED_PROVIDERS = new Set(['openai', 'anthropic', 'deepseek', 'openrouter']);
+
 export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
   const tavern = useTavern();
   const [profileName, setProfileName] = useState('');
@@ -85,13 +87,15 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
             <select
               className="text_pole"
               value={tavern.connectionSettings.provider}
-              onChange={(e) => tavern.updateConnectionSettings({ provider: e.target.value })}
+              onChange={(e) => {
+                if (ENGINE_SUPPORTED_PROVIDERS.has(e.target.value)) tavern.updateConnectionSettings({ provider: e.target.value });
+              }}
             >
               {PROVIDER_GROUPS.map((group) => (
                 <optgroup key={group.label} label={group.label}>
                   {group.providers.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label}
+                    <option key={p.value} value={p.value} disabled={!ENGINE_SUPPORTED_PROVIDERS.has(p.value)}>
+                      {p.label}{ENGINE_SUPPORTED_PROVIDERS.has(p.value) ? '' : ' (unsupported)'}
                     </option>
                   ))}
                 </optgroup>
@@ -127,6 +131,9 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
           settings={connectionFormSettings}
           onChange={updateConnectionFormSettings}
         />
+        <p className="settings-help-text">
+          Custom API base URLs are stored for profile metadata only and are not used for live provider calls.
+        </p>
       </section>
 
       <APIKeySection

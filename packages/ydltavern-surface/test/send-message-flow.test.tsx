@@ -86,6 +86,50 @@ describe('TavernProvider sendMessage flow', () => {
     ]);
     assert.equal(extractContentFromResult({ text: 'Mock assistant response' }), 'Mock assistant response');
   });
+
+  it('does not invoke live call for unsupported provider', async () => {
+    const posted: PostedMessage[] = [];
+    Object.defineProperty(globalThis, 'localStorage', { value: window.localStorage ?? new MemoryStorage(), configurable: true });
+    localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({ streaming: false }));
+    localStorage.setItem(STORAGE_KEYS.connection, JSON.stringify({
+      current: { provider: 'custom-openai', model: 'local-model', secretRef: 'secret_ref:store:CUSTOM_KEY', baseUrl: 'https://local.example/v1' },
+      profiles: {},
+    }));
+    installRpcHostMock(posted, { text: 'should not be used' });
+
+    const { TavernProvider, useTavern } = await import(`../src/app/TavernProvider.tsx?unsupported=${Date.now()}`);
+
+    let done!: () => void;
+    const completed = new Promise<void>((resolve) => { done = resolve; });
+
+    function Driver(): JSX.Element {
+      const tavern = useTavern();
+      const sent = useRef(false);
+      useEffect(() => {
+        if (sent.current) return;
+        sent.current = true;
+        tavern.sendMessage('Hello unsupported').then(done, done);
+      }, [tavern]);
+      return <div>{tavern.liveChat.turns.map((turn) => turn.variants[turn.active_variant]?.subs.map((sub) => 'text' in sub ? sub.text : '').join('')).join('\n')}</div>;
+    }
+
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+    flushSync(() => {
+      root?.render(
+        <TavernProvider chat={emptyChat}>
+          <Driver />
+        </TavernProvider>,
+      );
+    });
+
+    await completed;
+    await tick();
+
+    assert.equal(posted.some((message) => message.params.capability_id === 'ydltavern/engine/model.live_call'), false);
+    assert.match(container.textContent ?? '', /not supported for live model calls yet/u);
+  });
 });
 
 function installRpcHostMock(posted: PostedMessage[], output: unknown): void {

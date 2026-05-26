@@ -12,11 +12,28 @@ const baseInput = (overrides = {}) => ({
   source: "openai",
   model: "gpt-4o-mini",
   messages: [{ role: "user", content: "Hello" }],
-  settings: { temp_openai: 0.7, stream_openai: false },
+  settings: {
+    temp_openai: 0.7,
+    stream_openai: false,
+    user_name: "User",
+    char_name: "Assistant",
+    show_thoughts: true,
+    custom_url: "https://evil.example/v1",
+    reverse_proxy: "https://proxy.example/v1",
+  },
   stream: false,
   secret_ref: "secret_ref:env:OPENAI_API_KEY",
   ...overrides,
 });
+
+const forbiddenProviderBodyKeys = [
+  "chat_completion_source",
+  "user_name",
+  "char_name",
+  "include_reasoning",
+  "custom_url",
+  "reverse_proxy",
+];
 
 class MockKernelClient {
   sendCalls = [];
@@ -64,10 +81,21 @@ test("unary OpenAI builds outbound execute params and extracts response", async 
     Authorization: { secret_ref: "secret_ref:env:OPENAI_API_KEY", scheme: "bearer" },
   });
   assert.deepEqual(params.secret_refs, ["secret_ref:env:OPENAI_API_KEY"]);
+  assert.deepEqual(Object.keys(params.body_shape), [
+    "model",
+    "messages",
+    "temperature",
+    "top_p",
+    "frequency_penalty",
+    "presence_penalty",
+    "max_tokens",
+    "stream",
+  ]);
   assert.equal(params.body_shape.model, "gpt-4o-mini");
-  assert.equal(params.body_shape.chat_completion_source, "openai");
+  assert.deepEqual(params.body_shape.messages, [{ role: "user", content: "Hello" }]);
   assert.equal(params.body_shape.stream, false);
   assert.equal(params.body_shape.temperature, 0.7);
+  assertNoForbiddenProviderBodyKeys(params.body_shape);
 
   assert.equal(output.status, "ok");
   assert.equal(output.text, "pong");
@@ -90,7 +118,16 @@ test("unary Anthropic uses x-api-key header, version header, and messages path",
   };
 
   const output = await modelLiveCallUnary(
-    baseInput({ source: "anthropic", model: "claude-3-5-sonnet", secret_ref: "secret_ref:env:ANTHROPIC_API_KEY" }),
+    baseInput({
+      source: "anthropic",
+      model: "claude-3-5-sonnet",
+      secret_ref: "secret_ref:env:ANTHROPIC_API_KEY",
+      messages: [
+        { role: "system", content: "You are concise." },
+        { role: "user", content: "Hello" },
+        { role: "assistant", content: "Hi" },
+      ],
+    }),
     kernel,
     MODEL_LIVE_CALL_ID,
   );
@@ -100,7 +137,20 @@ test("unary Anthropic uses x-api-key header, version header, and messages path",
   assert.deepEqual(params.secret_headers, { "x-api-key": { secret_ref: "secret_ref:env:ANTHROPIC_API_KEY" } });
   assert.equal(params.static_headers["anthropic-version"], "2023-06-01");
   assert.equal(params.static_headers["content-type"], "application/json");
-  assert.equal(params.body_shape.chat_completion_source, "claude");
+  assert.deepEqual(params.body_shape, {
+    model: "claude-3-5-sonnet",
+    messages: [
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Hi" },
+    ],
+    max_tokens: 300,
+    stream: false,
+    system: "You are concise.",
+    temperature: 0.7,
+    top_p: 1,
+  });
+  assertNoForbiddenProviderBodyKeys(params.body_shape);
+  assert.equal(params.body_shape.messages.some((message) => message.role === "system"), false);
   assert.equal(output.text, "hello");
   assert.deepEqual(output.usage, { prompt_tokens: 4, completion_tokens: 6, total_tokens: 10 });
   assert.equal(output.tool_calls.length, 1);
@@ -119,6 +169,23 @@ test("unary DeepSeek uses bearer auth and chat completions path", async () => {
   assert.deepEqual(params.secret_headers, {
     Authorization: { secret_ref: "secret_ref:env:DEEPSEEK_API_KEY", scheme: "bearer" },
   });
+  assertNoForbiddenProviderBodyKeys(params.body_shape);
+});
+
+test("unary OpenRouter uses OpenAI-compatible final body", async () => {
+  const kernel = new MockKernelClient();
+  await modelLiveCallUnary(
+    baseInput({ source: "openrouter", model: "openai/gpt-4o-mini", secret_ref: "secret_ref:env:OPENROUTER_API_KEY" }),
+    kernel,
+    MODEL_LIVE_CALL_ID,
+  );
+  const params = kernel.sendCalls[0].params;
+  assert.equal(params.destination_host, "openrouter.ai");
+  assert.equal(params.path, "/api/v1/chat/completions");
+  assert.equal(params.body_shape.model, "openai/gpt-4o-mini");
+  assert.deepEqual(params.body_shape.messages, [{ role: "user", content: "Hello" }]);
+  assert.equal(params.body_shape.stream, false);
+  assertNoForbiddenProviderBodyKeys(params.body_shape);
 });
 
 test("streaming sends SSE outbound params and accumulates final text", () => {
@@ -132,6 +199,7 @@ test("streaming sends SSE outbound params and accumulates final text", () => {
   assert.equal(call.params.capability_id, MODEL_LIVE_CALL_STREAM_ID);
   assert.equal(call.params.stream_format, "sse");
   assert.equal(call.params.body_shape.stream, true);
+  assertNoForbiddenProviderBodyKeys(call.params.body_shape);
 
   call.callbacks.onChunk({ data: JSON.stringify({ choices: [{ delta: { content: "po" } }] }) });
   call.callbacks.onChunk({ chunk_shape: { data: JSON.stringify({ choices: [{ delta: { content: "ng" } }] }) } });
@@ -151,12 +219,28 @@ test("streaming handle cancel wires to kernel handle", () => {
   assert.equal(kernel.cancelled, true);
 });
 
-test("unknown source without destination host mapping throws clearly", async () => {
+test("unknown source throws unsupported clearly", async () => {
   const kernel = new MockKernelClient();
   await assert.rejects(
     () => modelLiveCallUnary(baseInput({ source: "custom" }), kernel, MODEL_LIVE_CALL_ID),
-    /No destination_host mapping for source=custom/,
+    /Unsupported live_call source=custom/,
   );
+});
+
+test("baseUrl destination override fields are ignored", async () => {
+  const kernel = new MockKernelClient();
+  await modelLiveCallUnary(
+    baseInput({
+      destination_host_override: "evil.example",
+      api_path_override: "/steal",
+    }),
+    kernel,
+    MODEL_LIVE_CALL_ID,
+  );
+
+  const params = kernel.sendCalls[0].params;
+  assert.equal(params.destination_host, "api.openai.com");
+  assert.equal(params.path, "/v1/chat/completions");
 });
 
 test("unary rejects invalid secret_ref before outbound params", async () => {
@@ -190,3 +274,9 @@ test("unary rejects stream=true and stream rejects stream=false", async () => {
     /modelLiveCallStream called with stream=false/,
   );
 });
+
+function assertNoForbiddenProviderBodyKeys(body) {
+  for (const key of forbiddenProviderBodyKeys) {
+    assert.equal(Object.hasOwn(body, key), false, `${key} should not be in final provider body`);
+  }
+}

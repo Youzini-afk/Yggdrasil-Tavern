@@ -21,6 +21,8 @@ const PROVIDERS = [
   'openai', 'deepseek', 'anthropic', 'openrouter', 'custom',
 ] as const;
 
+const ENGINE_SUPPORTED_PROVIDERS = new Set(['openai', 'deepseek', 'anthropic', 'openrouter']);
+
 export interface ConnectionFormProps {
   readonly settings: ConnectionSettings;
   readonly onChange: (settings: ConnectionSettings) => void;
@@ -36,6 +38,10 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
     if (error !== undefined) return;
     onChange(nextDraft);
   }, [draft, onChange]);
+
+  const handleCommitBlur = useCallback(() => {
+    commit();
+  }, [commit]);
 
   const updateField = useCallback(<K extends keyof ConnectionSettings>(key: K, value: ConnectionSettings[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -76,10 +82,10 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
             className="settings-input"
             value={draft.provider}
             onChange={handleChange('provider')}
-            onBlur={commit}
+            onBlur={handleCommitBlur}
           >
             {PROVIDERS.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p} value={p} disabled={!ENGINE_SUPPORTED_PROVIDERS.has(p)}>{p}{ENGINE_SUPPORTED_PROVIDERS.has(p) ? '' : ' (unsupported)'}</option>
             ))}
           </select>
         </label>
@@ -90,7 +96,7 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
             type="text"
             value={draft.model}
             onChange={handleChange('model')}
-            onBlur={commit}
+            onBlur={handleCommitBlur}
             placeholder="gpt-4o-mini"
           />
         </label>
@@ -109,15 +115,16 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
           ) : null}
         </label>
         <label className="settings-field">
-          <span className="settings-label">API Base URL (override)</span>
+          <span className="settings-label">API Base URL (not used for live calls)</span>
           <input
             className="settings-input"
             type="text"
             value={draft.apiBaseUrl}
             onChange={handleChange('apiBaseUrl')}
-            onBlur={commit}
+            onBlur={handleCommitBlur}
             placeholder="https://api.openai.com/v1"
           />
+          <span className="settings-help-text">Live provider calls use fixed engine host mappings; this does not override outbound host.</span>
         </label>
         <label className="settings-field settings-field-row">
           <span className="settings-label">Stream</span>
@@ -126,7 +133,7 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
             type="checkbox"
             checked={draft.stream}
             onChange={handleChange('stream')}
-            onBlur={commit}
+            onBlur={handleCommitBlur}
           />
         </label>
       </div>
