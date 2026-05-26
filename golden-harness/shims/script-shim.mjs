@@ -160,7 +160,7 @@ export function substituteParamsExtended(text, _env, _overrides) {
 }
 
 export function getRequestHeaders() {
-  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer test-key' };
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer <redacted-test-key>' };
 }
 
 export function saveSettings() {}

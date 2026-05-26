@@ -7,6 +7,7 @@ import {
   type ChatCompletionSource,
   type ChatGenerationType,
   type StreamMergeState,
+  assertValidSecretRef,
 } from "@ydltavern/engine-core";
 
 import { PACKAGE_ID, createCapabilityMeta, type HandlerContext, type HandlerRecord, type KernelClient } from "../types.js";
@@ -117,6 +118,7 @@ export async function modelLiveCallUnary(
   if (input.stream) {
     throw new Error("modelLiveCallUnary called with stream=true; use modelLiveCallStream");
   }
+  const secretRef = assertValidSecretRef(input.secret_ref, "input.secret_ref");
 
   const destinationHost = input.destination_host_override ?? DESTINATION_HOSTS[input.source];
   if (!destinationHost) {
@@ -135,14 +137,14 @@ export async function modelLiveCallUnary(
     includeTools: Array.isArray(input.tools) && input.tools.length > 0,
   });
 
-  const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, input.secret_ref);
+  const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, secretRef);
   const params = {
     capability_id: capabilityId,
     destination_host: destinationHost,
     method: "POST",
     path,
     purpose: `ydltavern.model.live_call:${input.source}`,
-    secret_refs: [input.secret_ref],
+    secret_refs: [secretRef],
     secret_headers: { [secretHeaderName]: secretHeaderSpec },
     static_headers: staticHeadersForSource(input.source),
     body_shape: requestBody.body,
@@ -177,6 +179,7 @@ export function modelLiveCallStream(
   if (!input.stream) {
     throw new Error("modelLiveCallStream called with stream=false; use modelLiveCallUnary");
   }
+  const secretRef = assertValidSecretRef(input.secret_ref, "input.secret_ref");
 
   const destinationHost = input.destination_host_override ?? DESTINATION_HOSTS[input.source];
   if (!destinationHost) {
@@ -195,14 +198,14 @@ export function modelLiveCallStream(
     includeTools: Array.isArray(input.tools) && input.tools.length > 0,
   });
 
-  const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, input.secret_ref);
+  const { name: secretHeaderName, spec: secretHeaderSpec } = secretHeaderForSource(input.source, secretRef);
   const params = {
     capability_id: capabilityId,
     destination_host: destinationHost,
     method: "POST",
     path,
     purpose: `ydltavern.model.live_call.stream:${input.source}`,
-    secret_refs: [input.secret_ref],
+    secret_refs: [secretRef],
     secret_headers: { [secretHeaderName]: secretHeaderSpec },
     static_headers: staticHeadersForSource(input.source),
     body_shape: requestBody.body,

@@ -81,6 +81,29 @@ test("openRealtimeSession gemini-live x-goog-api-key secret_header", async () =>
   });
 });
 
+test("openRealtimeSession rejects invalid secret_ref before websocket params", async () => {
+  const kernel = new MockKernelClient();
+  for (const secret_ref of ["sk-raw-secret", "secret_ref:inline:OPENAI_API_KEY", "secret_ref:file:OPENAI_API_KEY", "secret_ref:unknown:OPENAI_API_KEY", ""]) {
+    await assert.rejects(
+      () => openRealtimeSession(openAIInput({ secret_ref }), kernel, MODEL_LIVE_REALTIME_ID, { onServerEvent() {} }),
+      /input\.secret_ref must be one of secret_ref:store:NAME, secret_ref:project:NAME, or secret_ref:env:NAME/u,
+    );
+  }
+  assert.equal(kernel.wsCalls.length, 0);
+});
+
+test("openRealtimeSession accepts store, project, and env secret_ref scopes", async () => {
+  const kernel = new MockKernelClient();
+  for (const secret_ref of ["secret_ref:store:OPENAI_API_KEY", "secret_ref:project:OPENAI_API_KEY", "secret_ref:env:OPENAI_API_KEY"]) {
+    await openRealtimeSession(openAIInput({ secret_ref }), kernel, MODEL_LIVE_REALTIME_ID, { onServerEvent() {} });
+  }
+  assert.deepEqual(kernel.wsCalls.map((call) => call.params.secret_refs[0]), [
+    "secret_ref:store:OPENAI_API_KEY",
+    "secret_ref:project:OPENAI_API_KEY",
+    "secret_ref:env:OPENAI_API_KEY",
+  ]);
+});
+
 test("openRealtimeSession openai-realtime sends session.update on open", async () => {
   const kernel = new MockKernelClient();
   await openRealtimeSession(

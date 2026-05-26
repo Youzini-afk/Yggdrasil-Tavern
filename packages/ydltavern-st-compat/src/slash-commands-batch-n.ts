@@ -2,6 +2,7 @@
 // Aligns with ST parser/debug registrations in SillyTavern/public/scripts/slash-commands/SlashCommandParser.js:150-185
 // and secret command registrations in SillyTavern/public/scripts/secrets.js:767-1134.
 
+import { isValidSecretRef } from '@ydltavern/engine-core';
 import type { STContextDeep } from './context-st.js';
 import type { ScopeValue } from './stscript-st.js';
 import { registerIfMissing, registerPlanOnly, type BatchSlashOptions, type BatchSlashRegistry } from './slash-commands-common.js';
@@ -85,9 +86,9 @@ export function registerBatchN(registry: BatchSlashRegistry, options: BatchSlash
       const name = String(args._unnamed ?? args.name ?? value ?? '').trim();
       const ref = String(args.ref ?? args.value ?? '').trim();
       if (!name) throw new Error('secret-write requires name');
-      if (!ref) throw new Error('secret-write requires ref=secret_ref:env:NAME');
-      if (!ref.startsWith('secret_ref:')) {
-        throw new Error('secret-write only accepts secret_ref:env:NAME format; raw values are rejected');
+      if (!ref) throw new Error('secret-write requires ref=secret_ref:store:NAME, secret_ref:project:NAME, or secret_ref:env:NAME');
+      if (!isValidSecretRef(ref)) {
+        throw new Error('secret-write only accepts secret_ref:store:NAME, secret_ref:project:NAME, or secret_ref:env:NAME; raw and unsupported values are rejected');
       }
       return JSON.stringify({
         planned: true,

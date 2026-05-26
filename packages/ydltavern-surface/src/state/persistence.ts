@@ -24,6 +24,7 @@ import type {
   SamplerSettings,
   WorldBookEntry,
 } from '../types/state.js';
+import { normalizeSecretRef } from './secrets.js';
 
 export const STORAGE_KEYS = {
   settings: 'ydltavern.settings.v2',
@@ -118,11 +119,30 @@ export function readSamplerSettings(): SamplerSettings {
 }
 
 export function readConnectionState(): PersistedConnectionState {
-  return readPersisted<PersistedConnectionState>(STORAGE_KEYS.connection, { current: DEFAULT_CONNECTION, profiles: {} });
+  const persisted = readPersisted<PersistedConnectionState>(STORAGE_KEYS.connection, { current: DEFAULT_CONNECTION, profiles: {} });
+  return sanitizeConnectionState(persisted);
 }
 
 export function writeConnectionState(current: ConnectionSettings, profiles: Record<string, ConnectionSettings>): void {
-  writePersisted<PersistedConnectionState>(STORAGE_KEYS.connection, { current, profiles });
+  writePersisted<PersistedConnectionState>(STORAGE_KEYS.connection, sanitizeConnectionState({ current, profiles }));
+}
+
+function sanitizeConnectionState(state: PersistedConnectionState): PersistedConnectionState {
+  const current = isPlainObject(state.current) ? state.current as ConnectionSettings : DEFAULT_CONNECTION;
+  const profiles = isPlainObject(state.profiles) ? state.profiles as Record<string, ConnectionSettings> : {};
+  return {
+    current: sanitizeConnectionSettings(current),
+    profiles: Object.fromEntries(
+      Object.entries(profiles).map(([name, settings]) => [name, sanitizeConnectionSettings(settings)]),
+    ),
+  };
+}
+
+function sanitizeConnectionSettings(settings: ConnectionSettings): ConnectionSettings {
+  const normalizedSecretRef = normalizeSecretRef(settings.secretRef);
+  return normalizedSecretRef === undefined
+    ? { ...settings, secretRef: undefined }
+    : { ...settings, secretRef: normalizedSecretRef };
 }
 
 export function readFormattingSettings(): FormattingSettings {

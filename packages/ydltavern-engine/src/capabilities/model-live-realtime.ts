@@ -1,3 +1,4 @@
+import { assertValidSecretRef } from "@ydltavern/engine-core";
 import { PACKAGE_ID, createCapabilityMeta, type HandlerContext, type HandlerRecord, type KernelClient, type KernelWebSocketFrame, type KernelWebSocketHandle } from "../types.js";
 
 export const MODEL_LIVE_REALTIME_ID = `${PACKAGE_ID}/model.live_realtime`;
@@ -63,16 +64,17 @@ export async function openRealtimeSession(
     onClose?: (info: { code: number; reason: string }) => void;
   },
 ): Promise<RealtimeSession> {
+  const secretRef = assertValidSecretRef(input.secret_ref, "input.secret_ref");
   const destinationHost = DESTINATION_HOSTS[input.source];
   const path = PATHS[input.source](input.model);
   const secretHeaders: Record<string, { secret_ref: string; scheme?: string }> = {};
   const staticHeaders: Record<string, string> = {};
 
   if (input.source === "openai-realtime") {
-    secretHeaders["Authorization"] = { secret_ref: input.secret_ref, scheme: "bearer" };
+    secretHeaders["Authorization"] = { secret_ref: secretRef, scheme: "bearer" };
     staticHeaders["openai-beta"] = "realtime=v1";
   } else {
-    secretHeaders["x-goog-api-key"] = { secret_ref: input.secret_ref };
+    secretHeaders["x-goog-api-key"] = { secret_ref: secretRef };
   }
 
   const params = {
@@ -80,7 +82,7 @@ export async function openRealtimeSession(
     destination_host: destinationHost,
     path,
     purpose: `ydltavern.realtime:${input.source}`,
-    secret_refs: [input.secret_ref],
+    secret_refs: [secretRef],
     secret_headers: secretHeaders,
     static_headers: staticHeaders,
     metadata: { source: input.source, model: input.model },

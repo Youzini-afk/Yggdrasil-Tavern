@@ -1,4 +1,5 @@
-import { useCallback, useState, type ChangeEvent } from 'react';
+import { useCallback, useState, type ChangeEvent, type FocusEvent } from 'react';
+import { validateSecretRef } from '../../../state/secrets.js';
 
 export interface ConnectionSettings {
   readonly provider: string;
@@ -25,33 +26,40 @@ export interface ConnectionFormProps {
   readonly onChange: (settings: ConnectionSettings) => void;
 }
 
-function validateSecretRef(value: string): string | undefined {
-  if (value.length === 0) return undefined;
-  if (/^secret_ref:(env|file|inline|store):.+/.test(value)) return undefined;
-  return 'Expected format: secret_ref:store:KEY_NAME';
-}
-
 export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX.Element {
   const [draft, setDraft] = useState(settings);
   const [secretError, setSecretError] = useState<string | undefined>();
 
-  const commit = useCallback(() => {
-    onChange(draft);
+  const commit = useCallback((nextDraft: ConnectionSettings = draft) => {
+    const error = validateSecretRef(nextDraft.secretRef);
+    setSecretError(error);
+    if (error !== undefined) return;
+    onChange(nextDraft);
   }, [draft, onChange]);
 
   const updateField = useCallback(<K extends keyof ConnectionSettings>(key: K, value: ConnectionSettings[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const handleSecretBlur = useCallback(() => {
-    setSecretError(validateSecretRef(draft.secretRef));
-    commit();
-  }, [draft.secretRef, commit]);
-
   const handleChange = useCallback((key: keyof ConnectionSettings) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const value = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
+    if (key === 'secretRef') {
+      setSecretError(validateSecretRef(String(value)));
+    }
     updateField(key, value as never);
   }, [updateField]);
+
+  const handleSecretChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const nextDraft = { ...draft, secretRef: e.target.value };
+    setDraft(nextDraft);
+    setSecretError(validateSecretRef(nextDraft.secretRef));
+  }, [draft]);
+
+  const handleSecretBlurCurrent = useCallback((e: FocusEvent<HTMLInputElement>) => {
+    const nextDraft = { ...draft, secretRef: e.target.value };
+    setDraft(nextDraft);
+    commit(nextDraft);
+  }, [draft, commit]);
 
   const handleTestConnection = useCallback(() => {
     // Visual-only confirmation for now
@@ -92,8 +100,8 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
             className={`settings-input${secretError ? ' settings-input-error' : ''}`}
             type="text"
             value={draft.secretRef}
-            onChange={handleChange('secretRef')}
-            onBlur={handleSecretBlur}
+            onChange={handleSecretChange}
+            onBlur={handleSecretBlurCurrent}
             placeholder="secret_ref:store:OPENAI_API_KEY"
           />
           {secretError !== undefined ? (

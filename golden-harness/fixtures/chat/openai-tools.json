@@ -85,7 +85,7 @@
     "requestMethod": "POST",
     "requestHeaders": {
       "Content-Type": "application/json",
-      "Authorization": "Bearer test-key"
+      "Authorization": "Bearer <redacted-test-key>"
     },
     "scenario": "OpenAI chat completion with tool calling enabled"
   }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
 import { DEFAULT_SAMPLER } from '../src/state/defaults.ts';
-import { readPersisted, readSamplerSettings, STORAGE_KEYS, writePersisted } from '../src/state/persistence.ts';
+import { readConnectionState, readPersisted, readSamplerSettings, STORAGE_KEYS, writePersisted } from '../src/state/persistence.ts';
 
 class MemoryStorage {
   private readonly data = new Map<string, string>();
@@ -29,5 +29,20 @@ describe('state persistence', () => {
   it('returns fallback for corrupt JSON', () => {
     localStorage.setItem(STORAGE_KEYS.sampler, '{not-json');
     assert.deepEqual(readSamplerSettings(), DEFAULT_SAMPLER);
+  });
+
+  it('drops invalid connection secret refs when loading persisted state', () => {
+    localStorage.setItem(STORAGE_KEYS.connection, JSON.stringify({
+      current: { provider: 'openai', model: 'gpt-4o-mini', secretRef: 'secret_ref:inline:OPENAI_API_KEY' },
+      profiles: {
+        good: { provider: 'openai', model: 'gpt-4o-mini', secretRef: 'secret_ref:env:OPENAI_API_KEY' },
+        bad: { provider: 'openai', model: 'gpt-4o-mini', secretRef: 'Bearer test-key' },
+      },
+    }));
+
+    const state = readConnectionState();
+    assert.equal(state.current.secretRef, undefined);
+    assert.equal(state.profiles.good?.secretRef, 'secret_ref:env:OPENAI_API_KEY');
+    assert.equal(state.profiles.bad?.secretRef, undefined);
   });
 });

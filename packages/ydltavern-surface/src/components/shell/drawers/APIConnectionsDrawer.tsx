@@ -8,11 +8,13 @@ import {
   defaultSecretName,
   deleteSecret,
   listSecrets,
+  normalizeSecretRef,
   secretRefForProject,
   secretRefForStore,
   secretStoreHealth,
   storeProjectSecret,
   storeSecret,
+  validateSecretRef,
 } from '../../../state/secrets.js';
 
 const PROVIDER_GROUPS = [
@@ -60,6 +62,7 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
   };
 
   const updateConnectionFormSettings = (next: ConnectionFormSettings) => {
+    if (validateSecretRef(next.secretRef) !== undefined) return;
     tavern.updateConnectionSettings({
       provider: next.provider,
       model: next.model,
@@ -130,7 +133,10 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
         provider={tavern.connectionSettings.provider}
         currentSecretRef={tavern.connectionSettings.secretRef ?? ''}
         projectId={tavern.projectId}
-        onSecretRefChange={(ref) => tavern.updateConnectionSettings({ secretRef: ref })}
+        onSecretRefChange={(ref) => {
+          const normalized = normalizeSecretRef(ref);
+          if (normalized !== undefined) tavern.updateConnectionSettings({ secretRef: normalized });
+        }}
       />
 
       <section className="drawer-section">
@@ -223,6 +229,7 @@ export function APIKeySection({ provider, currentSecretRef, projectId, onSecretR
     setBusy(true);
     setStatus({ kind: 'idle', message: '' });
     try {
+      const nextRef = scope === 'project' ? secretRefForProject(trimmedName) : secretRefForStore(trimmedName);
       const result = scope === 'project'
         ? await storeProjectSecret(projectId, trimmedName, keyValue)
         : await storeSecret(trimmedName, keyValue);
@@ -231,7 +238,7 @@ export function APIKeySection({ provider, currentSecretRef, projectId, onSecretR
         kind: 'ok',
         message: result.created ? `Saved ${scope} key as ${trimmedName}` : `Updated ${scope} key ${trimmedName}`,
       });
-      onSecretRefChange(scope === 'project' ? secretRefForProject(trimmedName) : secretRefForStore(trimmedName));
+      onSecretRefChange(nextRef);
       if (scope === 'platform') await refresh();
     } catch (err) {
       setStatus({ kind: 'err', message: (err as Error).message });
@@ -266,8 +273,7 @@ export function APIKeySection({ provider, currentSecretRef, projectId, onSecretR
       <header className="drawer-section-header">
         <h3>API Key</h3>
         <small>
-          Stored encrypted in <code>~/.yggdrasil/secrets.dat</code>. Never sent to model providers
-          except as request headers.
+          Stored encrypted in the host secret store. Never sent to model providers except as request headers.
         </small>
       </header>
 
@@ -399,7 +405,7 @@ function StatusSection({ secretRef }: { secretRef: string }) {
       .catch(() => setStoreStatus({ kind: 'err' }));
   }, []);
 
-  const hasSecret = secretRef.startsWith('secret_ref:store:') || secretRef.startsWith('secret_ref:project:');
+  const hasSecret = normalizeSecretRef(secretRef) !== undefined;
   const hasProjectSecret = secretRef.startsWith('secret_ref:project:');
 
   return (

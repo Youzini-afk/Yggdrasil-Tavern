@@ -159,6 +159,26 @@ test("unknown source without destination host mapping throws clearly", async () 
   );
 });
 
+test("unary rejects invalid secret_ref before outbound params", async () => {
+  const kernel = new MockKernelClient();
+  for (const secret_ref of ["sk-raw-secret", "secret_ref:inline:OPENAI_API_KEY", "secret_ref:file:OPENAI_API_KEY", "secret_ref:unknown:OPENAI_API_KEY", ""]) {
+    await assert.rejects(
+      () => modelLiveCallUnary(baseInput({ secret_ref }), kernel, MODEL_LIVE_CALL_ID),
+      /input\.secret_ref must be one of secret_ref:store:NAME, secret_ref:project:NAME, or secret_ref:env:NAME/u,
+    );
+  }
+  assert.equal(kernel.sendCalls.length, 0);
+});
+
+test("stream rejects invalid secret_ref before outbound params", () => {
+  const kernel = new MockKernelClient();
+  assert.throws(
+    () => modelLiveCallStream(baseInput({ stream: true, settings: { stream_openai: true }, secret_ref: "secret_ref:file:OPENAI_API_KEY" }), kernel, MODEL_LIVE_CALL_STREAM_ID, () => {}),
+    /input\.secret_ref must be one of secret_ref:store:NAME, secret_ref:project:NAME, or secret_ref:env:NAME/u,
+  );
+  assert.equal(kernel.streamCalls.length, 0);
+});
+
 test("unary rejects stream=true and stream rejects stream=false", async () => {
   const kernel = new MockKernelClient();
   await assert.rejects(

@@ -72,7 +72,7 @@
     "requestMethod": "POST",
     "requestHeaders": {
       "Content-Type": "application/json",
-      "Authorization": "Bearer test-key"
+      "Authorization": "Bearer <redacted-test-key>"
     },
     "scenario": "Claude API request with assistant prefill message"
   }

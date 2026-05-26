@@ -64,7 +64,7 @@
     "requestMethod": "POST",
     "requestHeaders": {
       "Content-Type": "application/json",
-      "Authorization": "Bearer test-key"
+      "Authorization": "Bearer <redacted-test-key>"
     },
     "scenario": "DeepSeek reasoning model with chain-of-thought"
   }

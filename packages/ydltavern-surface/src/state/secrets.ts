@@ -1,4 +1,5 @@
 import { invokeCapability } from '../host-rpc/index.js';
+import { assertValidSecretRef, isValidSecretRef, parseSecretRef } from '@ydltavern/engine-core';
 
 const PUT = 'official/secret-store-lab/put_secret';
 const HAS = 'official/secret-store-lab/has_secret';
@@ -52,11 +53,26 @@ export async function secretStoreHealth(): Promise<{
 }
 
 export function secretRefForStore(name: string): string {
-  return `secret_ref:store:${name}`;
+  return assertValidSecretRef(`secret_ref:store:${name}`);
 }
 
 export function secretRefForProject(name: string): string {
-  return `secret_ref:project:${name}`;
+  return assertValidSecretRef(`secret_ref:project:${name}`);
+}
+
+export function secretRefForEnv(name: string): string {
+  return assertValidSecretRef(`secret_ref:env:${name}`);
+}
+
+export function validateSecretRef(value: string): string | undefined {
+  if (value.trim().length === 0) return undefined;
+  if (isValidSecretRef(value)) return undefined;
+  return 'Expected secret_ref:store:NAME, secret_ref:project:NAME, or secret_ref:env:NAME with a safe NAME';
+}
+
+export function normalizeSecretRef(value: string | undefined): string | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) return undefined;
+  return parseSecretRef(value)?.ref;
 }
 
 /** Default secret name for a provider (used by API Connections drawer) */

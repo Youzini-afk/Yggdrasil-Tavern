@@ -145,12 +145,14 @@ test('/secret-delete empty descriptor has no fields', async () => {
   });
 });
 
-test('/secret-write accepts secret_ref values', async () => {
-  assert.deepEqual(json(await last(ctx(), '/secret-write name=openai ref=secret_ref:env:OPENAI_API_KEY')), {
-    planned: true,
-    action: 'secret.write',
-    fields: { name: 'openai', ref: 'secret_ref:env:OPENAI_API_KEY' },
-  });
+test('/secret-write accepts supported secret_ref scopes', async () => {
+  for (const ref of ['secret_ref:store:OPENAI_API_KEY', 'secret_ref:project:OPENAI_API_KEY', 'secret_ref:env:OPENAI_API_KEY']) {
+    assert.deepEqual(json(await last(ctx(), `/secret-write name=openai ref=${ref}`)), {
+      planned: true,
+      action: 'secret.write',
+      fields: { name: 'openai', ref },
+    });
+  }
 });
 
 test('/secret-write accepts value alias for secret_ref', async () => {
@@ -164,7 +166,15 @@ test('/secret-write accepts value alias for secret_ref', async () => {
 test('/secret-write rejects raw values', async () => {
   const result = await exec(ctx(), '/secret-write name=openai ref=sk-raw-secret');
   assert.equal(result.ok, false);
-  assert.match(result.outputs[0]?.error ?? '', /raw values are rejected/u);
+  assert.match(result.outputs[0]?.error ?? '', /raw and unsupported values are rejected/u);
+});
+
+test('/secret-write rejects unsupported secret_ref variants', async () => {
+  for (const ref of ['secret_ref:inline:OPENAI_API_KEY', 'secret_ref:file:OPENAI_API_KEY', 'secret_ref:unknown:OPENAI_API_KEY']) {
+    const result = await exec(ctx(), `/secret-write name=openai ref=${ref}`);
+    assert.equal(result.ok, false);
+    assert.match(result.outputs[0]?.error ?? '', /raw and unsupported values are rejected/u);
+  }
 });
 
 test('/secret-write requires a secret name', async () => {
