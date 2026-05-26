@@ -9,7 +9,7 @@ import { TavernPersonaSurface } from './TavernPersonaSurface.js';
 import { TavernAIResponseConfigSurface } from './TavernAIResponseConfigSurface.js';
 import { TavernUserSettingsSurface } from './TavernUserSettingsSurface.js';
 import { TavernBackgroundsSurface } from './TavernBackgroundsSurface.js';
-import { setActiveSessionId } from '../host-rpc/index.js';
+import { configureHostRpcBridgeFromProps, resetHostRpcBridgeConfig, setActiveSessionId } from '../host-rpc/index.js';
 
 /**
  * Mount adapter contract: takes a root element and props, mounts a React
@@ -22,12 +22,14 @@ function makeMounter(Component: React.ComponentType<any>): MountFn {
   return (root, props = {}) => {
     const sessionId = readStringProp(props, 'sessionId') ?? readStringProp(props, 'session_id');
     const projectId = readStringProp(props, 'projectId') ?? readStringProp(props, 'project_id');
+    configureHostRpcBridgeFromProps(props);
     setActiveSessionId(sessionId);
     const reactRoot: Root = createRoot(root);
     reactRoot.render(React.createElement(Component, { ...props, sessionId, projectId }));
     return () => {
       reactRoot.unmount();
       setActiveSessionId(undefined);
+      resetHostRpcBridgeConfig();
     };
   };
 }

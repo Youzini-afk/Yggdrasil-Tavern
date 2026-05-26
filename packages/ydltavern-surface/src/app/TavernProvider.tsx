@@ -19,7 +19,7 @@ import {
   SEED_WORLDBOOK,
   type TavernSettings,
 } from '../state/defaults.js';
-import { invokeCapability, setActiveSessionId, streamCapability, type StreamHandle } from '../host-rpc/index.js';
+import { ensureStandaloneHostRpcBridgeConfigured, invokeCapability, setActiveSessionId, streamCapability, type StreamHandle } from '../host-rpc/index.js';
 import {
   migrateSettingsV1ToV2,
   readBackgroundDisplaySettings,
@@ -214,6 +214,7 @@ export function TavernProvider({
   const activeStreamRef = useRef<StreamHandle | null>(null);
 
   useLayoutEffect(() => {
+    ensureStandaloneHostRpcBridgeConfigured();
     setActiveSessionId(sessionId);
     return () => setActiveSessionId(undefined);
   }, [sessionId]);

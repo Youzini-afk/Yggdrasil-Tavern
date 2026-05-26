@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import type { Chat } from '@ydltavern/types';
 import { installTestDom } from './formatting/test-dom.ts';
+import { configureHostRpcBridge, resetHostRpcBridgeConfig } from '../src/host-rpc/index.ts';
 import { STORAGE_KEYS } from '../src/state/persistence.ts';
 
 installTestDom();
@@ -23,6 +24,8 @@ type PostedMessage = {
   readonly type: string;
   readonly id?: string;
   readonly method?: string;
+  readonly bridge_token?: string;
+  readonly session_id?: string;
   readonly params?: {
     readonly capability_id?: string;
     readonly input?: Record<string, unknown>;
@@ -204,7 +207,7 @@ function installRpcHostMock(posted: PostedMessage[], options: {
           const result = call.method === 'kernel.v1.capability.stream'
             ? { stream_id: 'stream-test-1' }
             : { output: options.unaryOutput ?? { text: 'Unary response' } };
-          dispatch(listeners, { type: 'rpc.result', id: call.id, result });
+          dispatch(listeners, { type: 'rpc.result', id: call.id, result, bridge_token: call.bridge_token }, parent);
         });
       }
       if (call.type === 'stream.subscribe') {
@@ -213,21 +216,23 @@ function installRpcHostMock(posted: PostedMessage[], options: {
           const frames = options.streamFrames ?? [];
           for (const frame of frames) {
             if (frame.kind === 'ended') {
-              dispatch(listeners, { type: 'stream.ended', subscription_id: call.id });
+              dispatch(listeners, { type: 'stream.ended', subscription_id: call.id, session_id: call.session_id, bridge_token: call.bridge_token }, parent);
             } else if (frame.kind === 'error') {
-              dispatch(listeners, { type: 'stream.error', subscription_id: call.id, error: frame.payload });
+              dispatch(listeners, { type: 'stream.error', subscription_id: call.id, session_id: call.session_id, bridge_token: call.bridge_token, error: frame.payload }, parent);
             } else {
-              dispatch(listeners, { type: 'stream.frame', subscription_id: call.id, kind: frame.kind, payload: frame.payload });
+              dispatch(listeners, { type: 'stream.frame', subscription_id: call.id, session_id: call.session_id, bridge_token: call.bridge_token, kind: frame.kind, payload: frame.payload }, parent);
             }
           }
           if (options.autoEnd !== false && frames.every((frame) => frame.kind !== 'ended' && frame.kind !== 'error')) {
-            dispatch(listeners, { type: 'stream.ended', subscription_id: call.id });
+            dispatch(listeners, { type: 'stream.ended', subscription_id: call.id, session_id: call.session_id, bridge_token: call.bridge_token }, parent);
           }
         });
       }
     },
-  };
+  } as WindowProxy & { postMessage(message: unknown): void };
   Object.defineProperty(window, 'parent', { value: parent, configurable: true });
+  resetHostRpcBridgeConfig();
+  configureHostRpcBridge({ targetOrigin: window.location.origin, expectedSource: parent, bridgeToken: 'stream-send-bridge-token' });
   const originalAddEventListener = baseAddEventListener.bind(window);
   window.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
     if (type === 'message' && typeof listener === 'function') listeners.push(listener as (event: MessageEvent) => void);
@@ -250,9 +255,9 @@ function installRpcHostMock(posted: PostedMessage[], options: {
   };
 }
 
-function dispatch(listeners: Array<(event: MessageEvent) => void>, data: unknown): void {
+function dispatch(listeners: Array<(event: MessageEvent) => void>, data: unknown, source: WindowProxy): void {
   void listeners;
-  window.dispatchEvent(new window.MessageEvent('message', { data }));
+  window.dispatchEvent(new window.MessageEvent('message', { data, origin: window.location.origin, source }));
 }
 
 async function waitFor(predicate: () => boolean): Promise<void> {

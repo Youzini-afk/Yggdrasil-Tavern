@@ -4,7 +4,7 @@
 //! is done (or wants to abort), call handle.cancel() to send
 //! kernel.v1.capability.cancel and unsubscribe.
 
-import { callHostRpc, getActiveSessionId } from './index.js';
+import { callHostRpc, getActiveSessionId, getResolvedHostRpcBridgeConfig, isTrustedBridgeEvent } from './index.js';
 
 export interface StreamFrame {
   kind: 'started' | 'chunk' | 'progress' | 'ended' | 'error' | 'cancelled' | 'timeout';
@@ -20,6 +20,8 @@ export interface StreamHandle {
 interface StreamFrameMessage {
   type: 'stream.frame';
   subscription_id: string;
+  session_id?: string;
+  bridge_token?: string;
   kind: 'started' | 'chunk' | 'progress';
   payload: unknown;
 }
@@ -27,11 +29,15 @@ interface StreamFrameMessage {
 interface StreamEndedMessage {
   type: 'stream.ended';
   subscription_id: string;
+  session_id?: string;
+  bridge_token?: string;
 }
 
 interface StreamErrorMessage {
   type: 'stream.error';
   subscription_id: string;
+  session_id?: string;
+  bridge_token?: string;
   error: { code: string; message: string };
 }
 
@@ -101,6 +107,8 @@ export async function streamCapability(
     throw new Error('streamCapability requires active session id (set via mount initialProps)');
   }
 
+  const bridge = getResolvedHostRpcBridgeConfig();
+
   // 1. Start stream via kernel.v1.capability.stream
   const start = await callHostRpc('kernel.v1.capability.stream', {
     capability_id: capabilityId,
@@ -124,8 +132,13 @@ export async function streamCapability(
       // Tell host to drop its subscription too
       try {
         window.parent?.postMessage(
-          { type: 'stream.unsubscribe', subscription_id: subscriptionId },
-          '*',
+          {
+            type: 'stream.unsubscribe',
+            subscription_id: subscriptionId,
+            session_id: sessionId,
+            bridge_token: bridge.bridgeToken,
+          },
+          bridge.targetOrigin,
         );
       } catch { /* ignore */ }
     }
@@ -154,6 +167,8 @@ export async function streamCapability(
       | undefined;
     if (!data || typeof data !== 'object') return;
     if ((data as { subscription_id?: string }).subscription_id !== subscriptionId) return;
+    if ((data as { session_id?: string }).session_id !== sessionId) return;
+    if (!isTrustedBridgeEvent(e, data, bridge)) return;
 
     if (data.type === 'stream.frame') {
       queue.push({ kind: data.kind, payload: data.payload });
@@ -172,10 +187,12 @@ export async function streamCapability(
       {
         type: 'stream.subscribe',
         id: subscriptionId,
+        subscription_id: subscriptionId,
         stream_id: streamId,
         session_id: sessionId,
+        bridge_token: bridge.bridgeToken,
       },
-      '*',
+      bridge.targetOrigin,
     );
   } else {
     // No window/parent (e.g., test environment without bridge): immediately error

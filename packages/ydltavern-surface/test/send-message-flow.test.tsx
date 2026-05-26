@@ -6,6 +6,7 @@ import { flushSync } from 'react-dom';
 import type { Chat } from '@ydltavern/types';
 import { installTestDom } from './formatting/test-dom.ts';
 import { extractContentFromResult } from '../src/app/TavernProvider.tsx';
+import { configureHostRpcBridge, resetHostRpcBridgeConfig } from '../src/host-rpc/index.ts';
 import { STORAGE_KEYS } from '../src/state/persistence.ts';
 
 installTestDom();
@@ -21,6 +22,7 @@ type PostedMessage = {
   readonly type: string;
   readonly id: string;
   readonly method: string;
+  readonly bridge_token?: string;
   readonly params: {
     readonly capability_id: string;
     readonly input: Record<string, unknown>;
@@ -140,12 +142,18 @@ function installRpcHostMock(posted: PostedMessage[], output: unknown): void {
       posted.push(call);
       queueMicrotask(() => {
         for (const listener of listeners) {
-          listener({ data: { type: 'rpc.result', id: call.id, result: { output } } } as MessageEvent);
+          listener({
+            data: { type: 'rpc.result', id: call.id, result: { output }, bridge_token: call.bridge_token },
+            origin: window.location.origin,
+            source: parent,
+          } as MessageEvent);
         }
       });
     },
-  };
+  } as WindowProxy & { postMessage(message: unknown): void };
   Object.defineProperty(window, 'parent', { value: parent, configurable: true });
+  resetHostRpcBridgeConfig();
+  configureHostRpcBridge({ targetOrigin: window.location.origin, expectedSource: parent, bridgeToken: 'send-flow-bridge-token' });
   const originalAddEventListener = window.addEventListener.bind(window);
   window.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
     if (type === 'message' && typeof listener === 'function') listeners.push(listener as (event: MessageEvent) => void);
