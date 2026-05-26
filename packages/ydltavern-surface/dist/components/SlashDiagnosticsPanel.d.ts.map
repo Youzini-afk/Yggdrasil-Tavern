@@ -1,0 +1,1 @@
+{"version":3,"file":"SlashDiagnosticsPanel.d.ts","sourceRoot":"","sources":["../../src/components/SlashDiagnosticsPanel.tsx"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,sBAAsB,CAAC;AAE7D,MAAM,WAAW,0BAA0B;IACzC,6DAA6D;IAC7D,QAAQ,CAAC,OAAO,EAAE,gBAAgB,CAAC;CACpC;AAID,wBAAgB,qBAAqB,CAAC,EAAE,OAAO,EAAE,EAAE,0BAA0B,GAAG,GAAG,CAAC,OAAO,CA6J1F"}

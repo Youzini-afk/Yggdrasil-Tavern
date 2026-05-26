@@ -1,0 +1,1 @@
+{"version":3,"file":"SubMessageView.d.ts","sourceRoot":"","sources":["../../src/components/SubMessageView.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,UAAU,EAAE,MAAM,kBAAkB,CAAC;AAEnD,MAAM,WAAW,mBAAmB;IAClC,QAAQ,CAAC,GAAG,EAAE,UAAU,CAAC;CAC1B;AAED;;;;GAIG;AACH,wBAAgB,cAAc,CAAC,EAAE,GAAG,EAAE,EAAE,mBAAmB,GAAG,GAAG,CAAC,OAAO,GAAG,IAAI,CA0E/E"}

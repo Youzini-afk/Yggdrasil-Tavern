@@ -1,0 +1,1 @@
+{"version":3,"file":"MessageMediaWrapper.d.ts","sourceRoot":"","sources":["../../../../src/components/product/Message/MessageMediaWrapper.tsx"],"names":[],"mappings":"AAEA,MAAM,WAAW,wBAAwB;IACvC,KAAK,EAAE;QAAE,IAAI,EAAE,OAAO,GAAG,MAAM,CAAC;QAAC,GAAG,EAAE,MAAM,CAAC;QAAC,GAAG,CAAC,EAAE,MAAM,CAAA;KAAE,EAAE,CAAC;CAChE;AAID,wBAAgB,mBAAmB,CAAC,EAAE,KAAK,EAAE,EAAE,wBAAwB,2CAetE"}

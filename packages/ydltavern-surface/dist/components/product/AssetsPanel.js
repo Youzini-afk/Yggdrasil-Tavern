@@ -1,0 +1,4 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+const ASSETS = [['Character cards', 'V1/V2/V3 JSON and PNG metadata import/export'], ['World books', 'Lorebook entries, routing, activation diagnostics'], ['Presets', 'OpenAI/text/context/instruct/sysprompt shapes'], ['Chats', 'JSONL history import/export into Turn model']];
+export function AssetsPanel() { return _jsxs("section", { className: "drawer-panel product-assets-panel", children: [_jsx("h2", { children: "Assets" }), _jsx("div", { className: "drop-zone", children: "Drop ST assets here once host file access is wired." }), _jsx("div", { className: "panel-list", children: ASSETS.map(([title, body]) => _jsxs("article", { className: "panel-row", children: [_jsx("strong", { children: title }), _jsx("span", { children: body })] }, title)) })] }); }
+//# sourceMappingURL=AssetsPanel.js.map

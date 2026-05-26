@@ -1,0 +1,60 @@
+// Public entry for @ydltavern/surface.
+//
+// This package is a reusable surface bundle — components and surface
+// compositions for Yggdrasil-hosted YdlTavern UI. It is NOT an app shell:
+// no router, no main.tsx, no Tauri config, no index.html. Hosts (Yggdrasil
+// dashboards, embedding apps, demos) provide the shell.
+//
+// Stylesheet: import `@ydltavern/surface/styles/surface.css` once at the
+// host level. All design tokens are scoped under `.ydltavern-surface` so
+// the package never leaks tokens onto `:root`.
+// ---- Leaf components ------------------------------------------------------
+export { TavernProvider, useTavern } from './app/TavernProvider.js';
+export { TavernShell } from './app/TavernShell.js';
+export { ChatList } from './components/product/ChatList.js';
+export { MessageList } from './components/product/MessageList.js';
+export { MessageComposer } from './components/product/MessageComposer.js';
+export { GenerationControls } from './components/product/GenerationControls.js';
+export { SwipeControls } from './components/product/SwipeControls.js';
+export { SettingsPanel } from './components/product/SettingsPanel.js';
+export { AssetsPanel } from './components/product/AssetsPanel.js';
+export { ExtensionsPanel } from './components/product/ExtensionsPanel.js';
+export { DevDiagnosticsPanel } from './components/product/DevDiagnosticsPanel.js';
+export { QuickReplyBar } from './components/product/QuickReplyBar.js';
+export { ThemedRoot } from './components/product/themes/ThemedRoot.js';
+export { BUILT_IN_THEMES, getThemeById } from './components/product/themes/built-in-themes.js';
+export { ConnectionForm, SamplerForm, PersonaForm, ThemeForm, } from './components/product/Settings/index.js';
+export { PromptManagerInspector } from './components/product/PromptManagerInspector.js';
+export { WorldInfoInspector } from './components/product/WorldInfoInspector.js';
+export { STScriptInspector } from './components/product/STScriptInspector.js';
+export { ExtensionsInspector } from './components/product/ExtensionsInspector.js';
+export { ConnectorInspector } from './components/product/ConnectorInspector.js';
+export { TurnView } from './components/TurnView.js';
+export { SubMessageView } from './components/SubMessageView.js';
+export { STDiagnosticsPanel } from './components/STDiagnosticsPanel.js';
+// ---- Shell primitives (V2) ------------------------------------------------
+export { useDrawers } from './components/shell/useDrawers.js';
+export { TopBar } from './components/shell/TopBar.js';
+export { DrawerShell } from './components/shell/DrawerShell.js';
+export { Sheld } from './components/shell/Sheld.js';
+export { AIConfigDrawer, APIConnectionsDrawer, AdvancedFormattingDrawer, WorldInfoDrawer, UserSettingsDrawer, BackgroundsDrawer, ExtensionsDrawer, PersonaDrawer, CharactersDrawer, } from './components/shell/drawers/index.js';
+export { EngineCorePreviewPanel } from './components/EngineCorePreviewPanel.js';
+export { ImportersPanel } from './components/ImportersPanel.js';
+export { PromptCriticalPanel } from './components/PromptCriticalPanel.js';
+export { SlashDiagnosticsPanel } from './components/SlashDiagnosticsPanel.js';
+// ---- Surface compositions -------------------------------------------------
+export { TavernPlaySurface } from './surfaces/TavernPlaySurface.js';
+export { TavernSettingsSurface } from './surfaces/TavernSettingsSurface.js';
+export { TavernExtensionsSurface } from './surfaces/TavernExtensionsSurface.js';
+export { TavernCharactersSurface } from './surfaces/TavernCharactersSurface.js';
+export { TavernWorldInfoSurface } from './surfaces/TavernWorldInfoSurface.js';
+export { TavernPersonaSurface } from './surfaces/TavernPersonaSurface.js';
+export { TavernAIResponseConfigSurface } from './surfaces/TavernAIResponseConfigSurface.js';
+export { TavernUserSettingsSurface } from './surfaces/TavernUserSettingsSurface.js';
+export { TavernBackgroundsSurface } from './surfaces/TavernBackgroundsSurface.js';
+export { mountTavernPlaySurface, mountTavernSettingsSurface, mountTavernExtensionsSurface, mountTavernCharactersSurface, mountTavernWorldInfoSurface, mountTavernPersonaSurface, mountTavernAIResponseConfigSurface, mountTavernUserSettingsSurface, mountTavernBackgroundsSurface, } from './surfaces/mount.js';
+// ---- Fixtures (also exposed via the `./fixtures` subpath) -----------------
+export { sampleChat } from './fixtures/sample-chat.js';
+// ---- Formatting ------------------------------------------------------------
+export { formatMessage, registerPreMarkdownHook, registerPreSanitizeHook, registerPostRenderHook, getConverter, createConverter, sanitizeChatHtml, ensureDOMPurifyHooks, } from './formatting/index.js';
+//# sourceMappingURL=index.js.map

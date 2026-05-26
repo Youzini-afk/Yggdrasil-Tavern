@@ -1,0 +1,957 @@
+import { jsx as _jsx } from "react/jsx-runtime";
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createSTContext, createTurnStore } from '@ydltavern/st-compat';
+import {} from '@ydltavern/extensions';
+import { sampleChat } from '../fixtures/sample-chat.js';
+import { getThemeById } from '../components/product/themes/built-in-themes.js';
+import { DEFAULT_BACKGROUND_DISPLAY, DEFAULT_CONNECTION, DEFAULT_FORMATTING, DEFAULT_SAMPLER, DEFAULT_SELECTION, DEFAULT_SETTINGS, DEFAULT_THEME_SETTINGS, SEED_BACKGROUND, SEED_CHARACTER, SEED_PERSONA, SEED_WORLDBOOK, } from '../state/defaults.js';
+import { ensureStandaloneHostRpcBridgeConfigured, invokeCapability, setActiveSessionId, streamCapability } from '../host-rpc/index.js';
+import { migrateSettingsV1ToV2, readBackgroundDisplaySettings, readBackgrounds, readCharacters, readConnectionState, readFormattingSettings, readPersonas, readSamplerSettings, readSelection, readTavernSettings, readThemeSettings, readWorldBooks, STORAGE_KEYS, writeConnectionState, writePersisted, writeThemeSettings, } from '../state/persistence.js';
+const TavernContext = createContext(undefined);
+const SUPPORTED_LIVE_CALL_PROVIDERS = new Set(['openai', 'anthropic', 'deepseek', 'openrouter']);
+export function TavernProvider({ chat = sampleChat, showDiagnostics = true, sessionId, projectId, children, extensionRecords = [], extensionActivationContext, }) {
+    const [revision, setRevision] = useState(0);
+    const [input, setInput] = useState('');
+    const [activeDrawer, setActiveDrawer] = useState('settings');
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const [themeSettings, setThemeSettingsState] = useState(readThemeSettings);
+    const [settings, setSettings] = useState(() => {
+        migrateSettingsV1ToV2();
+        return readTavernSettings();
+    });
+    const [samplerSettings, setSamplerSettings] = useState(readSamplerSettings);
+    const [connectionState, setConnectionState] = useState(readConnectionState);
+    const [formattingSettings, setFormattingSettings] = useState(readFormattingSettings);
+    const [backgroundDisplaySettings, setBackgroundDisplaySettings] = useState(readBackgroundDisplaySettings);
+    const [characters, setCharacters] = useState(readCharacters);
+    const needsApiConnection = !connectionState.current.provider || !connectionState.current.secretRef;
+    const [personas, setPersonas] = useState(readPersonas);
+    const [worldBooks, setWorldBooks] = useState(readWorldBooks);
+    const [backgrounds, setBackgrounds] = useState(readBackgrounds);
+    const [selection, setSelectionState] = useState(readSelection);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const activeStreamRef = useRef(null);
+    useLayoutEffect(() => {
+        ensureStandaloneHostRpcBridgeConfigured();
+        setActiveSessionId(sessionId);
+        return () => setActiveSessionId(undefined);
+    }, [sessionId]);
+    const theme = useMemo(() => {
+        const base = getThemeById(themeSettings.themeId);
+        return {
+            ...base,
+            font: { ...base.font, family: themeSettings.fontFamily },
+            density: themeSettings.density,
+        };
+    }, [themeSettings]);
+    const persistSelection = useCallback((next) => {
+        setSelectionState(next);
+        writePersisted(STORAGE_KEYS.selection, next);
+    }, []);
+    const patchSelection = useCallback((partial) => {
+        setSelectionState((prev) => {
+            const next = { ...prev, ...partial };
+            writePersisted(STORAGE_KEYS.selection, next);
+            return next;
+        });
+    }, []);
+    const setThemeSettings = useCallback((next) => {
+        setThemeSettingsState(next);
+        writeThemeSettings(next);
+    }, []);
+    const updateSettings = useCallback((partial) => {
+        setSettings((prev) => {
+            const next = { ...prev, ...partial };
+            writePersisted(STORAGE_KEYS.settings, next);
+            if (partial.activePreset !== undefined)
+                patchSelection({ activePreset: partial.activePreset });
+            return next;
+        });
+    }, [patchSelection]);
+    const setActivePreset = useCallback((id) => {
+        updateSettings({ activePreset: id });
+    }, [updateSettings]);
+    const updateSamplerSettings = useCallback((partial) => {
+        setSamplerSettings((prev) => {
+            const next = { ...prev, ...partial };
+            writePersisted(STORAGE_KEYS.sampler, next);
+            return next;
+        });
+    }, []);
+    const updateConnectionSettings = useCallback((partial) => {
+        setConnectionState((prev) => {
+            const next = { ...prev, current: { ...prev.current, ...partial } };
+            writeConnectionState(next.current, next.profiles);
+            return next;
+        });
+    }, []);
+    const saveConnectionProfile = useCallback((name) => {
+        const trimmed = name.trim();
+        if (trimmed.length === 0)
+            return;
+        setConnectionState((prev) => {
+            const next = { ...prev, profiles: { ...prev.profiles, [trimmed]: prev.current } };
+            writeConnectionState(next.current, next.profiles);
+            return next;
+        });
+        patchSelection({ activeConnectionProfile: trimmed });
+    }, [patchSelection]);
+    const loadConnectionProfile = useCallback((name) => {
+        setConnectionState((prev) => {
+            const profile = prev.profiles[name];
+            if (profile === undefined)
+                return prev;
+            const next = { ...prev, current: profile };
+            writeConnectionState(next.current, next.profiles);
+            return next;
+        });
+        patchSelection({ activeConnectionProfile: name });
+    }, [patchSelection]);
+    const deleteConnectionProfile = useCallback((name) => {
+        setConnectionState((prev) => {
+            const { [name]: _removed, ...profiles } = prev.profiles;
+            const next = { ...prev, profiles };
+            writeConnectionState(next.current, next.profiles);
+            return next;
+        });
+        if (selection.activeConnectionProfile === name)
+            patchSelection({ activeConnectionProfile: null });
+    }, [patchSelection, selection.activeConnectionProfile]);
+    const updateFormattingSettings = useCallback((partial) => {
+        setFormattingSettings((prev) => {
+            const next = { ...prev, ...partial };
+            writePersisted(STORAGE_KEYS.formatting, next);
+            return next;
+        });
+    }, []);
+    const setBackgroundFitMode = useCallback((mode) => {
+        setBackgroundDisplaySettings((prev) => {
+            const next = { ...prev, fitMode: mode };
+            writePersisted(STORAGE_KEYS.backgroundDisplay, next);
+            return next;
+        });
+    }, []);
+    const setBackgroundAutoSelect = useCallback((enabled) => {
+        setBackgroundDisplaySettings((prev) => {
+            const next = { ...prev, autoSelectByCharacter: enabled };
+            writePersisted(STORAGE_KEYS.backgroundDisplay, next);
+            return next;
+        });
+    }, []);
+    const setActiveCharacter = useCallback((id) => patchSelection({ activeCharacterId: id }), [patchSelection]);
+    const setActivePersona = useCallback((id) => patchSelection({ activePersonaId: id }), [patchSelection]);
+    const setActiveWorldBook = useCallback((id) => patchSelection({ activeWorldBookId: id }), [patchSelection]);
+    const setSelectedWorldEntry = useCallback((id) => patchSelection({ selectedWorldEntryId: id }), [patchSelection]);
+    const setActiveBackground = useCallback((id) => patchSelection({ activeBackgroundId: id }), [patchSelection]);
+    const createCharacter = useCallback((entry) => {
+        const now = timestamp();
+        const id = entry.id ?? createId('char');
+        const nextEntry = { id, name: entry.name ?? 'New Character', ...entry, createdAt: entry.createdAt ?? now, updatedAt: entry.updatedAt ?? now };
+        setCharacters((prev) => persistArray(STORAGE_KEYS.characters, [...prev, nextEntry]));
+        patchSelection({ activeCharacterId: id });
+        return id;
+    }, [patchSelection]);
+    const updateCharacter = useCallback((id, partial) => {
+        setCharacters((prev) => persistArray(STORAGE_KEYS.characters, prev.map((entry) => entry.id === id ? { ...entry, ...partial, id, updatedAt: timestamp() } : entry)));
+    }, []);
+    const deleteCharacter = useCallback((id) => {
+        setCharacters((prev) => {
+            const next = prev.filter((entry) => entry.id !== id);
+            if (selection.activeCharacterId === id)
+                patchSelection({ activeCharacterId: next[0]?.id ?? null });
+            return persistArray(STORAGE_KEYS.characters, next);
+        });
+    }, [patchSelection, selection.activeCharacterId]);
+    const duplicateCharacter = useCallback((id) => {
+        const source = characters.find((entry) => entry.id === id);
+        if (source === undefined)
+            return null;
+        return createCharacter({ ...source, id: createId('char'), name: `${source.name} Copy` });
+    }, [characters, createCharacter]);
+    const importCharacter = useCallback((entry) => {
+        setCharacters((prev) => persistArray(STORAGE_KEYS.characters, upsertById(prev, entry)));
+        patchSelection({ activeCharacterId: entry.id });
+        return entry.id;
+    }, [patchSelection]);
+    const exportCharacter = useCallback((id) => characters.find((entry) => entry.id === id) ?? null, [characters]);
+    const createPersona = useCallback((entry) => {
+        const now = timestamp();
+        const id = entry.id ?? createId('persona');
+        const nextEntry = { id, name: entry.name ?? 'New Persona', ...entry, createdAt: entry.createdAt ?? now, updatedAt: entry.updatedAt ?? now };
+        setPersonas((prev) => persistArray(STORAGE_KEYS.personas, [...prev, nextEntry]));
+        patchSelection({ activePersonaId: id });
+        return id;
+    }, [patchSelection]);
+    const updatePersona = useCallback((id, partial) => {
+        setPersonas((prev) => persistArray(STORAGE_KEYS.personas, prev.map((entry) => entry.id === id ? { ...entry, ...partial, id, updatedAt: timestamp() } : entry)));
+    }, []);
+    const deletePersona = useCallback((id) => {
+        setPersonas((prev) => {
+            const next = prev.filter((entry) => entry.id !== id);
+            if (selection.activePersonaId === id)
+                patchSelection({ activePersonaId: next[0]?.id ?? null });
+            return persistArray(STORAGE_KEYS.personas, next);
+        });
+    }, [patchSelection, selection.activePersonaId]);
+    const importPersona = useCallback((entry) => {
+        setPersonas((prev) => persistArray(STORAGE_KEYS.personas, upsertById(prev, entry)));
+        patchSelection({ activePersonaId: entry.id });
+        return entry.id;
+    }, [patchSelection]);
+    const createWorldBook = useCallback((entry) => {
+        const now = timestamp();
+        const id = entry.id ?? createId('wb');
+        const nextEntry = { id, name: entry.name ?? 'Untitled World Book', enabled: entry.enabled ?? false, entries: entry.entries ?? [], ...entry, createdAt: entry.createdAt ?? now, updatedAt: entry.updatedAt ?? now };
+        setWorldBooks((prev) => persistArray(STORAGE_KEYS.worldbooks, [...prev, nextEntry]));
+        patchSelection({ activeWorldBookId: id, selectedWorldEntryId: nextEntry.entries[0]?.uid ?? null });
+        return id;
+    }, [patchSelection]);
+    const updateWorldBook = useCallback((id, partial) => {
+        setWorldBooks((prev) => persistArray(STORAGE_KEYS.worldbooks, prev.map((entry) => entry.id === id ? { ...entry, ...partial, id, updatedAt: timestamp() } : entry)));
+    }, []);
+    const deleteWorldBook = useCallback((id) => {
+        setWorldBooks((prev) => {
+            const next = prev.filter((entry) => entry.id !== id);
+            if (selection.activeWorldBookId === id)
+                patchSelection({ activeWorldBookId: next[0]?.id ?? null, selectedWorldEntryId: next[0]?.entries[0]?.uid ?? null });
+            return persistArray(STORAGE_KEYS.worldbooks, next);
+        });
+    }, [patchSelection, selection.activeWorldBookId]);
+    const createWorldEntry = useCallback((bookId, entry) => {
+        const uid = entry.uid ?? createId('wbe');
+        const nextEntry = {
+            uid,
+            key: entry.key ?? [],
+            content: entry.content ?? '',
+            position: entry.position ?? 'before_char',
+            probability: entry.probability ?? 100,
+            order: entry.order ?? 100,
+            enabled: entry.enabled ?? true,
+            ...entry,
+        };
+        let created = false;
+        setWorldBooks((prev) => persistArray(STORAGE_KEYS.worldbooks, prev.map((book) => {
+            if (book.id !== bookId)
+                return book;
+            created = true;
+            return { ...book, entries: [...book.entries, nextEntry], updatedAt: timestamp() };
+        })));
+        if (created)
+            patchSelection({ selectedWorldEntryId: uid });
+        return created ? uid : null;
+    }, [patchSelection]);
+    const updateWorldEntry = useCallback((bookId, uid, partial) => {
+        setWorldBooks((prev) => persistArray(STORAGE_KEYS.worldbooks, prev.map((book) => book.id === bookId ? { ...book, entries: book.entries.map((entry) => entry.uid === uid ? { ...entry, ...partial, uid } : entry), updatedAt: timestamp() } : book)));
+    }, []);
+    const deleteWorldEntry = useCallback((bookId, uid) => {
+        setWorldBooks((prev) => persistArray(STORAGE_KEYS.worldbooks, prev.map((book) => {
+            if (book.id !== bookId)
+                return book;
+            const entries = book.entries.filter((entry) => entry.uid !== uid);
+            if (selection.selectedWorldEntryId === uid)
+                patchSelection({ selectedWorldEntryId: entries[0]?.uid ?? null });
+            return { ...book, entries, updatedAt: timestamp() };
+        })));
+    }, [patchSelection, selection.selectedWorldEntryId]);
+    const duplicateWorldEntry = useCallback((bookId, uid) => {
+        const source = worldBooks.find((book) => book.id === bookId)?.entries.find((entry) => entry.uid === uid);
+        if (source === undefined)
+            return null;
+        return createWorldEntry(bookId, { ...source, uid: createId('wbe'), comment: source.comment ? `${source.comment} Copy` : 'Copy' });
+    }, [createWorldEntry, worldBooks]);
+    const uploadBackground = useCallback((entry) => {
+        const id = entry.id ?? createId('bg');
+        const nextEntry = { id, name: entry.name ?? 'New Background', url: entry.url ?? '', ...entry };
+        setBackgrounds((prev) => persistArray(STORAGE_KEYS.backgrounds, [...prev, nextEntry]));
+        patchSelection({ activeBackgroundId: id });
+        return id;
+    }, [patchSelection]);
+    const deleteBackground = useCallback((id) => {
+        setBackgrounds((prev) => {
+            const next = prev.filter((entry) => entry.id !== id);
+            if (selection.activeBackgroundId === id)
+                patchSelection({ activeBackgroundId: next[0]?.id ?? null });
+            return persistArray(STORAGE_KEYS.backgrounds, next);
+        });
+    }, [patchSelection, selection.activeBackgroundId]);
+    const resetSettings = useCallback((scope = 'all') => {
+        if (scope === 'all' || scope === 'sampler') {
+            setSamplerSettings(DEFAULT_SAMPLER);
+            writePersisted(STORAGE_KEYS.sampler, DEFAULT_SAMPLER);
+        }
+        if (scope === 'all' || scope === 'connection') {
+            setConnectionState((prev) => ({ current: DEFAULT_CONNECTION, profiles: prev.profiles }));
+            writeConnectionState(DEFAULT_CONNECTION, connectionState.profiles);
+            patchSelection({ activeConnectionProfile: null });
+        }
+        if (scope === 'all' || scope === 'formatting') {
+            setFormattingSettings(DEFAULT_FORMATTING);
+            writePersisted(STORAGE_KEYS.formatting, DEFAULT_FORMATTING);
+            setBackgroundDisplaySettings(DEFAULT_BACKGROUND_DISPLAY);
+            writePersisted(STORAGE_KEYS.backgroundDisplay, DEFAULT_BACKGROUND_DISPLAY);
+        }
+        if (scope === 'all' || scope === 'theme')
+            setThemeSettings(DEFAULT_THEME_SETTINGS);
+        if (scope === 'all') {
+            setSettings(DEFAULT_SETTINGS);
+            writePersisted(STORAGE_KEYS.settings, DEFAULT_SETTINGS);
+            persistSelection({ ...selection, activePreset: DEFAULT_SETTINGS.activePreset, activeConnectionProfile: null });
+        }
+    }, [connectionState.profiles, patchSelection, persistSelection, selection, setThemeSettings]);
+    const { runtime, ownStore } = useMemo(() => {
+        const store = createTurnStore(chat);
+        const rt = createSTContext({
+            chat,
+            chatHooks: {
+                onEdit: (index, message) => {
+                    store.updateMessage(index, { mes: message.mes, name: message.name, is_user: message.is_user, is_system: message.is_system, extra: message.extra });
+                    setRevision((r) => r + 1);
+                },
+                onPush: (messages) => {
+                    messages.forEach((message) => store.pushMessage(message));
+                    setRevision((r) => r + 1);
+                },
+                onDelete: (index) => {
+                    store.deleteMessage(index);
+                    setRevision((r) => r + 1);
+                },
+            },
+        });
+        return { runtime: rt, ownStore: store };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chat]);
+    const ctx = runtime.getContext();
+    void revision;
+    const liveChat = ownStore.snapshot();
+    const updateAssistantMessage = useCallback((assistantIndex, update) => {
+        const current = ownStore.messageAt(assistantIndex);
+        ownStore.updateMessage(assistantIndex, {
+            mes: update.content,
+            extra: {
+                ...(current?.extra ?? {}),
+                ...(update.reasoning ? { reasoning: update.reasoning } : {}),
+                ydl_streaming: update.streaming,
+                ...(update.isError !== undefined ? { ydl_error: update.isError } : {}),
+            },
+        });
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const sendNonStreaming = useCallback(async (assistantIndex, baseInput) => {
+        try {
+            const result = await invokeCapability('ydltavern/engine/model.live_call', {
+                ...baseInput,
+                stream: false,
+            });
+            const content = extractContentFromResult(result);
+            const reasoning = extractReasoningFromResult(result);
+            updateAssistantMessage(assistantIndex, {
+                content,
+                reasoning,
+                streaming: false,
+                isError: false,
+            });
+        }
+        catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            updateAssistantMessage(assistantIndex, {
+                content: `Error: ${message}`,
+                streaming: false,
+                isError: true,
+            });
+        }
+        finally {
+            setIsGenerating(false);
+        }
+    }, [updateAssistantMessage]);
+    const sendStreaming = useCallback(async (assistantIndex, baseInput) => {
+        let handle = null;
+        let accumulated = '';
+        try {
+            handle = await streamCapability('ydltavern/engine/model.live_call.stream', {
+                ...baseInput,
+                stream: true,
+            });
+            activeStreamRef.current = handle;
+            setIsGenerating(true);
+            for await (const frame of handle.frames) {
+                const kind = frame.kind;
+                if (kind === 'started' || kind === 'progress') {
+                    continue;
+                }
+                if (kind === 'chunk') {
+                    const delta = extractStreamChunkDelta(frame.payload);
+                    if (delta) {
+                        accumulated += delta;
+                        updateAssistantMessage(assistantIndex, { content: accumulated, streaming: true });
+                    }
+                    continue;
+                }
+                if (kind === 'ended' || kind === 'final') {
+                    const finalText = extractStreamFinalText(frame.payload);
+                    if (finalText)
+                        accumulated = finalText;
+                    break;
+                }
+                if (kind === 'error') {
+                    const errMsg = extractStreamErrorMessage(frame.payload);
+                    updateAssistantMessage(assistantIndex, {
+                        content: accumulated || `Error: ${errMsg}`,
+                        streaming: false,
+                        isError: !accumulated,
+                    });
+                    return;
+                }
+                if (kind === 'cancelled' || kind === 'timeout') {
+                    updateAssistantMessage(assistantIndex, {
+                        content: accumulated || `(${kind})`,
+                        streaming: false,
+                    });
+                    return;
+                }
+            }
+            updateAssistantMessage(assistantIndex, { content: accumulated, streaming: false });
+        }
+        catch (err) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            updateAssistantMessage(assistantIndex, {
+                content: accumulated || `Error: ${errMsg}`,
+                streaming: false,
+                isError: !accumulated,
+            });
+        }
+        finally {
+            if (activeStreamRef.current === handle) {
+                activeStreamRef.current = null;
+            }
+            setIsGenerating(false);
+        }
+    }, [updateAssistantMessage]);
+    const sendMessage = useCallback(async (text) => {
+        if (isGenerating)
+            return;
+        const mes = (text ?? input).trim();
+        if (mes.length === 0)
+            return;
+        const userMessage = ctx.addOneMessage({ is_user: true, name: ctx.name1, mes });
+        ownStore.pushMessage(userMessage);
+        setInput('');
+        setRevision((r) => r + 1);
+        if (!connectionState.current.provider || !connectionState.current.secretRef) {
+            const systemMessage = ctx.addOneMessage({
+                is_system: true,
+                name: 'System',
+                mes: 'Configure an API connection before sending. Open API Connections drawer and set a provider + API key.',
+            });
+            ownStore.pushMessage(systemMessage);
+            setRevision((r) => r + 1);
+            return;
+        }
+        if (!isSupportedLiveCallProvider(connectionState.current.provider)) {
+            const isChatProvider = SUPPORTED_LIVE_CALL_PROVIDERS.has('textgen') || false; // placeholder
+            // Push an error-styled system notice rather than a plain message
+            const systemMessage = ctx.addOneMessage({
+                is_system: true,
+                name: 'System',
+                mes: `Provider "${connectionState.current.provider}" is not supported for live model calls yet. Choose OpenAI, Anthropic, DeepSeek, or OpenRouter.`,
+                extra: { ydl_error: true },
+            });
+            ownStore.pushMessage(systemMessage);
+            setRevision((r) => r + 1);
+            return;
+        }
+        const assistantMessage = ctx.addOneMessage({
+            is_user: false,
+            name: ctx.name2,
+            mes: '',
+            extra: { ydl_streaming: true },
+        });
+        ownStore.pushMessage(assistantMessage);
+        const assistantIndex = ownStore.length - 1;
+        setIsGenerating(true);
+        setRevision((r) => r + 1);
+        const provider = normalizeLiveCallSource(connectionState.current.provider);
+        const baseInput = {
+            source: provider,
+            model: connectionState.current.model || defaultModelForProvider(provider),
+            messages: buildLiveMessages(ownStore.messages()),
+            settings: buildLiveCallSettings(samplerSettings, settings, connectionState.current, ctx.name1, ctx.name2),
+            secret_ref: connectionState.current.secretRef,
+        };
+        if (settings.streaming) {
+            await sendStreaming(assistantIndex, baseInput);
+        }
+        else {
+            await sendNonStreaming(assistantIndex, baseInput);
+        }
+    }, [connectionState.current, ctx, input, isGenerating, ownStore, samplerSettings, sendNonStreaming, sendStreaming, settings]);
+    const pushSystemNotice = useCallback((mes) => {
+        const result = ctx.addOneMessage({ is_system: true, name: 'System', mes });
+        ownStore.pushMessage(result);
+        setRevision((r) => r + 1);
+    }, [ctx, ownStore]);
+    const generateReply = useCallback(() => {
+        pushSystemNotice('[Generate] not yet available. Use Send to get a live assistant reply.');
+    }, [pushSystemNotice]);
+    const editFirstMessage = useCallback(() => {
+        editStoreMessage(ownStore, 0, (message) => ({ ...message, mes: `${message.mes ?? ''} [edited via surface]` }));
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const swipeReply = useCallback(() => {
+        pushSystemNotice('[Swipe reply] not yet available. Use Send to get a live assistant reply.');
+    }, [pushSystemNotice]);
+    const regenerateReply = useCallback(() => {
+        pushSystemNotice('[Regenerate] not yet available. Use Send to get a live assistant reply.');
+    }, [pushSystemNotice]);
+    const cancelGeneration = useCallback(async () => {
+        const handle = activeStreamRef.current;
+        if (!handle)
+            return;
+        await handle.cancel();
+        activeStreamRef.current = null;
+        setIsGenerating(false);
+    }, []);
+    const continueLastReply = useCallback(() => {
+        pushSystemNotice('[Continue] is not yet available on this surface.');
+    }, [pushSystemNotice]);
+    const impersonate = useCallback(() => {
+        pushSystemNotice('[Impersonate] is not yet available on this surface.');
+    }, [pushSystemNotice]);
+    const editMessage = useCallback((id, text) => {
+        const index = resolveMessageIndex(ownStore.snapshot(), id);
+        if (index === null)
+            return;
+        ownStore.updateMessage(index, { mes: text });
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const deleteMessage = useCallback((id) => {
+        const index = resolveMessageIndex(ownStore.snapshot(), id);
+        if (index === null)
+            return;
+        ownStore.deleteMessage(index);
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const moveMessage = useCallback((id, direction) => {
+        const snapshot = ownStore.snapshot();
+        const index = resolveMessageIndex(snapshot, id);
+        if (index === null)
+            return;
+        const target = direction === 'up' ? index - 1 : index + 1;
+        if (target < 0 || target >= snapshot.turns.length)
+            return;
+        const messages = ownStore.messages();
+        const current = messages[index];
+        const neighbor = messages[target];
+        if (current === undefined || neighbor === undefined)
+            return;
+        ownStore.spliceMessages(Math.min(index, target), 2, direction === 'up' ? current : neighbor, direction === 'up' ? neighbor : current);
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const copyMessage = useCallback((id) => {
+        const index = resolveMessageIndex(ownStore.snapshot(), id);
+        if (index === null)
+            return;
+        const message = ownStore.messageAt(index);
+        if (message === undefined)
+            return;
+        void navigator.clipboard?.writeText(message.mes ?? '').catch(() => undefined);
+        ownStore.spliceMessages(index + 1, 0, { ...message, send_date: new Date().toISOString() });
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const hideMessage = useCallback((id) => {
+        const index = resolveMessageIndex(ownStore.snapshot(), id);
+        if (index === null)
+            return;
+        const message = ownStore.messageAt(index);
+        ownStore.updateMessage(index, { extra: { ...(message?.extra ?? {}), ydl_hidden: true } });
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const unhideMessage = useCallback((id) => {
+        const index = resolveMessageIndex(ownStore.snapshot(), id);
+        if (index === null)
+            return;
+        const message = ownStore.messageAt(index);
+        const { ydl_hidden: _hidden, ...extra } = message?.extra ?? {};
+        ownStore.updateMessage(index, { extra });
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const swipeMessage = useCallback((id, delta) => {
+        const index = resolveMessageIndex(ownStore.snapshot(), id);
+        if (index === null)
+            return;
+        const message = ownStore.messageAt(index);
+        const swipes = message?.swipes ?? [];
+        if (message === undefined || swipes.length === 0)
+            return;
+        const current = message.swipe_id ?? 0;
+        const nextSwipe = wrapIndex(current + delta, swipes.length);
+        ownStore.updateMessage(index, { mes: swipes[nextSwipe] ?? message.mes, extra: message.extra });
+        setRevision((r) => r + 1);
+    }, [ownStore]);
+    const swipeLeft = useCallback((id) => swipeMessage(id, -1), [swipeMessage]);
+    const swipeRight = useCallback((id) => swipeMessage(id, 1), [swipeMessage]);
+    const regenerateMessage = useCallback((id) => {
+        pushSystemNotice(`[Regenerate message ${id}] not yet available on this surface.`);
+    }, [pushSystemNotice]);
+    const branchMessage = useCallback((id) => {
+        pushSystemNotice(`[Branch message ${id}] not yet available on this surface.`);
+    }, [pushSystemNotice]);
+    const checkpointMessage = useCallback((id) => {
+        pushSystemNotice(`[Checkpoint message ${id}] not yet available on this surface.`);
+    }, [pushSystemNotice]);
+    return (_jsx(TavernContext.Provider, { value: {
+            runtime,
+            liveChat,
+            liveMessages: ownStore.messages(),
+            input,
+            activeDrawer,
+            showDiagnostics,
+            sessionId,
+            projectId,
+            setInput,
+            setActiveDrawer,
+            sendMessage,
+            generateReply,
+            editFirstMessage,
+            swipeReply,
+            regenerateReply,
+            settings,
+            updateSettings,
+            setActivePreset,
+            needsApiConnection,
+            theme,
+            themeSettings,
+            setThemeSettings,
+            mobileDrawerOpen,
+            setMobileDrawerOpen,
+            extensionRecords,
+            extensionActivationContext,
+            samplerSettings,
+            updateSamplerSettings,
+            connectionSettings: connectionState.current,
+            updateConnectionSettings,
+            connectionProfiles: connectionState.profiles,
+            saveConnectionProfile,
+            loadConnectionProfile,
+            deleteConnectionProfile,
+            activeConnectionProfile: selection.activeConnectionProfile,
+            formattingSettings,
+            updateFormattingSettings,
+            backgroundDisplaySettings,
+            setBackgroundFitMode,
+            setBackgroundAutoSelect,
+            characters,
+            activeCharacterId: selection.activeCharacterId,
+            setActiveCharacter,
+            createCharacter,
+            updateCharacter,
+            deleteCharacter,
+            duplicateCharacter,
+            importCharacter,
+            exportCharacter,
+            personas,
+            activePersonaId: selection.activePersonaId,
+            setActivePersona,
+            createPersona,
+            updatePersona,
+            deletePersona,
+            importPersona,
+            worldBooks,
+            activeWorldBookId: selection.activeWorldBookId,
+            selectedWorldEntryId: selection.selectedWorldEntryId,
+            setActiveWorldBook,
+            setSelectedWorldEntry,
+            createWorldBook,
+            updateWorldBook,
+            deleteWorldBook,
+            createWorldEntry,
+            updateWorldEntry,
+            deleteWorldEntry,
+            duplicateWorldEntry,
+            backgrounds,
+            activeBackgroundId: selection.activeBackgroundId,
+            setActiveBackground,
+            uploadBackground,
+            deleteBackground,
+            resetSettings,
+            isGenerating,
+            cancelGeneration,
+            continueLastReply,
+            impersonate,
+            editMessage,
+            deleteMessage,
+            moveMessage,
+            copyMessage,
+            hideMessage,
+            unhideMessage,
+            swipeLeft,
+            swipeRight,
+            regenerateMessage,
+            branchMessage,
+            checkpointMessage,
+            pushSystemNotice,
+        }, children: children }));
+}
+export function useTavern() {
+    const context = useContext(TavernContext);
+    if (context === undefined)
+        throw new Error('useTavern must be used inside <TavernProvider>.');
+    return context;
+}
+function createId(prefix) {
+    const cryptoUuid = globalThis.crypto?.randomUUID?.();
+    if (cryptoUuid !== undefined)
+        return `${prefix}-${cryptoUuid}`;
+    return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+function timestamp() {
+    return new Date().toISOString();
+}
+function persistArray(key, value) {
+    writePersisted(key, value);
+    return value;
+}
+function upsertById(entries, entry) {
+    const index = entries.findIndex((candidate) => candidate.id === entry.id);
+    if (index === -1)
+        return [...entries, entry];
+    return entries.map((candidate) => candidate.id === entry.id ? entry : candidate);
+}
+function buildLiveMessages(messages) {
+    return messages
+        .map((message) => ({
+        role: roleFromStMessage(message),
+        content: message.mes ?? '',
+    }))
+        .filter((message) => message.content.length > 0 || message.role === 'assistant');
+}
+function roleFromStMessage(message) {
+    if (message.is_system)
+        return 'system';
+    if (message.is_user)
+        return 'user';
+    return 'assistant';
+}
+function normalizeLiveCallSource(provider) {
+    switch (provider) {
+        case 'anthropic':
+            return 'anthropic';
+        case 'custom-openai':
+            return 'openai';
+        default:
+            return provider;
+    }
+}
+function isSupportedLiveCallProvider(provider) {
+    return SUPPORTED_LIVE_CALL_PROVIDERS.has(provider);
+}
+function defaultModelForProvider(provider) {
+    switch (provider) {
+        case 'anthropic':
+            return 'claude-3-5-haiku-latest';
+        case 'deepseek':
+            return 'deepseek-chat';
+        case 'openrouter':
+            return 'openai/gpt-4o-mini';
+        case 'gemini':
+            return 'gemini-1.5-flash';
+        default:
+            return 'gpt-4o-mini';
+    }
+}
+function buildLiveCallSettings(sampler, settings, connection, userName, characterName) {
+    return {
+        temp_openai: sampler.temperature,
+        freq_pen_openai: sampler.frequencyPenalty,
+        pres_pen_openai: sampler.presencePenalty,
+        top_p_openai: sampler.topP,
+        top_k: sampler.topK,
+        min_p: sampler.minP,
+        top_a: sampler.topA,
+        repetition_penalty: sampler.repetitionPenalty,
+        openai_max_tokens: sampler.maxTokens,
+        openai_model: connection.model,
+        stream_openai: false,
+        user_name: userName,
+        char_name: characterName,
+        logit_bias: parseLogitBias(settings.logitBias),
+        stop: splitLines(settings.bannedTokens),
+    };
+}
+function parseLogitBias(value) {
+    const trimmed = value.trim();
+    if (trimmed.length === 0)
+        return undefined;
+    try {
+        const parsed = JSON.parse(trimmed);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+            return undefined;
+        const out = {};
+        for (const [key, raw] of Object.entries(parsed)) {
+            if (typeof raw === 'number' && Number.isFinite(raw))
+                out[key] = raw;
+        }
+        return Object.keys(out).length > 0 ? out : undefined;
+    }
+    catch {
+        return undefined;
+    }
+}
+function splitLines(value) {
+    const lines = value.split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
+    return lines.length > 0 ? lines : undefined;
+}
+export function extractContentFromResult(result) {
+    if (typeof result === 'string')
+        return result;
+    if (!result || typeof result !== 'object')
+        return '(empty response)';
+    const r = result;
+    if (typeof r.text === 'string')
+        return r.text;
+    if (typeof r.output === 'string')
+        return r.output;
+    if (r.output !== undefined)
+        return extractContentFromResult(r.output);
+    if (r.body_shape !== undefined)
+        return extractContentFromResult(r.body_shape);
+    const choices = r.choices;
+    if (Array.isArray(choices)) {
+        const choice = choices[0];
+        const message = choice?.message;
+        if (typeof message?.content === 'string')
+            return message.content;
+        if (typeof choice?.text === 'string')
+            return choice.text;
+    }
+    const content = r.content;
+    if (Array.isArray(content)) {
+        const text = content
+            .map((part) => typeof part === 'object' && part !== null && typeof part.text === 'string' ? part.text : '')
+            .join('');
+        if (text)
+            return text;
+    }
+    else if (typeof content === 'string') {
+        return content;
+    }
+    const candidates = r.candidates;
+    if (Array.isArray(candidates)) {
+        const candidate = candidates[0];
+        const candidateContent = candidate?.content;
+        const parts = candidateContent?.parts;
+        if (Array.isArray(parts)) {
+            const text = parts
+                .map((part) => typeof part === 'object' && part !== null && typeof part.text === 'string' ? part.text : '')
+                .join('');
+            if (text)
+                return text;
+        }
+    }
+    return '(empty response)';
+}
+export function extractStreamChunkDelta(payload) {
+    if (typeof payload === 'string')
+        return payload;
+    if (!payload || typeof payload !== 'object')
+        return '';
+    const p = payload;
+    if (typeof p.text === 'string')
+        return p.text;
+    if (typeof p.delta === 'string')
+        return p.delta;
+    if (typeof p.delta_text === 'string')
+        return p.delta_text;
+    if (p.output !== undefined)
+        return extractStreamChunkDelta(p.output);
+    if (p.frame !== undefined)
+        return extractStreamChunkDelta(p.frame);
+    const choices = p.choices;
+    if (Array.isArray(choices)) {
+        const choice = choices[0];
+        const delta = choice?.delta;
+        if (typeof delta?.content === 'string')
+            return delta.content;
+        if (typeof choice?.text === 'string')
+            return choice.text;
+    }
+    const delta = p.delta;
+    if (delta && typeof delta === 'object' && typeof delta.text === 'string') {
+        return delta.text;
+    }
+    const content = p.content;
+    if (Array.isArray(content)) {
+        const first = content[0];
+        if (typeof first?.text === 'string')
+            return first.text;
+    }
+    const candidates = p.candidates;
+    if (Array.isArray(candidates)) {
+        const candidate = candidates[0];
+        const candidateContent = candidate?.content;
+        const parts = candidateContent?.parts;
+        if (Array.isArray(parts)) {
+            const first = parts[0];
+            if (typeof first?.text === 'string')
+                return first.text;
+        }
+    }
+    return '';
+}
+function extractStreamFinalText(payload) {
+    if (!payload || typeof payload !== 'object')
+        return '';
+    const p = payload;
+    if (typeof p.text === 'string')
+        return p.text;
+    if (p.output !== undefined)
+        return extractStreamFinalText(p.output);
+    if (p.frame !== undefined)
+        return extractStreamFinalText(p.frame);
+    return '';
+}
+function extractStreamErrorMessage(payload) {
+    if (payload && typeof payload === 'object') {
+        const p = payload;
+        if (typeof p.message === 'string')
+            return p.message;
+        if (typeof p.error === 'string')
+            return p.error;
+    }
+    return 'stream error';
+}
+function extractReasoningFromResult(result) {
+    if (!result || typeof result !== 'object')
+        return undefined;
+    const r = result;
+    if (typeof r.reasoning === 'string')
+        return r.reasoning;
+    if (r.output !== undefined)
+        return extractReasoningFromResult(r.output);
+    if (r.body_shape !== undefined)
+        return extractReasoningFromResult(r.body_shape);
+    const choices = r.choices;
+    if (Array.isArray(choices)) {
+        const choice = choices[0];
+        const message = choice?.message;
+        if (typeof message?.reasoning_content === 'string')
+            return message.reasoning_content;
+    }
+    return undefined;
+}
+function resolveMessageIndex(chat, id) {
+    if (typeof id === 'number')
+        return id >= 0 && id < chat.turns.length ? id : null;
+    const index = chat.turns.findIndex((turn) => turn.id === id || turn.variants.some((variant) => variant.id === id));
+    return index === -1 ? null : index;
+}
+function editStoreMessage(store, index, update) {
+    const message = store.messageAt(index);
+    if (message === undefined)
+        return;
+    const next = update(message);
+    store.updateMessage(index, { mes: next.mes, name: next.name, is_user: next.is_user, is_system: next.is_system, extra: next.extra });
+}
+function wrapIndex(index, length) {
+    return ((index % length) + length) % length;
+}
+//# sourceMappingURL=TavernProvider.js.map

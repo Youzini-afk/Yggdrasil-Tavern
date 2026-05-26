@@ -1,0 +1,8 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import React from 'react';
+// Mirrors SillyTavern .mes_edit_buttons
+// @see SillyTavern/public/index.html lines 7418-7426
+export function MessageEditToolbar(props) {
+    return (_jsxs("div", { className: "mes_edit_buttons", children: [_jsx("button", { className: "mes_edit_done menu_button", type: "button", onClick: () => props.onDone?.(), "aria-label": "Done", title: "Confirm", children: _jsx("i", { className: "fa-solid fa-check" }) }), _jsx("button", { className: "mes_edit_copy menu_button", type: "button", onClick: props.onCopy, "aria-label": "Copy", title: "Copy this message", children: _jsx("i", { className: "fa-solid fa-copy" }) }), _jsx("button", { className: "mes_edit_delete menu_button", type: "button", onClick: props.onDelete, "aria-label": "Delete", title: "Delete this message", children: _jsx("i", { className: "fa-solid fa-trash-can" }) }), _jsx("button", { className: "mes_edit_up menu_button", type: "button", onClick: props.onMoveUp, "aria-label": "Move up", title: "Move message up", children: _jsx("i", { className: "fa-solid fa-chevron-up" }) }), _jsx("button", { className: "mes_edit_down menu_button", type: "button", onClick: props.onMoveDown, "aria-label": "Move down", title: "Move message down", children: _jsx("i", { className: "fa-solid fa-chevron-down" }) }), _jsx("button", { className: "mes_edit_cancel menu_button", type: "button", onClick: props.onCancel, "aria-label": "Cancel", title: "Cancel", children: _jsx("i", { className: "fa-solid fa-xmark" }) })] }));
+}
+//# sourceMappingURL=MessageEditToolbar.js.map

@@ -1,0 +1,1 @@
+{"version":3,"file":"STDiagnosticsPanel.d.ts","sourceRoot":"","sources":["../../src/components/STDiagnosticsPanel.tsx"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,sBAAsB,CAAC;AAE7D,MAAM,WAAW,uBAAuB;IACtC,6DAA6D;IAC7D,QAAQ,CAAC,OAAO,EAAE,gBAAgB,CAAC;CACpC;AAgBD,wBAAgB,kBAAkB,CAAC,EAAE,OAAO,EAAE,EAAE,uBAAuB,GAAG,GAAG,CAAC,OAAO,CAkGpF"}

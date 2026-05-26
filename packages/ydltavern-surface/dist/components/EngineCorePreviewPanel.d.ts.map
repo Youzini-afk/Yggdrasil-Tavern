@@ -1,0 +1,1 @@
+{"version":3,"file":"EngineCorePreviewPanel.d.ts","sourceRoot":"","sources":["../../src/components/EngineCorePreviewPanel.tsx"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,IAAI,EAAE,MAAM,kBAAkB,CAAC;AAQ7C,MAAM,WAAW,2BAA2B;IAC1C,QAAQ,CAAC,IAAI,EAAE,IAAI,CAAC;CACrB;AAgCD,wBAAgB,sBAAsB,CAAC,EAAE,IAAI,EAAE,EAAE,2BAA2B,GAAG,GAAG,CAAC,OAAO,CAsEzF"}

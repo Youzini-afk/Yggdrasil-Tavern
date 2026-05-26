@@ -1,0 +1,1 @@
+{"version":3,"file":"TurnView.d.ts","sourceRoot":"","sources":["../../src/components/TurnView.tsx"],"names":[],"mappings":"AAAA,OAAO,EAAiB,KAAK,IAAI,EAAE,MAAM,kBAAkB,CAAC;AAG5D,MAAM,WAAW,aAAa;IAC5B,QAAQ,CAAC,IAAI,EAAE,IAAI,CAAC;CACrB;AASD;;;;GAIG;AACH,wBAAgB,QAAQ,CAAC,EAAE,IAAI,EAAE,EAAE,aAAa,GAAG,GAAG,CAAC,OAAO,CAkD7D"}

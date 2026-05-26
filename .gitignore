@@ -4,6 +4,8 @@ node_modules/
 .npm/
 .yarn/
 dist/
+!packages/ydltavern-surface/dist/
+!packages/ydltavern-surface/dist/**
 build/
 out/
 
