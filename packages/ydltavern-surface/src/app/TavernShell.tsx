@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { normalizeQuickReplySets } from '@ydltavern/extensions';
 import type { STExtensionRecord } from '@ydltavern/extensions';
 import { SendForm } from '../components/product/Composer/SendForm.js';
@@ -27,10 +28,15 @@ export function TavernShell(): JSX.Element {
   // Build quick reply sets from demo/extension data
   const qrSets = useQuickReplySets(tavern.extensionRecords);
 
-  const handleQuickReply = (_id: string) => {
-    // Visual feedback for now; real execution via host bridge later
-    // eslint-disable-next-line no-console
-    console.log('[QuickReply] triggered:', _id);
+  useEffect(() => {
+    if (tavern.needsApiConnection) {
+      drawers.open('api-connections');
+    }
+  }, [tavern.needsApiConnection, drawers]);
+
+  const handleQuickReply = (id: string) => {
+    if (!id) return;
+    tavern.pushSystemNotice('Quick reply is not yet available on this surface.');
   };
 
   return (
@@ -61,6 +67,8 @@ export function TavernShell(): JSX.Element {
               // TODO Phase B: open options menu (slash commands, attach, etc.)
             }}
             isGenerating={tavern.isGenerating}
+            needsApiConnection={tavern.needsApiConnection}
+            onOpenApiConnections={() => drawers.open('api-connections')}
           />
         </Sheld>
 

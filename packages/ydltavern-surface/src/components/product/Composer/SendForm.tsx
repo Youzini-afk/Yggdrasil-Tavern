@@ -21,6 +21,10 @@ export interface SendFormProps {
   disabled?: boolean;
   /** Initial text (for continue/edit flows). */
   initialText?: string;
+  /** Whether the API connection is missing and should be highlighted. */
+  needsApiConnection?: boolean;
+  /** Callback to open the API Connections drawer when a key is missing. */
+  onOpenApiConnections?: () => void;
 }
 
 export function SendForm(props: SendFormProps) {
@@ -54,6 +58,24 @@ export function SendForm(props: SendFormProps) {
       aria-label="Send message"
     >
       {props.isGenerating && <StreamingIndicator onStop={props.onStop} />}
+
+      {props.needsApiConnection && (
+        <div className="ydl-api-callout" role="alert">
+          <span className="ydl-api-callout-text">
+            No API connection configured. Set a provider and key to send messages.
+          </span>
+          {props.onOpenApiConnections && (
+            <button
+              type="button"
+              className="menu_button"
+              onClick={props.onOpenApiConnections}
+              aria-label="Open API Connections"
+            >
+              <i className="fa-solid fa-plug" aria-hidden="true" /> Open API Connections
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="send_form_row">
         <div id="leftSendForm" data-extension-territory>

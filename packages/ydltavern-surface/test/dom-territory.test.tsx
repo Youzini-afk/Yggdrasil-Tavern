@@ -87,6 +87,18 @@ describe('DOM extension territories', () => {
     }
   });
 
+  it('MessageBubble renders is-error class and data-is-error when isError is true', () => {
+    const { container, unmount } = render(<MessageBubble message={{ ...bubbleMessage, isError: true }} />);
+    try {
+      const mes = container.querySelector('.mes');
+      assert.ok(mes);
+      assert.ok(mes.classList.contains('is-error'));
+      assert.equal(mes.getAttribute('data-is-error'), 'true');
+    } finally {
+      unmount();
+    }
+  });
+
   it('MessageList wraps content in #chat', () => {
     const { container, unmount } = render(
       <TavernProvider>

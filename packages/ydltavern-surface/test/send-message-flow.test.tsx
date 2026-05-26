@@ -132,6 +132,99 @@ describe('TavernProvider sendMessage flow', () => {
     assert.equal(posted.some((message) => message.params.capability_id === 'ydltavern/engine/model.live_call'), false);
     assert.match(container.textContent ?? '', /not supported for live model calls yet/u);
   });
+
+  it('triggers needsApiConnection when provider or secretRef is missing', async () => {
+    const posted: PostedMessage[] = [];
+    Object.defineProperty(globalThis, 'localStorage', { value: window.localStorage ?? new MemoryStorage(), configurable: true });
+    localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({ streaming: false }));
+    localStorage.setItem(STORAGE_KEYS.connection, JSON.stringify({
+      current: { provider: '', model: '', secretRef: '', baseUrl: '' },
+      profiles: {},
+    }));
+    installRpcHostMock(posted, { text: 'unused' });
+
+    const { TavernProvider, useTavern } = await import(`../src/app/TavernProvider.tsx?noApi=${Date.now()}`);
+
+    let done!: () => void;
+    const completed = new Promise<void>((resolve) => { done = resolve; });
+
+    function Driver(): JSX.Element {
+      const tavern = useTavern();
+      const sent = useRef(false);
+      useEffect(() => {
+        if (sent.current) return;
+        sent.current = true;
+        tavern.sendMessage('Hello no-api').then(done, done);
+      }, [tavern]);
+      return (
+        <div data-need-api={tavern.needsApiConnection}>
+          {tavern.liveChat.turns.map((turn) => turn.variants[turn.active_variant]?.subs.map((sub) => 'text' in sub ? sub.text : '').join('')).join('\n')}
+        </div>
+      );
+    }
+
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+    flushSync(() => {
+      root?.render(
+        <TavernProvider chat={emptyChat}>
+          <Driver />
+        </TavernProvider>,
+      );
+    });
+
+    await completed;
+    await tick();
+
+    assert.equal((container.querySelector('[data-need-api]') as HTMLElement | null)?.dataset.needApi, 'true');
+    assert.equal(posted.some((message) => message.params.capability_id === 'ydltavern/engine/model.live_call'), false);
+  });
+
+  it('does not generate fake assistant messages via generateReply / swipeReply / regenerateReply', async () => {
+    const { TavernProvider, useTavern } = await import(`../src/app/TavernProvider.tsx?noFake=${Date.now()}`);
+
+    function Driver(): JSX.Element {
+      const tavern = useTavern();
+      return (
+        <div>
+          <button id="gen" onClick={() => tavern.generateReply()}>Generate</button>
+          <button id="swipe" onClick={() => tavern.swipeReply()}>Swipe</button>
+          <button id="regen" onClick={() => tavern.regenerateReply()}>Regen</button>
+          <div data-turns={tavern.liveChat.turns.length}>{tavern.liveChat.turns.map((turn) => turn.variants[turn.active_variant]?.subs.map((sub) => 'text' in sub ? sub.text : '').join('')).join('\n')}</div>
+        </div>
+      );
+    }
+
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+    flushSync(() => {
+      root?.render(
+        <TavernProvider chat={emptyChat}>
+          <Driver />
+        </TavernProvider>,
+      );
+    });
+
+    const genBtn = container.querySelector<HTMLButtonElement>('#gen');
+    const swipeBtn = container.querySelector<HTMLButtonElement>('#swipe');
+    const regenBtn = container.querySelector<HTMLButtonElement>('#regen');
+    assert.ok(genBtn && swipeBtn && regenBtn);
+
+    flushSync(() => genBtn?.click());
+    await tick();
+    assert.match(container.textContent ?? '', /not yet available/ui);
+
+    flushSync(() => swipeBtn?.click());
+    await tick();
+    flushSync(() => regenBtn?.click());
+    await tick();
+
+    // Should not contain any fake ydltavern text
+    assert.equal(/\[ydltavern fake/ui.test(container.textContent ?? ''), false);
+    assert.equal(/fake generated reply/ui.test(container.textContent ?? ''), false);
+  });
 });
 
 function installRpcHostMock(posted: PostedMessage[], output: unknown): void {

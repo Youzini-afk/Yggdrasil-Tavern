@@ -781,6 +781,28 @@
   opacity: 0.7;
 }
 
+/* Error states */
+.ydltavern-surface .mes.is-error {
+  background: rgba(217, 122, 122, 0.04);
+}
+
+.ydltavern-surface .mes.is-error .mes_text {
+  color: var(--color-rose, #d97a7a);
+  border-left: 2px solid var(--color-rose, #d97a7a);
+  padding-left: 10px;
+}
+
+.ydltavern-surface .mes.is-error .name_text::after {
+  content: 'Error';
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-rose, #d97a7a);
+  margin-left: 6px;
+  opacity: 0.9;
+}
+
 /* ---------- Turn stream --------------------------------------------------- */
 
 .turn-stream {
@@ -2399,7 +2421,40 @@
   --tavern-font-size-lg: 18px;
   --tavern-density: comfortable;
 
-  /* === New: ST-aligned tokens ================================================= */
+  /* --- API Connection callout inside composer --- */
+.ydl-api-callout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border: 1px dashed var(--color-rose);
+  border-radius: var(--radius-sm);
+  background: rgba(217, 122, 122, 0.06);
+  color: var(--color-rose, #d97a7a);
+  font-size: 13px;
+}
+
+.ydl-api-callout .menu_button {
+  opacity: 0.9;
+  cursor: pointer;
+  border-color: var(--color-rose);
+  color: var(--color-rose);
+}
+
+.ydl-api-callout .menu_button:hover {
+  background: rgba(217, 122, 122, 0.1);
+}
+
+/* --- Disabled button tooltip treatment --- */
+.ydltavern-surface .menu_button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.ydltavern-surface .menu_button:disabled[title]:hover::after {
+  /* browsers that support title tooltip natively show it */
+}
   /* Blur / glass */
   --tavern-blur-strength: 10px;
   --tavern-glass-opacity: 0.7;

@@ -13,6 +13,7 @@ export interface MessageBubbleProps {
     chName: string;
     isUser: boolean;
     isSystem: boolean;
+    isError?: boolean;
     bookmarkLink?: string;
     avatarUrl?: string;
     text: string;
@@ -78,10 +79,11 @@ export function MessageBubble(props: MessageBubbleProps) {
 
   return (
     <div
-      className={`mes ${message.isUser ? 'is-user' : ''} ${message.isSystem ? 'is-system' : ''} ${hasBookmark ? 'has-bookmark' : ''}`}
+      className={`mes ${message.isUser ? 'is-user' : ''} ${message.isSystem ? 'is-system' : ''} ${hasBookmark ? 'has-bookmark' : ''} ${message.isError ? 'is-error' : ''}`}
       data-mesid={message.mesId}
       data-is-user={message.isUser}
       data-is-system={message.isSystem}
+      data-is-error={!!message.isError}
       data-bookmark-link={message.bookmarkLink ?? ''}
     >
       <MessageAvatar

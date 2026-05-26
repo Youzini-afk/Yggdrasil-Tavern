@@ -69,6 +69,7 @@ export type {
 export interface TavernRuntimeState {
   readonly runtime: STContextRuntime;
   readonly liveChat: Chat;
+  readonly liveMessages: readonly STChatMessage[];
   readonly input: string;
   readonly activeDrawer: TavernDrawer;
   readonly showDiagnostics: boolean;
@@ -83,6 +84,7 @@ export interface TavernRuntimeState {
   readonly regenerateReply: () => void;
 
   readonly settings: TavernSettings;
+  readonly needsApiConnection: boolean;
   readonly updateSettings: (partial: Partial<TavernSettings>) => void;
   readonly setActivePreset: (id: string) => void;
 
@@ -168,6 +170,7 @@ export interface TavernRuntimeState {
   readonly regenerateMessage: (id: string | number) => void;
   readonly branchMessage: (id: string | number) => void;
   readonly checkpointMessage: (id: string | number) => void;
+  readonly pushSystemNotice: (mes: string) => void;
 }
 
 export interface TavernProviderProps {
@@ -206,6 +209,7 @@ export function TavernProvider({
   const [formattingSettings, setFormattingSettings] = useState<FormattingSettings>(readFormattingSettings);
   const [backgroundDisplaySettings, setBackgroundDisplaySettings] = useState<BackgroundDisplaySettings>(readBackgroundDisplaySettings);
   const [characters, setCharacters] = useState<CharacterEntry[]>(readCharacters);
+  const needsApiConnection = !connectionState.current.provider || !connectionState.current.secretRef;
   const [personas, setPersonas] = useState<PersonaEntry[]>(readPersonas);
   const [worldBooks, setWorldBooks] = useState<WorldBookEntry[]>(readWorldBooks);
   const [backgrounds, setBackgrounds] = useState<BackgroundEntry[]>(readBackgrounds);
@@ -650,7 +654,7 @@ export function TavernProvider({
       const systemMessage = ctx.addOneMessage({
         is_system: true,
         name: 'System',
-        mes: 'Configure API in API Connections drawer first.',
+        mes: 'Configure an API connection before sending. Open API Connections drawer and set a provider + API key.',
       });
       ownStore.pushMessage(systemMessage);
       setRevision((r) => r + 1);
@@ -658,10 +662,13 @@ export function TavernProvider({
     }
 
     if (!isSupportedLiveCallProvider(connectionState.current.provider)) {
+      const isChatProvider = SUPPORTED_LIVE_CALL_PROVIDERS.has('textgen') || false; // placeholder
+      // Push an error-styled system notice rather than a plain message
       const systemMessage = ctx.addOneMessage({
         is_system: true,
         name: 'System',
         mes: `Provider "${connectionState.current.provider}" is not supported for live model calls yet. Choose OpenAI, Anthropic, DeepSeek, or OpenRouter.`,
+        extra: { ydl_error: true },
       });
       ownStore.pushMessage(systemMessage);
       setRevision((r) => r + 1);
@@ -695,11 +702,15 @@ export function TavernProvider({
     }
   }, [connectionState.current, ctx, input, isGenerating, ownStore, samplerSettings, sendNonStreaming, sendStreaming, settings]);
 
-  const generateReply = useCallback(() => {
-    const result = ctx.Generate({ text: 'This is a fake generated reply from the YdlTavern product surface.' });
-    ownStore.pushMessage(result.message);
+  const pushSystemNotice = useCallback((mes: string) => {
+    const result = ctx.addOneMessage({ is_system: true, name: 'System', mes });
+    ownStore.pushMessage(result);
     setRevision((r) => r + 1);
   }, [ctx, ownStore]);
+
+  const generateReply = useCallback(() => {
+    pushSystemNotice('[Generate] not yet available. Use Send to get a live assistant reply.');
+  }, [pushSystemNotice]);
 
   const editFirstMessage = useCallback(() => {
     editStoreMessage(ownStore, 0, (message) => ({ ...message, mes: `${message.mes ?? ''} [edited via surface]` }));
@@ -707,16 +718,12 @@ export function TavernProvider({
   }, [ownStore]);
 
   const swipeReply = useCallback(() => {
-    const result = ctx.Generate({ text: '[ydltavern fake swipe] alternate response from surface controls.' });
-    ownStore.pushMessage(result.message);
-    setRevision((r) => r + 1);
-  }, [ctx, ownStore]);
+    pushSystemNotice('[Swipe reply] not yet available. Use Send to get a live assistant reply.');
+  }, [pushSystemNotice]);
 
   const regenerateReply = useCallback(() => {
-    const result = ctx.Generate({ text: '[ydltavern fake regenerate] replacement response from surface controls.' });
-    ownStore.pushMessage(result.message);
-    setRevision((r) => r + 1);
-  }, [ctx, ownStore]);
+    pushSystemNotice('[Regenerate] not yet available. Use Send to get a live assistant reply.');
+  }, [pushSystemNotice]);
 
   const cancelGeneration = useCallback(async () => {
     const handle = activeStreamRef.current;
@@ -727,14 +734,12 @@ export function TavernProvider({
   }, []);
 
   const continueLastReply = useCallback(() => {
-    // TODO Phase B: wire to host capability
-    console.info('[YdlTavern] continueLastReply');
-  }, []);
+    pushSystemNotice('[Continue] is not yet available on this surface.');
+  }, [pushSystemNotice]);
 
   const impersonate = useCallback(() => {
-    // TODO Phase B: wire to host capability
-    console.info('[YdlTavern] impersonate');
-  }, []);
+    pushSystemNotice('[Impersonate] is not yet available on this surface.');
+  }, [pushSystemNotice]);
 
   const editMessage = useCallback((id: string | number, text: string) => {
     const index = resolveMessageIndex(ownStore.snapshot(), id);
@@ -807,26 +812,23 @@ export function TavernProvider({
   const swipeRight = useCallback((id: string | number) => swipeMessage(id, 1), [swipeMessage]);
 
   const regenerateMessage = useCallback((id: string | number) => {
-    // TODO Phase B: wire to host capability
-    console.info('[YdlTavern] regenerateMessage', id);
-    editMessage(id, '[ydltavern fake regenerate] replacement response from message controls.');
-  }, [editMessage]);
+    pushSystemNotice(`[Regenerate message ${id}] not yet available on this surface.`);
+  }, [pushSystemNotice]);
 
   const branchMessage = useCallback((id: string | number) => {
-    // TODO Phase B: wire to host capability
-    console.info('[YdlTavern] branchMessage', id);
-  }, []);
+    pushSystemNotice(`[Branch message ${id}] not yet available on this surface.`);
+  }, [pushSystemNotice]);
 
   const checkpointMessage = useCallback((id: string | number) => {
-    // TODO Phase B: wire to host capability
-    console.info('[YdlTavern] checkpointMessage', id);
-  }, []);
+    pushSystemNotice(`[Checkpoint message ${id}] not yet available on this surface.`);
+  }, [pushSystemNotice]);
 
   return (
     <TavernContext.Provider
       value={{
         runtime,
         liveChat,
+        liveMessages: ownStore.messages(),
         input,
         activeDrawer,
         showDiagnostics,
@@ -842,6 +844,7 @@ export function TavernProvider({
         settings,
         updateSettings,
         setActivePreset,
+        needsApiConnection,
         theme,
         themeSettings,
         setThemeSettings,
@@ -912,6 +915,7 @@ export function TavernProvider({
         regenerateMessage,
         branchMessage,
         checkpointMessage,
+        pushSystemNotice,
       }}
     >
       {children}

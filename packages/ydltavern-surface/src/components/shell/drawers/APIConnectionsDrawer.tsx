@@ -176,7 +176,13 @@ export function APIConnectionsDrawer({ drawers }: { drawers: DrawerState }) {
           >
             <i className="fa-solid fa-floppy-disk" aria-hidden="true" /> Save profile
           </button>
-          <button type="button" className="menu_button" aria-label="Test connection">
+          <button
+            type="button"
+            className="menu_button"
+            aria-label="Test connection"
+            disabled
+            title="Save a profile, then send a message to verify the connection."
+          >
             <i className="fa-solid fa-plug-circle-check" aria-hidden="true" /> Test
           </button>
           <button

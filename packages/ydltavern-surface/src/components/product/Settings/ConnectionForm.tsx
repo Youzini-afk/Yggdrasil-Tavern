@@ -67,11 +67,6 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
     commit(nextDraft);
   }, [draft, commit]);
 
-  const handleTestConnection = useCallback(() => {
-    // Visual-only confirmation for now
-    alert(`Connection test: ${draft.provider}/${draft.model} \u2014 visual confirmation (real wiring in P3.5/Y4 path).`);
-  }, [draft]);
-
   return (
     <section className="settings-form-section">
       <h3 className="settings-form-title">Connection</h3>
@@ -138,8 +133,13 @@ export function ConnectionForm({ settings, onChange }: ConnectionFormProps): JSX
         </label>
       </div>
       <div className="settings-form-actions">
-        <button type="button" className="settings-button" onClick={handleTestConnection}>
-          Test Connection
+        <button
+          type="button"
+          className="settings-button"
+          disabled
+          title="Save a profile, then send a message to verify the connection through Yggdrasil."
+        >
+          Test after save
         </button>
       </div>
     </section>

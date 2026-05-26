@@ -47,6 +47,8 @@ export function MessageList(): JSX.Element {
     const reasoning = reasoningParts.length > 0 ? reasoningParts.join('\n') : undefined;
     const media = mapMedia(subs);
     const totalSwipes = turn.variants.length;
+    const stMessage = tavern.liveMessages[index];
+    const isError = !isUser && !isSystem && (stMessage?.extra as Record<string, unknown> | undefined)?.ydl_error === true;
 
     return (
       <MessageBubble
@@ -63,6 +65,7 @@ export function MessageList(): JSX.Element {
           timer: variant?.meta.latency_ms,
           media: media.length > 0 ? media : undefined,
           swipes: totalSwipes > 0 ? { current: turn.active_variant, total: totalSwipes } : { current: 0, total: 0 },
+          isError,
         }}
         editing={editingId === turn.id}
         onSwipeLeft={() => tavern.swipeLeft(turn.id)}
