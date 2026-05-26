@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { formatMessage, _runPostRender, type FormatRenderCtx } from '../../../formatting';
 import { MessageAvatar } from './MessageAvatar';
 import { MessageActions } from './MessageActions';
@@ -49,6 +49,12 @@ export function MessageBubble(props: MessageBubbleProps) {
   const { message, editing } = props;
   const hasBookmark = Boolean(message.bookmarkLink);
   const mesTextRef = useRef<HTMLDivElement>(null);
+  const [editText, setEditText] = useState(message.text);
+
+  // Sync edit text when editing starts
+  useEffect(() => {
+    if (editing) setEditText(message.text);
+  }, [editing, message.text]);
 
   const formatCtx: FormatRenderCtx = useMemo(() => ({
     messageId: message.mesId,
@@ -132,13 +138,12 @@ export function MessageBubble(props: MessageBubbleProps) {
 
           {editing && (
             <MessageEditToolbar
-              onDone={props.onEditDone}
+              onDone={() => props.onEditDone?.(editText)}
               onCancel={props.onEditCancel}
               onCopy={props.onCopy}
               onDelete={props.onDelete}
               onMoveUp={props.onMoveUp}
               onMoveDown={props.onMoveDown}
-              initialText={message.text}
             />
           )}
         </div>
@@ -161,9 +166,10 @@ export function MessageBubble(props: MessageBubbleProps) {
         {editing && (
           <textarea
             className="mes_edit_textarea"
-            value={message.text}
-            readOnly
-            rows={3}
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            rows={Math.max(3, editText.split('\n').length)}
+            data-testid="mes-edit-textarea"
           />
         )}
 

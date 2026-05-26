@@ -1,6 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ComposerToolbar } from './ComposerToolbar';
 import { StreamingIndicator } from './StreamingIndicator';
+
+const MAX_TEXTAREA_HEIGHT = 320; // px
 
 export interface SendFormProps {
   /** Send the typed message. Returns when message accepted. */
@@ -31,21 +33,51 @@ export function SendForm(props: SendFormProps) {
   const [text, setText] = useState(props.initialText ?? '');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const handleSend = async () => {
+  const resizeTextarea = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
+  }, []);
+
+  const handleSend = useCallback(async () => {
     if (!text.trim() || props.disabled || props.isGenerating) return;
     const value = text;
     setText('');
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+    }
     await props.onSend(value);
     textareaRef.current?.focus();
-  };
+  }, [text, props.disabled, props.isGenerating, props.onSend]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // ST convention: Enter sends, Shift+Enter newline
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl/Cmd+Enter sends; Shift+Enter newline; plain Enter sends (ST convention)
     if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       handleSend();
+      return;
     }
-  };
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [handleSend]);
+
+  useEffect(() => {
+    if (!props.isGenerating) {
+      try {
+        textareaRef.current?.focus();
+      } catch {
+        // ignore focus failures in test envs without full focus support
+      }
+    }
+  }, [props.isGenerating]);
+
+  useEffect(() => {
+    resizeTextarea();
+  }, [text, resizeTextarea]);
 
   return (
     <form
@@ -98,6 +130,7 @@ export function SendForm(props: SendFormProps) {
           rows={1}
           disabled={props.disabled || props.isGenerating}
           aria-label="Message input"
+          style={{ overflowY: 'auto' }}
         />
 
         <div id="rightSendForm" data-extension-territory>

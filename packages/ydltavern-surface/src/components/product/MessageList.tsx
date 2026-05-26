@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { Virtuoso } from 'react-virtuoso';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { activeVariant, type AssetRef, type SubMessage, type Turn, type TurnVariant } from '@ydltavern/types';
 import { useTavern } from '../../app/TavernProvider.js';
 import { MessageBubble } from './Message/MessageBubble.js';
@@ -13,6 +13,24 @@ const ROLE_LABEL: Record<Turn['role'], string> = {
   tool: 'Tool',
 };
 
+/** How close to the bottom (in px) a user must be for auto-scroll during streaming. */
+const NEAR_BOTTOM_THRESHOLD = 120;
+
+export function isNearBottom(
+  scrollContainer: HTMLElement | null,
+  virtuosoScrollContainer?: HTMLElement | null,
+  threshold = NEAR_BOTTOM_THRESHOLD,
+): boolean {
+  const scroller = virtuosoScrollContainer ?? scrollContainer;
+  if (!scroller) return true;
+  const scrollTop = scroller.scrollTop ?? 0;
+  const scrollHeight = scroller.scrollHeight ?? 0;
+  const clientHeight = scroller.clientHeight ?? 0;
+  if (scrollHeight <= clientHeight) return true;
+  const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+  return distanceFromBottom <= threshold;
+}
+
 /**
  * MessageList renders liveChat.turns using ST-aligned MessageBubble.
  * Replaces ChatList + TurnView path.
@@ -25,6 +43,63 @@ export function MessageList(): JSX.Element {
   const tavern = useTavern();
   const turns = tavern.liveChat.turns;
   const [editingId, setEditingId] = useState<string | number | null>(null);
+  const [showJump, setShowJump] = useState(false);
+  const listRef = useRef<VirtuosoHandle>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const virtuosoScrollerRef = useRef<HTMLElement | null>(null);
+  const wasGeneratingRef = useRef(tavern.isGenerating);
+  const isNearBottomRef = useRef(true);
+
+  // Capture Virtuoso scroller element for scroll calculations
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const scroller = wrapper.querySelector('.ydltavern-message-list-virtuoso [data-testid="virtuoso-scroller"]') as HTMLElement | null
+      ?? wrapper.querySelector('[data-virtuoso-scroller]') as HTMLElement | null
+      ?? wrapper.querySelector('.ydltavern-message-list-virtuoso') as HTMLElement | null;
+    if (scroller) virtuosoScrollerRef.current = scroller;
+  }, []);
+
+  // Scroll-lock: only auto-follow while generating if user is near bottom
+  const updateJumpVisibility = useCallback(() => {
+    const near = isNearBottom(wrapperRef.current, virtuosoScrollerRef.current);
+    isNearBottomRef.current = near;
+    if (!near) {
+      setShowJump(true);
+    } else {
+      setShowJump(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const scroller = virtuosoScrollerRef.current ?? wrapperRef.current;
+    if (!scroller) return;
+    scroller.addEventListener('scroll', updateJumpVisibility, { passive: true });
+    return () => scroller.removeEventListener('scroll', updateJumpVisibility);
+  }, [updateJumpVisibility]);
+
+  useEffect(() => {
+    const generating = tavern.isGenerating;
+    if (generating && !wasGeneratingRef.current) {
+      // Generation started — capture bottom state once
+      isNearBottomRef.current = isNearBottom(wrapperRef.current, virtuosoScrollerRef.current);
+      if (isNearBottomRef.current) {
+        listRef.current?.scrollToIndex({ index: turns.length - 1, behavior: 'smooth', align: 'end' });
+      } else {
+        setShowJump(true);
+      }
+    } else if (generating && isNearBottomRef.current) {
+      // Generation in progress and user is near bottom — keep tailing
+      listRef.current?.scrollToIndex({ index: turns.length - 1, behavior: 'auto', align: 'end' });
+    } else if (!generating && wasGeneratingRef.current) {
+      // Generation ended — optionally scroll to end once if near bottom
+      if (isNearBottomRef.current) {
+        listRef.current?.scrollToIndex({ index: turns.length - 1, behavior: 'smooth', align: 'end' });
+      }
+      setShowJump(false);
+    }
+    wasGeneratingRef.current = generating;
+  }, [tavern.isGenerating, turns.length]);
 
   const renderBubble = useCallback((index: number) => {
     const turn = turns[index];
@@ -89,14 +164,30 @@ export function MessageList(): JSX.Element {
   }, [editingId, tavern, turns]);
 
   return (
-    <div id="chat" className="ydltavern-message-list">
+    <div id="chat" className="ydltavern-message-list" ref={wrapperRef}>
       <Virtuoso
+        ref={listRef}
         className="ydltavern-message-list-virtuoso"
         totalCount={turns.length}
         itemContent={renderBubble}
-        followOutput="smooth"
+        followOutput={false}
         overscan={{ main: 200, reverse: 200 }}
       />
+
+      {showJump && (
+        <button
+          type="button"
+          className="ydl-jump-to-latest"
+          onClick={() => {
+            listRef.current?.scrollToIndex({ index: turns.length - 1, behavior: 'smooth', align: 'end' });
+            setShowJump(false);
+            isNearBottomRef.current = true;
+          }}
+          aria-label="Jump to latest message"
+        >
+          <i className="fa-solid fa-arrow-down" aria-hidden="true" /> Jump to latest
+        </button>
+      )}
     </div>
   );
 }

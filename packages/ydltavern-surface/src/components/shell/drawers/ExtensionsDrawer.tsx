@@ -8,26 +8,31 @@ export function ExtensionsDrawer({ drawers }: { drawers: DrawerState }) {
   const tavern = useTavern();
 
   return (
-    <DrawerShell id="extensions" drawers={drawers} side="left" title="Extensions">
-      <section className="drawer-section">
-        <header className="drawer-section-header">
-          <h3>Installed</h3>
-          <div className="preset-actions">
-            <button type="button" className="menu_button" aria-label="Install extension">
-              <i className="fa-solid fa-plus" /> Install
-            </button>
-            <button type="button" className="menu_button" aria-label="Refresh extensions">
-              <i className="fa-solid fa-arrows-rotate" /> Refresh
-            </button>
-          </div>
-        </header>
-        <ExtensionsPanel
-          records={tavern.extensionRecords}
-          activationContext={tavern.extensionActivationContext}
-        />
-      </section>
-      <div id="extensions_settings" data-extension-territory />
-      <div id="extensions_settings2" data-extension-territory />
-    </DrawerShell>
+    <>
+      {/* Always keep extension territory nodes in DOM so ST extensions can mount. */}
+      <div style={{ display: 'none' }} aria-hidden="true">
+        <div id="extensions_settings" data-extension-territory />
+        <div id="extensions_settings2" data-extension-territory />
+      </div>
+      <DrawerShell id="extensions" drawers={drawers} side="left" title="Extensions">
+        <section className="drawer-section">
+          <header className="drawer-section-header">
+            <h3>Installed</h3>
+            <div className="preset-actions">
+              <button type="button" className="menu_button" aria-label="Install extension">
+                <i className="fa-solid fa-plus" /> Install
+              </button>
+              <button type="button" className="menu_button" aria-label="Refresh extensions">
+                <i className="fa-solid fa-arrows-rotate" /> Refresh
+              </button>
+            </div>
+          </header>
+          <ExtensionsPanel
+            records={tavern.extensionRecords}
+            activationContext={tavern.extensionActivationContext}
+          />
+        </section>
+      </DrawerShell>
+    </>
   );
 }

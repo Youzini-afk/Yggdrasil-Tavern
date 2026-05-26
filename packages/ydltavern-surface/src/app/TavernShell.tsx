@@ -34,6 +34,21 @@ export function TavernShell(): JSX.Element {
     }
   }, [tavern.needsApiConnection, drawers]);
 
+  // Escape closes active drawer unless focus is inside a textarea/input
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (!drawers.openId) return;
+      const active = document.activeElement;
+      if (active instanceof HTMLTextAreaElement) return;
+      if (active instanceof HTMLInputElement && (active.type === 'text' || active.type === 'search')) return;
+      e.preventDefault();
+      drawers.close();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [drawers]);
+
   const handleQuickReply = (id: string) => {
     if (!id) return;
     tavern.pushSystemNotice('Quick reply is not yet available on this surface.');
@@ -73,6 +88,12 @@ export function TavernShell(): JSX.Element {
         </Sheld>
 
         <div id="movingDivs" data-extension-territory />
+
+        {/* Hidden extension territory shells so ST extensions can query them even before first drawer open. */}
+        <div style={{ display: 'none' }} aria-hidden="true">
+          <div id="extensions_settings" data-extension-territory />
+          <div id="extensions_settings2" data-extension-territory />
+        </div>
 
         <div className="drawer-rail drawer-rail-right">
           <CharactersDrawer drawers={drawers} />

@@ -2542,6 +2542,38 @@
   margin-bottom: 0;
 }
 
+.ydltavern-surface .ydl-jump-to-latest {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-cyan-soft);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-cyan-edge);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+  opacity: 0.9;
+}
+
+.ydltavern-surface .ydl-jump-to-latest:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.ydltavern-surface .send_form .send_textarea {
+  resize: none;
+  overflow-y: auto;
+}
+
 .ydltavern-surface .tavern-chat-list > .virtuoso-grid-list {
   padding: 22px;
 }

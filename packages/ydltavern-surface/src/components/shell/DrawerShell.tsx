@@ -9,8 +9,18 @@ export interface DrawerShellProps {
   children: React.ReactNode;
 }
 
+/**
+ * Optimized drawer shell for YdlTavern.
+ * - Only renders children when the drawer has been open at least once.
+ * - Keeps the drawer DOM hidden when not open so ST extensions can mount
+ *   into territory nodes inside drawers even while closed.
+ */
 export function DrawerShell({ id, drawers, side, title, children }: DrawerShellProps) {
   const isOpen = drawers.openId === id;
+  const hasBeenOpenRef = React.useRef(false);
+  if (isOpen) hasBeenOpenRef.current = true;
+  const shouldRenderChildren = hasBeenOpenRef.current;
+
   return (
     <aside
       className={`drawer-content drawer-${side} ${isOpen ? 'openDrawer' : ''}`}
@@ -29,7 +39,9 @@ export function DrawerShell({ id, drawers, side, title, children }: DrawerShellP
           <i className="fa-solid fa-xmark" aria-hidden="true" />
         </button>
       </header>
-      <div className="drawer-body">{children}</div>
+      <div className="drawer-body" hidden={!isOpen} aria-hidden={!isOpen}>
+        {shouldRenderChildren ? children : null}
+      </div>
     </aside>
   );
 }
