@@ -22,7 +22,7 @@ Intentional divergence: React/TypeScript components, Yggdrasil iframe SurfaceHos
 - Batch M — Extension/Tools (36 commands: 2 real + 4 plan-only + 30 unsupported)
 - Batch N — Debug/Dev/Secret (8 commands: 3 real + 5 plan-only)
 
-Plan-only commands return `{ planned: true, action, fields }`; unsupported commands throw `SlashCommandUnsupportedError` with a reason; `/secret-write` accepts only `secret_ref:env:NAME`.
+Plan-only commands return `{ planned: true, action, fields }`; unsupported commands throw `SlashCommandUnsupportedError` with a reason; `/secret-write` accepts only `secret_ref:store:*`, `secret_ref:project:*`, and `secret_ref:env:*`.
 
 ## Design tokens
 
@@ -66,7 +66,7 @@ Yggdrasil `clients/web` / Desktop / App shells still own iframe SurfaceHost, nav
 All 9 ST-aligned drawers are real forms/lists that read and write the same `TavernProvider`:
 
 1. **AI Response Configuration**: presets, sampler matrix, banned tokens, logit bias, streaming.
-2. **API Connections**: 19 providers, profile management, status indicator.
+2. **API Connections**: currently live-enabled providers, profile management, secret-store save/delete, and missing-key guidance.
 3. **Advanced Formatting**: context template, instruct mode, system prompt, stop strings, reasoning, macros.
 4. **World Info**: world book list, entry editor (key / secondary key / content / position / depth / probability / order), activation diagnostics.
 5. **User Settings**: theme picker, UI preferences, font scale, chat width, persistence.

@@ -28,9 +28,9 @@ yg install ../YdlTavern --data-dir <data-dir> --profile <profile> -y
 
 - 直接导入 SillyTavern 的角色卡（V1 / V2 / V3）、世界书、提示词预设、聊天历史。
 - 兼容 SillyTavern 扩展 API（`getContext()`、`eventSource`、slash commands 等），让现有扩展能直接跑起来。
-- SendForm 真实调用 engine `model.live_call` / `model.live_call.stream`，可经 Yggdrasil host outbound 调 OpenAI / Anthropic / Gemini 等 provider API，并在聊天 UI 中流式显示响应；Stop 可取消当前生成。
+- SendForm 真实调用 engine `model.live_call` / `model.live_call.stream`，可经 Yggdrasil host outbound 调 OpenAI / DeepSeek / OpenRouter / Anthropic 等当前已启用的 provider API，并在聊天 UI 中流式显示响应；Stop 可取消当前生成。
 - UI 结构和操作流程对老用户保持熟悉，前端代码全新写一遍。
-- 引擎层走 Yggdrasil：模型接入、`secret_ref`、流式生命周期、提案审批、外发审计、记忆/检索、agent 框架，都来自平台。
+- 引擎层走 Yggdrasil：模型接入、host-owned `secret_ref`、流式生命周期、提案审批、外发审计、记忆/检索、agent 框架，都来自平台。
 
 ## 跟 Yggdrasil 的关系
 
@@ -45,7 +45,7 @@ YdlTavern 是 Yggdrasil 上的接入项目，通过公开协议（HTTP `/rpc` + 
 
 ## 当前状态
 
-YdlTavern 已经完成 ST 核心运行时的一对一算法移植：PromptManager、World Info、STScript、宏引擎、chat/text completion 适配器（25/15 providers）、instruct mode、tokenizer registry、内置扩展逻辑、ST API surface 与扩展加载器。算法从 ST 源码逐函数移植，内嵌文件/行号引用。同窗口 ST 扩展兼容已落地：`messageFormatting()`（showdown + DOMPurify + hooks）、React DOM territory cession、`mountSTGlobals()`、ST URL layout shims、BME/shujuku 真实扩展 smoke 都已可跑。golden harness 当前 20/20 perfect；slash commands 覆盖全部 199 个 ST canonical commands。
+YdlTavern 已经完成 ST 核心运行时的一对一算法移植：PromptManager、World Info、STScript、宏引擎、chat/text completion 适配器、instruct mode、tokenizer registry、内置扩展逻辑、ST API surface 与扩展加载器。真实模型调用现在只开放 OpenAI-compatible（OpenAI / DeepSeek / OpenRouter）与 Anthropic/Claude 的 provider-final body 路径，所有 key 都通过 Yggdrasil secret store 或 host env 的 `secret_ref` 使用。surface 侧已去掉假生成动作，host bridge 使用 tokenized postMessage，消息编辑、stream scroll-lock、错误消息样式与 API Connections 引导已进入人测闭环。golden harness 当前 20/20 perfect；slash commands 覆盖全部 199 个 ST canonical commands，但这不代表全域字节级 ST 对齐。
 
 详细兼容矩阵与现状见 [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.md)；下一步见 [`docs/roadmap/NEXT_STEPS.md`](docs/roadmap/NEXT_STEPS.md)。
 

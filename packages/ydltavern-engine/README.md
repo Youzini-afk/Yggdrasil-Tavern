@@ -27,11 +27,11 @@
 
 ## Recent additions
 
-- `model.live_call`：用 `buildChatRequest` 生成 provider request body，然后通过 subprocess `kernelClient` 调用 Yggdrasil `kernel.v1.outbound.execute`。
-- `model.live_call.stream`：通过 `kernel.v1.outbound.stream` 读取 SSE chunk，并归一化为 stream frames（delta text、reasoning、tool_calls、final/error/cancelled/timeout）。
+- `model.live_call`：用 ST unified builder 收集设置，再转换成 OpenAI-compatible 或 Anthropic provider-final body，然后通过 subprocess `kernelClient` 调用 Yggdrasil `kernel.v1.outbound.execute`。
+- `model.live_call.stream`：用 provider-final streaming body 调用 `kernel.v1.outbound.stream` 读取 SSE chunk，并归一化为 stream frames（delta text、reasoning、tool_calls、final/error/cancelled/timeout）。
 - `model.live_realtime`：通过 `kernelClient.openWebSocket` / Yggdrasil `kernel.v1.outbound.websocket.*` 打开 provider WebSocket；OpenAI Realtime 是真实路径，Gemini Live 是 best-effort stub。
 - `manifest.yaml` 声明 provider network hosts（OpenAI、DeepSeek、Anthropic、OpenRouter、Gemini）、WEBSOCKET method（OpenAI/Gemini）和 `secret_refs`。
-- raw key 不进入 YdlTavern；输入只携带 `secret_ref`，由 Yggdrasil host 解析、脱敏、审计。
+- raw key 不进入 YdlTavern；输入只携带 `secret_ref:store:*`、`secret_ref:project:*` 或 `secret_ref:env:*`，由 Yggdrasil host 解析、脱敏、审计。
 - 需要 Yggdrasil live outbound profile（例如 `profiles/forge-with-live-models.example.yaml`）和环境变量（如 `OPENAI_API_KEY`、`DEEPSEEK_API_KEY`、`GEMINI_API_KEY`）；Realtime 还需要 host profile 启用 `outbound.websocket.executor: live`。
 
 WebSocket 边界与 HTTP/SSE 一样严格：YdlTavern 绝不直接 `new WebSocket(...)` 到 provider，必须经 host `openWebSocket` 边界；host 负责 allowed host、`secret_ref` 解析、审计、脱敏、取消和超时。
@@ -47,6 +47,6 @@ WebSocket 边界与 HTTP/SSE 一样严格：YdlTavern 绝不直接 `new WebSocke
 
 ## 后续
 
-下一步是扩大 golden harness 场景、补更多 provider smoke tests，并继续把 fake generation 生命周期与真实 live-call path 收敛。
+下一步是扩大 golden harness 场景、补更多 provider smoke tests，并继续补齐更多 provider-final adapters。
 
 - [C 轨道：引擎核心](../../docs/tracks/C_ENGINE_CORE.md)

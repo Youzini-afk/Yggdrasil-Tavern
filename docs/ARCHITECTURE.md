@@ -81,7 +81,7 @@ YdlTavern 前端不是一个独立 app。它是 surface bundle：
 
 ### 模型调用
 
-YdlTavern 不自己接 OpenAI / Anthropic / Gemini。真实模型调用通过 `ydltavern/engine/model.live_call` 和 `ydltavern/engine/model.live_call.stream` 进入 Yggdrasil：YdlTavern engine 用 `buildChatRequest` 组 provider 请求体，经 subprocess SDK `kernelClient` 调用 `kernel.v1.outbound.execute` 或 `kernel.v1.outbound.stream`，再由 host 的 live outbound executor 访问 provider HTTPS。YdlTavern 只传 `secret_ref` 字符串和 manifest 声明，不读取 raw key；审计、脱敏、取消和超时由 Yggdrasil outbound 事件链负责。
+YdlTavern 不自己接 provider 网络。真实模型调用通过 `ydltavern/engine/model.live_call` 和 `ydltavern/engine/model.live_call.stream` 进入 Yggdrasil：engine 先用 ST unified builder 收集 Tavern 设置，再转换成 provider-final HTTP body。目前人测路径只启用 OpenAI-compatible（OpenAI / DeepSeek / OpenRouter）和 Anthropic/Claude；任意 custom base URL 不会静默变成 outbound host。subprocess SDK `kernelClient` 调用 `kernel.v1.outbound.execute` 或 `kernel.v1.outbound.stream`，host 的 live outbound executor 访问 provider HTTPS。YdlTavern 只传 host-owned `secret_ref` 和 manifest 声明，不读取 raw key；审计、脱敏、取消和超时由 Yggdrasil outbound 事件链负责。
 
 Engine 与 surface 的权威边界分开：engine 是可执行 subprocess 包，持有 manifest 声明的 capability 与出站权限；surface 是静态浏览器 bundle，没有直接 kernel access，只能通过 host bridge 调用 `allowed_capability_ids` 中列出的能力。
 
@@ -113,7 +113,7 @@ Browser stub 是显式审计过的最小集合：`document`、`window`、`localS
 
 ### Slash command coverage
 
-`createSTContextDeep` 注册 14 个 slash command batches（A-N），覆盖全部 199 个 ST canonical commands。命令分为三类：真实实现直接读写 st-compat context；plan-only descriptors 返回 JSON `{ planned: true, action, fields }`，供 host capability 执行；unsupported sentinels 抛出 `SlashCommandUnsupportedError` 并给出明确原因。重复注册通过 `registerIfMissing` 保留先注册版本，避免覆盖已有 built-in 或早期 batch 行为。`/secret-write` 只接受 `secret_ref:env:NAME` 形式，拒绝 raw value 写入。
+`createSTContextDeep` 注册 14 个 slash command batches（A-N），覆盖全部 199 个 ST canonical commands。命令分为三类：真实实现直接读写 st-compat context；plan-only descriptors 返回 JSON `{ planned: true, action, fields }`，供 host capability 执行；unsupported sentinels 抛出 `SlashCommandUnsupportedError` 并给出明确原因。重复注册通过 `registerIfMissing` 保留先注册版本，避免覆盖已有 built-in 或早期 batch 行为。`/secret-write` 只接受 `secret_ref:store:*`、`secret_ref:project:*`、`secret_ref:env:*`，拒绝 raw value、inline/file/unknown prefix。
 
 ### World Info alignment
 
@@ -137,11 +137,11 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 
 #### TavernProvider state architecture
 
-`TavernProvider` 是 surface UI 的单一状态源，包含：
+`TavernProvider` 是 surface UI 的单一状态源。当前人测闭环中，surface 不再生成 fake assistant 内容；未接通的 generate/swipe/regenerate/branch/checkpoint 入口会返回明确 notice，真实发送路径走 `model.live_call` / `.stream`。Provider state 会清理非法 `secret_ref`，错误消息带 `.mes.is-error` 样式，API key 缺失时打开或高亮 API Connections。它包含：
 
 - settings slices：sampler、connection、formatting、background display，以及 active preset / connection profile 等 selection state；
 - library collections：characters、personas、world books、backgrounds，以及 active / selected ids；
-- CRUD 与消息操作：character/persona/world book/background 管理，message edit/delete/move/copy/hide/swipe/regenerate/branch/checkpoint；
+- CRUD 与消息操作：character/persona/world book/background 管理，message edit/delete/move/copy/hide；swipe/regenerate/branch/checkpoint 在未接通真实 host 能力前返回明确 notice；
 - schema-versioned persistence：`ydltavern.settings.v2` 与 sampler / connection / formatting / personas / characters / worldbooks / backgrounds 等独立 localStorage keys，并包含 v1→v2 migration。
 
 9 个 drawer surfaces（AI Config、API Connections、Advanced Formatting、World Info、User Settings、Backgrounds、Extensions、Persona、Characters）都通过 `useTavern()` 读写 provider，不再维护与 provider 冲突的本地 stub state。
@@ -150,7 +150,7 @@ Surface descriptor 采用双 manifest 模式：`packages/ydltavern-surface/manif
 
 `packages/ydltavern-surface/src/components/shell/` 使用 SillyTavern-like shell：`TopBar` 提供 9 个 Font Awesome 图标入口，`DrawerShell` 统一抽屉容器与 backdrop click-to-close，`Sheld` 是 50vw 居中主聊天列，`drawer-rail` layout 负责左右侧抽屉布局。左侧承载 AI Config、API Connections、Advanced Formatting、World Info、User Settings、Backgrounds、Extensions、Persona 8 个抽屉；右侧承载 Characters。
 
-抽屉状态由 `useDrawers` hook 维护：单一 `openId` 保证 mutual exclusion，同一图标再次点击关闭，backdrop 点击清空 open state。Yggdrasil `clients/web` / Desktop / App 仍拥有 iframe `SurfaceHost`、导航、权限、安装和平台生命周期；`@ydltavern/surface` 只是 React component library，不是 standalone app，也不拥有平台壳。
+抽屉状态由 `useDrawers` hook 维护：单一 `openId` 保证 mutual exclusion，同一图标再次点击关闭，backdrop 或 Escape 会清空 open state。重抽屉 lazy mount；扩展所需的 `#extensions_settings` / `#extensions_settings2` territory 保持常驻，避免破坏 ST 扩展查询。Yggdrasil `clients/web` / Desktop / App 仍拥有 iframe `SurfaceHost`、导航、权限、安装和平台生命周期；`@ydltavern/surface` 只是 React component library，不是 standalone app，也不拥有平台壳。
 
 #### Visual design system
 

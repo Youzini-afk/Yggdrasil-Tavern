@@ -4,7 +4,7 @@
 
 ## 概念
 
-Live model calls 是 YdlTavern 通过 Yggdrasil host 发起真实 provider HTTPS 请求的 opt-in 通道。YdlTavern engine 负责把 Tavern/ST 风格设置转换成 provider request body；Yggdrasil host 负责网络、secret、审计、取消和超时。
+Live model calls 是 YdlTavern 通过 Yggdrasil host 发起真实 provider HTTPS 请求的 opt-in 通道。YdlTavern engine 负责把 Tavern/ST 风格设置转换成 provider-final request body；Yggdrasil host 负责网络、secret、审计、取消和超时。
 
 边界很明确：YdlTavern engine 永远不直接 `fetch` provider，也不读取 raw API key。所有真实外发都必须走 `kernel.v1.outbound.execute` 或 `kernel.v1.outbound.stream`。
 
@@ -14,7 +14,7 @@ Unary：
 
 ```text
 YdlTavern model.live_call
-  -> buildChatRequest(...)
+  -> 生成 provider-final body（OpenAI-compatible 或 Anthropic）
   -> subprocess kernelClient.sendKernelRequest("kernel.v1.outbound.execute", ...)
   -> Yggdrasil host outbound executor
   -> provider HTTPS
@@ -24,7 +24,7 @@ Streaming：
 
 ```text
 YdlTavern model.live_call.stream
-  -> buildChatRequest(... stream=true)
+  -> 生成 stream=true 的 provider-final body
   -> kernelClient.streamKernelRequest("kernel.v1.outbound.stream", ...)
   -> provider SSE
   -> normalized stream frames via callbacks
@@ -78,17 +78,21 @@ Without that flag, tests should stay offline or use deterministic mocks.
 
 ## secret_ref rules
 
-YdlTavern receives and forwards only a ref string such as:
+YdlTavern 只接收和转发 host-owned refs：
 
 ```text
+secret_ref:store:OPENAI_API_KEY
+secret_ref:project:OPENAI_API_KEY
 secret_ref:env:OPENAI_API_KEY
 ```
+
+`secret_ref:inline:*`、`secret_ref:file:*`、未知 prefix 和 raw-looking value 会在 outbound 前被拒绝。
 
 The raw key never enters YdlTavern code, manifest, request logs, fixture files, or audit details. The Yggdrasil host resolves the ref, injects the header, redacts it in logs, and records the outbound event.
 
 ## Manifest declarations
 
-The engine manifest must declare both network destinations and accepted secret refs. Current provider hosts include:
+Engine manifest 必须声明网络目标和可接受的 secret refs。当前 live HTTP provider hosts 故意固定为：
 
 - `api.openai.com`
 - `api.deepseek.com`
@@ -102,7 +106,7 @@ Current secret refs include:
 - `secret_ref:env:ANTHROPIC_API_KEY`
 - `secret_ref:env:OPENROUTER_API_KEY`
 
-Adding a provider means updating the manifest and the live-call source mapping together. Do not rely on arbitrary destination host overrides for normal use.
+新增 provider 必须同时更新 manifest、final-body adapter、source mapping、UI provider list 和测试。surface 可以保存 base URL 作为 profile metadata，但不会把它静默变成 live call outbound host override。
 
 ## Capability surface
 
@@ -136,4 +140,4 @@ Callers should wire UI stop buttons to `cancel()` for streaming generation. A ca
 
 ## Current limits
 
-This path is `partial-opt-in`. It covers the bridge from YdlTavern request builders to Yggdrasil outbound for supported provider hosts, but it is not a claim that every ST provider, sampler, retry mode, proxy mode, or provider-specific streaming edge case is implemented. Keep offline tests as the default and gate real smoke tests behind `YGG_LIVE_MODEL_TESTS=1`.
+这条路径仍是 `partial-opt-in`。它覆盖从 YdlTavern provider-final request body 到 Yggdrasil outbound 的桥接，目前限 OpenAI-compatible 与 Anthropic provider hosts；这不是对所有 ST provider、sampler、retry mode、proxy mode 或 provider-specific streaming edge case 的完整实现声明。默认测试仍应保持离线，真实 smoke test 必须显式使用 `YGG_LIVE_MODEL_TESTS=1` 打开。

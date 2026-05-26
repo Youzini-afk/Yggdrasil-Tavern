@@ -29,8 +29,6 @@ export interface ModelLiveCallInput {
   tools?: Tool[];
   stream: boolean;
   secret_ref: string;
-  destination_host_override?: string;
-  api_path_override?: string;
   timeout_ms?: number;
 }
 

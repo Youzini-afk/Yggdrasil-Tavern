@@ -53,10 +53,10 @@ contract MVP 和深度移植已落地到 `packages/ydltavern-st-compat`：
 - `getContext()` 返回完整 ST context shape（`context-st.ts`），包含 state（chat/characters/groups/characterId/groupId/chatId/name1/name2/mainApi/onlineStatus/maxContext/chatMetadata/menuType/extensionSettings/powerUserSettings/tags/tagMap）、bridges（eventSource/extensionPrompts/variables/swipe/toolManager）、functions（getCurrentChatId/reloadCurrentChat/saveChat/saveSettingsDebounced/saveMetadata/updateChatMetadata/addOneMessage/deleteLastMessage/generate/generateRaw/substituteParams/setExtensionPrompt/getExtensionPrompt/getRequestHeaders/getTokenCountAsync/isMobile/etc）、legacy aliases（event_types/eventTypes, main_api/mainApi, online_status/onlineStatus）、symbols（ignore/unset）、deprecated stubs；
 - `ExtensionPromptStore`（`context-st.ts`）支持 `set`/`render`/`maxDepth`/`removeDepthPrompts` + async filter callback，对应 ST 的 `setExtensionPrompt`/`getExtensionPrompt` 语义；
 - `addOneMessage`、`saveChat`、`saveSettingsDebounced`、`Generate`、`substituteParams` 有真实行为；
-- fake generation 会派发 generation lifecycle 事件并追加 assistant message；
-- 单元测试覆盖 push/edit/delete/splice、事件派发、fake generation、完整宏引擎和 STScript 运行时。
+- generation lifecycle 会派发事件；未接通真实模型路径时返回明确 notice，不再追加 fake assistant message；
+- 单元测试覆盖 push/edit/delete/splice、事件派发、no-fake generation notice、完整宏引擎和 STScript 运行时。
 
-这仍是 `partial`，不是字节级 ST 对齐；下一步要继续补全真实 DOM/network bridges、真实 generate/generateRaw、popups 和 payload 对齐。
+这仍是 `partial`，不是字节级 ST 对齐；下一步要继续补全更多真实 DOM/network bridges、popups、第三方扩展行为和 provider payload 对齐。
 
 ## 不在范围内
 

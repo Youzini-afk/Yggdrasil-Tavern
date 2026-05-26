@@ -81,7 +81,7 @@ End users obtain the YdlTavern package family through Yggdrasil's install/load m
 
 ### Model calls
 
-YdlTavern does not connect to OpenAI / Anthropic / Gemini directly. Live model calls enter Yggdrasil through `ydltavern/engine/model.live_call` and `ydltavern/engine/model.live_call.stream`: the YdlTavern engine builds the provider request body with `buildChatRequest`, calls `kernel.v1.outbound.execute` or `kernel.v1.outbound.stream` through the subprocess SDK `kernelClient`, and the host live outbound executor performs provider HTTPS. YdlTavern passes only `secret_ref` strings and manifest declarations, not raw keys; audit, redaction, cancel, and timeout behavior are owned by the Yggdrasil outbound event path.
+YdlTavern does not perform provider networking itself. Live model calls enter Yggdrasil through `ydltavern/engine/model.live_call` and `ydltavern/engine/model.live_call.stream`: the engine first collects Tavern settings through the ST unified builder, then converts them into provider-final HTTP bodies. The human-test path currently enables only OpenAI-compatible providers (OpenAI / DeepSeek / OpenRouter) and Anthropic/Claude; arbitrary custom base URLs are not silently converted into outbound hosts. The subprocess SDK `kernelClient` calls `kernel.v1.outbound.execute` or `kernel.v1.outbound.stream`, and the host live outbound executor performs provider HTTPS. YdlTavern passes only host-owned `secret_ref` strings and manifest declarations, not raw keys; audit, redaction, cancel, and timeout behavior are owned by the Yggdrasil outbound event path.
 
 Engine and surface authority are separate: the engine is an executable subprocess package with manifest-declared capabilities and outbound authority; the surface is a static browser bundle with no direct kernel access and can only call capabilities listed in `allowed_capability_ids` through the host bridge.
 
@@ -113,7 +113,7 @@ The deep ST-compatible macro implementation now lives in `@ydltavern/engine-core
 
 ### Slash command coverage
 
-`createSTContextDeep` registers 14 slash-command batches (A-N), covering all 199 ST canonical commands. Commands fall into three classes: real implementations read/write the st-compat context directly; plan-only descriptors return JSON `{ planned: true, action, fields }` for host capability execution; unsupported sentinels throw `SlashCommandUnsupportedError` with a clear reason. Duplicate registrations go through `registerIfMissing`, preserving the first registered version rather than overwriting earlier built-ins or batch behavior. `/secret-write` accepts only `secret_ref:env:NAME` values and rejects raw secret writes.
+`createSTContextDeep` registers 14 slash-command batches (A-N), covering all 199 ST canonical commands. Commands fall into three classes: real implementations read/write the st-compat context directly; plan-only descriptors return JSON `{ planned: true, action, fields }` for host capability execution; unsupported sentinels throw `SlashCommandUnsupportedError` with a clear reason. Duplicate registrations go through `registerIfMissing`, preserving the first registered version rather than overwriting earlier built-ins or batch behavior. `/secret-write` accepts only `secret_ref:store:*`, `secret_ref:project:*`, and `secret_ref:env:*`, rejecting raw values and inline/file/unknown prefixes.
 
 ### World Info alignment
 
@@ -137,11 +137,11 @@ The font strategy is self-hosted Noto Sans + Noto Sans Mono (SIL OFL 1.1, AGPL-c
 
 #### TavernProvider state architecture
 
-`TavernProvider` is the single source of truth for the surface UI. It contains:
+`TavernProvider` is the single source of truth for the surface UI. In the current human-test loop, the surface no longer emits fake assistant content; unconnected generate/swipe/regenerate/branch/checkpoint actions return explicit notices, while real send uses `model.live_call` / `.stream`. Provider state sanitizes illegal `secret_ref` values, error messages render with `.mes.is-error`, and missing API keys open or highlight API Connections. It contains:
 
 - settings slices: sampler, connection, formatting, background display, plus active preset / connection profile and related selection state;
 - library collections: characters, personas, world books, backgrounds, plus active / selected ids;
-- CRUD and message operations: character/persona/world-book/background management, message edit/delete/move/copy/hide/swipe/regenerate/branch/checkpoint;
+- CRUD and message operations: character/persona/world-book/background management and message edit/delete/move/copy/hide; swipe/regenerate/branch/checkpoint return explicit notices until real host capabilities are wired;
 - schema-versioned persistence: `ydltavern.settings.v2` plus separate localStorage keys for sampler / connection / formatting / personas / characters / worldbooks / backgrounds, including v1→v2 migration.
 
 All 9 drawer surfaces (AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, Persona, Characters) read and write provider state through `useTavern()` instead of maintaining local stub state that conflicts with the provider.
@@ -150,7 +150,7 @@ All 9 drawer surfaces (AI Config, API Connections, Advanced Formatting, World In
 
 `packages/ydltavern-surface/src/components/shell/` uses a SillyTavern-like shell: `TopBar` provides 9 Font Awesome icon entries, `DrawerShell` owns the shared drawer container and backdrop click-to-close, `Sheld` is the centered 50vw main chat column, and the `drawer-rail` layout owns the left/right drawer placement. The left side contains AI Config, API Connections, Advanced Formatting, World Info, User Settings, Backgrounds, Extensions, and Persona; the right side contains Characters.
 
-Drawer state is maintained by the `useDrawers` hook: a single `openId` enforces mutual exclusion, clicking the already-open icon closes it, and clicking the backdrop clears open state. Yggdrasil `clients/web` / Desktop / App still own iframe `SurfaceHost`, navigation, permissions, installation, and platform lifecycle; `@ydltavern/surface` is a React component library, not a standalone app or platform shell.
+Drawer state is maintained by the `useDrawers` hook: a single `openId` enforces mutual exclusion, clicking the already-open icon closes it, and clicking the backdrop or Escape clears open state. Heavy drawers lazy-mount, while extension-required `#extensions_settings` / `#extensions_settings2` territories remain present so ST extensions can still query them. Yggdrasil `clients/web` / Desktop / App still own iframe `SurfaceHost`, navigation, permissions, installation, and platform lifecycle; `@ydltavern/surface` is a React component library, not a standalone app or platform shell.
 
 #### Visual design system
 

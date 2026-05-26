@@ -27,8 +27,8 @@ Current phase: deep-port complete, with an opt-in live model call path added. In
 
 ## Recent additions
 
-- `model.live_call`: builds the provider request body with `buildChatRequest`, then calls Yggdrasil `kernel.v1.outbound.execute` through the subprocess `kernelClient`.
-- `model.live_call.stream`: reads SSE chunks through `kernel.v1.outbound.stream` and normalizes them into stream frames (delta text, reasoning, tool_calls, final/error/cancelled/timeout).
+- `model.live_call`: collects settings through the ST unified builder, converts them into OpenAI-compatible or Anthropic provider-final bodies, then calls Yggdrasil `kernel.v1.outbound.execute` through the subprocess `kernelClient`.
+- `model.live_call.stream`: calls `kernel.v1.outbound.stream` with provider-final streaming bodies and normalizes SSE chunks into stream frames (delta text, reasoning, tool_calls, final/error/cancelled/timeout).
 - `model.live_realtime`: opens provider WebSockets through `kernelClient.openWebSocket` / Yggdrasil `kernel.v1.outbound.websocket.*`; OpenAI Realtime is the real path, while Gemini Live is a best-effort stub.
 - `manifest.yaml` declares provider network hosts (OpenAI, DeepSeek, Anthropic, OpenRouter, Gemini), WEBSOCKET methods (OpenAI/Gemini), and `secret_refs`.
 - Raw keys never enter YdlTavern; inputs carry only `secret_ref`, resolved/redacted/audited by the Yggdrasil host.
@@ -47,6 +47,6 @@ This is still `partial-opt-in`: the package does not directly network by default
 
 ## Next
 
-Next: expand golden harness scenarios, add more provider smoke tests, and continue converging fake generation lifecycle with the real live-call path.
+Next: expand golden harness scenarios, add more provider smoke tests, and continue filling in provider-final adapters.
 
 - [Track C: Engine Core](../../docs/tracks/C_ENGINE_CORE.en.md)

@@ -28,9 +28,9 @@ The project id uses the stable shape `youzini-afk__YdlTavern__d2a47e5c`: the pre
 
 - Imports SillyTavern character cards (V1 / V2 / V3), world books, prompt presets, and chat history directly.
 - Supports SillyTavern's extension API (`getContext()`, `eventSource`, slash commands, etc.) so existing extensions can run.
-- SendForm actually invokes engine `model.live_call` / `model.live_call.stream`, which can call OpenAI / Anthropic / Gemini and other provider APIs through Yggdrasil host outbound and stream responses in the chat UI; Stop cancels the active generation.
+- SendForm actually invokes engine `model.live_call` / `model.live_call.stream`, which can call OpenAI / DeepSeek / OpenRouter / Anthropic provider APIs currently enabled through Yggdrasil host outbound and stream responses in the chat UI; Stop cancels the active generation.
 - Keeps the UI structure and interaction flow familiar to longtime SillyTavern users, with the frontend rewritten from scratch.
-- Uses Yggdrasil for the engine layer: model integration, `secret_ref`, streaming lifecycle, proposal approval, outbound audit, memory / retrieval, and agent infrastructure all come from the platform.
+- Uses Yggdrasil for the engine layer: model integration, host-owned `secret_ref`, streaming lifecycle, proposal approval, outbound audit, memory / retrieval, and agent infrastructure all come from the platform.
 
 ## Relationship to Yggdrasil
 
@@ -45,7 +45,7 @@ For the boundary in detail, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.en.md
 
 ## Status
 
-YdlTavern has one-to-one algorithm ports of ST's core runtime: PromptManager, World Info, STScript, the macro engine, chat/text completion adapters (25/15 providers), instruct mode, the tokenizer registry, built-in extension logic, the ST API surface, and the extension loader. Algorithms are ported function-by-function from ST source with file/line references baked in. Same-window ST extension compatibility is in: `messageFormatting()` (showdown + DOMPurify + hooks), React DOM territory cession, `mountSTGlobals()`, ST URL layout shims, and BME/shujuku real-extension smoke all run. The golden harness is currently 20/20 perfect; slash commands cover all 199 ST canonical commands.
+YdlTavern has one-to-one algorithm ports of ST's core runtime: PromptManager, World Info, STScript, the macro engine, chat/text completion adapters, instruct mode, the tokenizer registry, built-in extension logic, the ST API surface, and the extension loader. Live model calls currently expose provider-final body paths for OpenAI-compatible providers (OpenAI / DeepSeek / OpenRouter) and Anthropic/Claude only; every key is used through a Yggdrasil secret-store or host-env `secret_ref`. The surface no longer emits fake assistant generations, the host bridge uses tokenized postMessage, and message editing, streaming scroll-lock, error styling, and API Connections guidance are ready for human-test flow. The golden harness is currently 20/20 perfect; slash commands cover all 199 ST canonical commands, but this is not a full-domain byte-level ST claim.
 
 For the full compatibility matrix and current state, see [`docs/COMPATIBILITY_MATRIX.md`](docs/COMPATIBILITY_MATRIX.en.md); for what's next, see [`docs/roadmap/NEXT_STEPS.md`](docs/roadmap/NEXT_STEPS.en.md).
 

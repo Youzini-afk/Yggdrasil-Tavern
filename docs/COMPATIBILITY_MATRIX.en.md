@@ -69,7 +69,7 @@ ST source remains the ground truth; any "full-domain byte-level ST alignment" cl
 |---|---|---|---|
 | Theme system | ST flat theme JSON + SmartTheme-style values | `importSTTheme` / `exportSTTheme` flat JSON round-trip; 29 `--tavern-*` tokens; Dark V 1.0 / Azure / Celestial Macaron | implemented |
 | Settings panel / drawers | 9 ST top-drawer entries | TopBar + DrawerShell + 9 drawers; 8 on the left, Characters on the right; `useDrawers` mutual exclusion | implemented |
-| API Connections drawer | Provider/model/base URL/profile selection + API keys | paste + save through Yggdrasil host RPC into encrypted `official/secret-store-lab`; profiles store only `secret_ref:store:NAME`; env `secret_ref:env:*` remains a fallback | implemented |
+| API Connections drawer | Provider/model/profile selection + API keys | paste + save/delete through Yggdrasil host RPC into encrypted `official/secret-store-lab`; profiles store only `secret_ref:store:*`, `secret_ref:project:*`, or `secret_ref:env:*`; arbitrary base URL values are metadata only and do not override live outbound hosts | implemented |
 | Mobile responsive | ST 1000px mobile breakpoint + 768px tighter breakpoint | `mobile.css`: 1000px primary, 768px secondary, full-screen sheets, touch targets, safe-area, iOS 16px textarea | implemented |
 | Message rendering | ST `.mes` template structure | `MessageBubble` / Avatar / Actions / EditToolbar / SwipeControls / ReasoningBlock / MediaWrapper mirror `.mes` structure | implemented |
 | Settings forms / drawers | ST drawer forms backed by shared state | Sampler, connection, formatting, persona, characters, world books, backgrounds, and user settings all read/write TavernProvider; schema-versioned localStorage persists state | implemented |
