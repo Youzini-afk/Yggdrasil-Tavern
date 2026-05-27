@@ -8,6 +8,9 @@ import { resolve } from 'node:path';
 // the parent.
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
   resolve: {
     alias: {
       '@ydltavern/engine-core': resolve(__dirname, 'browser/engine-core.ts'),
