@@ -1,1 +1,1 @@
-{"version":3,"file":"sample-chat.d.ts","sourceRoot":"","sources":["../../src/fixtures/sample-chat.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,IAAI,EAAc,MAAM,kBAAkB,CAAC;AAsBzD,eAAO,MAAM,UAAU,EAAE,IA6GxB,CAAC"}
+{"version":3,"file":"sample-chat.d.ts","sourceRoot":"","sources":["../../src/fixtures/sample-chat.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,IAAI,EAAc,MAAM,kBAAkB,CAAC;AAMzD,wBAAgB,eAAe,IAAI,IAAI,CAStC;AAkBD,eAAO,MAAM,UAAU,EAAE,IA6GxB,CAAC"}

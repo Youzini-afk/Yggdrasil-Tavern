@@ -1,6 +1,16 @@
 // A small fixture exercised by the bundled surfaces and any host-side
 // demos/tests. All four sibling packages — types, st-compat, engine-core,
 // importers — see the same Chat instance.
+export function createEmptyChat() {
+    return {
+        id: 'chat_empty',
+        meta: {
+            title: 'New chat',
+            source_format: 'ydltavern_native',
+        },
+        turns: [],
+    };
+}
 const calendarArguments = {
     day: 'tomorrow',
     tz: 'America/Los_Angeles',

@@ -2,14 +2,14 @@ import { jsx as _jsx } from "react/jsx-runtime";
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createSTContext, createTurnStore } from '@ydltavern/st-compat';
 import {} from '@ydltavern/extensions';
-import { sampleChat } from '../fixtures/sample-chat.js';
+import { createEmptyChat } from '../fixtures/sample-chat.js';
 import { getThemeById } from '../components/product/themes/built-in-themes.js';
 import { DEFAULT_BACKGROUND_DISPLAY, DEFAULT_CONNECTION, DEFAULT_FORMATTING, DEFAULT_SAMPLER, DEFAULT_SELECTION, DEFAULT_SETTINGS, DEFAULT_THEME_SETTINGS, SEED_BACKGROUND, SEED_CHARACTER, SEED_PERSONA, SEED_WORLDBOOK, } from '../state/defaults.js';
 import { ensureStandaloneHostRpcBridgeConfigured, invokeCapability, setActiveSessionId, streamCapability } from '../host-rpc/index.js';
 import { migrateSettingsV1ToV2, readBackgroundDisplaySettings, readBackgrounds, readCharacters, readConnectionState, readFormattingSettings, readPersonas, readSamplerSettings, readSelection, readTavernSettings, readThemeSettings, readWorldBooks, STORAGE_KEYS, writeConnectionState, writePersisted, writeThemeSettings, } from '../state/persistence.js';
 const TavernContext = createContext(undefined);
 const SUPPORTED_LIVE_CALL_PROVIDERS = new Set(['openai', 'anthropic', 'deepseek', 'openrouter']);
-export function TavernProvider({ chat = sampleChat, showDiagnostics = true, sessionId, projectId, children, extensionRecords = [], extensionActivationContext, }) {
+export function TavernProvider({ chat = createEmptyChat(), showDiagnostics = true, sessionId, projectId, children, extensionRecords = [], extensionActivationContext, }) {
     const [revision, setRevision] = useState(0);
     const [input, setInput] = useState('');
     const [activeDrawer, setActiveDrawer] = useState('settings');

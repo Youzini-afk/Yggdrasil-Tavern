@@ -67,6 +67,6 @@ export type { TavernUserSettingsSurfaceProps } from './surfaces/TavernUserSettin
 export { TavernBackgroundsSurface } from './surfaces/TavernBackgroundsSurface.js';
 export type { TavernBackgroundsSurfaceProps } from './surfaces/TavernBackgroundsSurface.js';
 export { mountTavernPlaySurface, mountTavernSettingsSurface, mountTavernExtensionsSurface, mountTavernCharactersSurface, mountTavernWorldInfoSurface, mountTavernPersonaSurface, mountTavernAIResponseConfigSurface, mountTavernUserSettingsSurface, mountTavernBackgroundsSurface, type MountFn, } from './surfaces/mount.js';
-export { sampleChat } from './fixtures/sample-chat.js';
+export { createEmptyChat, sampleChat } from './fixtures/sample-chat.js';
 export { formatMessage, registerPreMarkdownHook, registerPreSanitizeHook, registerPostRenderHook, getConverter, createConverter, sanitizeChatHtml, ensureDOMPurifyHooks, type FormatMessageOptions, type PreMarkdownHook, type PreSanitizeHtmlHook, type PostRenderHook, type FormatRenderCtx, } from './formatting/index.js';
 //# sourceMappingURL=index.d.ts.map

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRe
 import type { Chat, STChatMessage } from '@ydltavern/types';
 import { createSTContext, createTurnStore, type STContextRuntime } from '@ydltavern/st-compat';
 import { type STExtensionRecord, type STActivationContext } from '@ydltavern/extensions';
-import { sampleChat } from '../fixtures/sample-chat.js';
+import { createEmptyChat } from '../fixtures/sample-chat.js';
 import { getThemeById } from '../components/product/themes/built-in-themes.js';
 import type { TavernTheme, TavernThemeSettings } from '../components/product/themes/theme-types.js';
 import {
@@ -187,7 +187,7 @@ const TavernContext = createContext<TavernRuntimeState | undefined>(undefined);
 const SUPPORTED_LIVE_CALL_PROVIDERS = new Set(['openai', 'anthropic', 'deepseek', 'openrouter']);
 
 export function TavernProvider({
-  chat = sampleChat,
+  chat = createEmptyChat(),
   showDiagnostics = true,
   sessionId,
   projectId,

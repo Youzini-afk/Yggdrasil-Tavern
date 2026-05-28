@@ -54,7 +54,7 @@ export { TavernUserSettingsSurface } from './surfaces/TavernUserSettingsSurface.
 export { TavernBackgroundsSurface } from './surfaces/TavernBackgroundsSurface.js';
 export { mountTavernPlaySurface, mountTavernSettingsSurface, mountTavernExtensionsSurface, mountTavernCharactersSurface, mountTavernWorldInfoSurface, mountTavernPersonaSurface, mountTavernAIResponseConfigSurface, mountTavernUserSettingsSurface, mountTavernBackgroundsSurface, } from './surfaces/mount.js';
 // ---- Fixtures (also exposed via the `./fixtures` subpath) -----------------
-export { sampleChat } from './fixtures/sample-chat.js';
+export { createEmptyChat, sampleChat } from './fixtures/sample-chat.js';
 // ---- Formatting ------------------------------------------------------------
 export { formatMessage, registerPreMarkdownHook, registerPreSanitizeHook, registerPostRenderHook, getConverter, createConverter, sanitizeChatHtml, ensureDOMPurifyHooks, } from './formatting/index.js';
 //# sourceMappingURL=index.js.map

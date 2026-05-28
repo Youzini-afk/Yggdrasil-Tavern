@@ -4,6 +4,17 @@ import type { Chat, JsonObject } from '@ydltavern/types';
 // demos/tests. All four sibling packages — types, st-compat, engine-core,
 // importers — see the same Chat instance.
 
+export function createEmptyChat(): Chat {
+  return {
+    id: 'chat_empty',
+    meta: {
+      title: 'New chat',
+      source_format: 'ydltavern_native',
+    },
+    turns: [],
+  };
+}
+
 const calendarArguments: JsonObject = {
   day: 'tomorrow',
   tz: 'America/Los_Angeles',

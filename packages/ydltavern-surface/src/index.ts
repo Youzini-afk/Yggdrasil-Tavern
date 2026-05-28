@@ -157,7 +157,7 @@ export {
 
 // ---- Fixtures (also exposed via the `./fixtures` subpath) -----------------
 
-export { sampleChat } from './fixtures/sample-chat.js';
+export { createEmptyChat, sampleChat } from './fixtures/sample-chat.js';
 
 // ---- Formatting ------------------------------------------------------------
 
