@@ -105,6 +105,10 @@
   text-decoration: none;
 }
 
+.ydltavern-surface .inline-flex {
+  display: inline-flex;
+}
+
 .ydltavern-surface code,
 .ydltavern-surface pre {
   font-family: var(--font-mono);
@@ -667,22 +671,31 @@
 }
 
 .ydltavern-surface .menu_button {
-  background: transparent;
+  background: var(--tavern-blur-tint-color, rgba(23, 23, 23, 0.85));
   border: 1px solid var(--tavern-border-subtle, var(--color-border));
   color: var(--tavern-fg-primary, var(--color-text));
-  padding: 4px 8px;
+  padding: 4px 10px;
+  margin: 0;
   cursor: pointer;
   border-radius: 4px;
-  transition: background var(--tavern-animation-duration, 150ms);
-  opacity: 0.5;
-  display: flex;
+  transition:
+    background var(--tavern-animation-duration, 150ms),
+    border-color var(--tavern-animation-duration, 150ms),
+    color var(--tavern-animation-duration, 150ms),
+    opacity var(--tavern-animation-duration, 150ms);
+  display: inline-flex;
   justify-content: center;
   align-items: center;
-  aspect-ratio: 1 / 1;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  min-width: fit-content;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .ydltavern-surface .menu_button:hover {
-  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .ydltavern-surface .mes_edit_done.menu_button {
@@ -865,7 +878,6 @@
   gap: 6px;
   padding: 6px 14px;
   font-size: 13px;
-  aspect-ratio: auto;
 }
 
 .ydltavern-surface .welcomeHeaderRecentControl .menu_button:hover {
@@ -899,7 +911,6 @@
   padding: 7px 14px;
   font-size: 13px;
   opacity: 0.7;
-  aspect-ratio: auto;
   border-radius: 6px;
   text-decoration: none;
 }
@@ -979,7 +990,6 @@
   padding: 8px 16px;
   font-size: 13px;
   opacity: 0.8;
-  aspect-ratio: auto;
   border-radius: 6px;
 }
 
@@ -989,9 +999,23 @@
 }
 
 .ydltavern-surface .menu_button_icon {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 5px;
   font-size: 14px;
-  width: 16px;
-  text-align: center;
+}
+
+.ydltavern-surface .menu_button_icon_only,
+.ydltavern-surface .mes_edit_buttons .menu_button,
+.ydltavern-surface .chatActions .menu_button_icon {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  gap: 0;
 }
 
 /* ---------- Turn stream --------------------------------------------------- */

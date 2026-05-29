@@ -6,6 +6,8 @@ node_modules/
 dist/
 !packages/ydltavern-surface/dist/
 !packages/ydltavern-surface/dist/**
+!packages/ydltavern-engine/dist/
+!packages/ydltavern-engine/dist/**
 build/
 out/
 
