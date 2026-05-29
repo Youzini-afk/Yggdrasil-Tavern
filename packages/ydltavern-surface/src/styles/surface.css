@@ -2420,9 +2420,10 @@
   --tavern-font-size-sm: 13px;
   --tavern-font-size-lg: 18px;
   --tavern-density: comfortable;
+}
 
-  /* --- API Connection callout inside composer --- */
-.ydl-api-callout {
+/* --- API Connection callout inside composer --- */
+.ydltavern-surface .ydl-api-callout {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2435,14 +2436,14 @@
   font-size: 13px;
 }
 
-.ydl-api-callout .menu_button {
+.ydltavern-surface .ydl-api-callout .menu_button {
   opacity: 0.9;
   cursor: pointer;
   border-color: var(--color-rose);
   color: var(--color-rose);
 }
 
-.ydl-api-callout .menu_button:hover {
+.ydltavern-surface .ydl-api-callout .menu_button:hover {
   background: rgba(217, 122, 122, 0.1);
 }
 
@@ -2455,6 +2456,8 @@
 .ydltavern-surface .menu_button:disabled[title]:hover::after {
   /* browsers that support title tooltip natively show it */
 }
+
+.ydltavern-surface {
   /* Blur / glass */
   --tavern-blur-strength: 10px;
   --tavern-glass-opacity: 0.7;

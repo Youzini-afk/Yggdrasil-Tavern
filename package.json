@@ -1,0 +1,14 @@
+{
+  "name": "ydltavern",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/ydltavern-types -w packages/ydltavern-engine-core -w packages/ydltavern-importers -w packages/ydltavern-st-compat -w packages/ydltavern-extensions -w packages/ydltavern-engine -w packages/ydltavern-surface",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "bench": "node scripts/run-all-benches.mjs"
+  }
+}
