@@ -31,6 +31,9 @@ export type {
 export { TavernShell } from './app/TavernShell.js';
 export { ChatList } from './components/product/ChatList.js';
 export { MessageList } from './components/product/MessageList.js';
+export type { MessageListProps } from './components/product/MessageList.js';
+export { WelcomeScreen } from './components/product/WelcomeScreen.js';
+export type { WelcomeScreenProps } from './components/product/WelcomeScreen.js';
 export { MessageComposer } from './components/product/MessageComposer.js';
 export { GenerationControls } from './components/product/GenerationControls.js';
 export { SwipeControls } from './components/product/SwipeControls.js';

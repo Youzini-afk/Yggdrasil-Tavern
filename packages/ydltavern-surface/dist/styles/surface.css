@@ -803,6 +803,197 @@
   opacity: 0.9;
 }
 
+/* ---------- Welcome panel (ST empty-state) --------------------------------- */
+
+.ydltavern-surface .welcomePanel {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ydltavern-surface .welcomeHeaderTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.ydltavern-surface .welcomeHeaderLogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--tavern-body-color, var(--color-text));
+}
+
+.ydltavern-surface .welcomeHeaderLogoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  color: var(--color-amber);
+  font-size: 20px;
+}
+
+.ydltavern-surface .welcomeHeaderLogoText {
+  letter-spacing: -0.02em;
+}
+
+.ydltavern-surface .welcomeHeaderVersionDisplay {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+}
+
+.ydltavern-surface .welcomeHeaderRecentControl {
+  margin-top: 4px;
+}
+
+.ydltavern-surface .welcomeHeaderRecentControl .menu_button {
+  opacity: 0.7;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  aspect-ratio: auto;
+}
+
+.ydltavern-surface .welcomeHeaderRecentControl .menu_button:hover {
+  opacity: 1;
+}
+
+.ydltavern-surface .welcomeHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ydltavern-surface .welcomeHeader .recentChatsTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-text-faint);
+}
+
+.ydltavern-surface .welcomeShortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ydltavern-surface .welcomeShortcuts .menu_button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  opacity: 0.7;
+  aspect-ratio: auto;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.ydltavern-surface .welcomeShortcuts .menu_button:hover {
+  opacity: 1;
+}
+
+.ydltavern-surface .welcomeRecent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ydltavern-surface .welcomeRecent .recentChatsTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-text-faint);
+}
+
+.ydltavern-surface .recentChatList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ydltavern-surface .recentChatEmpty {
+  padding: 16px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* "How to start chatting?" system message inside welcome */
+.ydltavern-surface .welcomePanel .mes {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+  padding: 18px 20px;
+  margin: 0;
+  opacity: 1;
+}
+
+.ydltavern-surface .welcomePanel .mes .mes_block {
+  padding: 0;
+}
+
+.ydltavern-surface .welcomePanel .mes .mes_text {
+  color: var(--tavern-fg-primary, var(--color-text));
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ydltavern-surface .welcomePanel .mes .mes_text p {
+  margin: 0 0 12px;
+}
+
+.ydltavern-surface .welcomePanel .mes .mes_text strong {
+  font-size: 15px;
+  color: var(--color-amber-soft, #f1c98a);
+}
+
+.ydltavern-surface .welcomeStartButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ydltavern-surface .welcomeStartButtons .menu_button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  opacity: 0.8;
+  aspect-ratio: auto;
+  border-radius: 6px;
+}
+
+.ydltavern-surface .welcomeStartButtons .menu_button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ydltavern-surface .menu_button_icon {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
 /* ---------- Turn stream --------------------------------------------------- */
 
 .turn-stream {
@@ -4066,4 +4257,266 @@
   font-size: 0.85em;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
+}
+
+/* ── Welcome screen (ST-faithful, glass-blur, scoped) ─────────────────── */
+.ydltavern-surface .welcomePanel {
+  margin: 12px auto 8px;
+  padding: 16px;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--tavern-border, rgba(0, 0, 0, 0.5));
+  background-color: var(--tavern-blur-tint-color, rgba(23, 23, 23, 0.85));
+  backdrop-filter: blur(var(--tavern-blur-strength, 10px));
+  -webkit-backdrop-filter: blur(var(--tavern-blur-strength, 10px));
+  color: var(--tavern-body-color, #dcdcd2);
+  box-shadow: 0 2px 20px 0 rgba(0, 0, 0, 0.3);
+}
+
+.ydltavern-surface .welcomeHeaderTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--tavern-border, rgba(255, 255, 255, 0.08));
+}
+
+.ydltavern-surface .welcomeHeaderLogo {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.ydltavern-surface .welcomeHeaderLogoText {
+  font-size: calc(var(--tavern-main-font-size, 15px) * 1.6);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--tavern-body-color, #dcdcd2);
+}
+
+.ydltavern-surface .welcomeHeaderVersionDisplay {
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.8);
+  color: var(--tavern-em-color, #919191);
+  font-weight: 400;
+}
+
+.ydltavern-surface .welcomeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ydltavern-surface .recentChatsTitle {
+  font-weight: 600;
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.95);
+  color: var(--tavern-em-color, #b8b8b0);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ydltavern-surface .welcomeShortcuts {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.9);
+}
+
+.ydltavern-surface .welcomeShortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--tavern-em-color, #919191);
+  text-decoration: none;
+  transition: color 125ms ease;
+}
+
+.ydltavern-surface .welcomeShortcut:hover {
+  color: var(--tavern-quote-color, #e18a24);
+}
+
+.ydltavern-surface .welcomeShortcutsSeparator {
+  color: var(--tavern-em-color, #555);
+  user-select: none;
+}
+
+.ydltavern-surface .openTemporaryChat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ydltavern-surface .recentChatList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ydltavern-surface .recentChatList-empty {
+  padding: 8px 0;
+}
+
+.ydltavern-surface .welcomeEmptyHint {
+  margin: 0;
+  color: var(--tavern-em-color, #919191);
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.95);
+  font-style: italic;
+}
+
+.ydltavern-surface .recentChat {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: background-color 125ms ease, border-color 125ms ease;
+  cursor: pointer;
+}
+
+.ydltavern-surface .recentChat:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--tavern-border, rgba(255, 255, 255, 0.08));
+}
+
+.ydltavern-surface .recentChat .avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--tavern-border, rgba(0, 0, 0, 0.5));
+}
+
+.ydltavern-surface .recentChat .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ydltavern-surface .recentChat .avatar .avatar-placeholder {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--tavern-em-color, #919191);
+}
+
+.ydltavern-surface .recentChatInfo {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ydltavern-surface .chatNameContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ydltavern-surface .chatName {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ydltavern-surface .chatName .characterName {
+  font-weight: 600;
+  color: var(--tavern-body-color, #dcdcd2);
+}
+
+.ydltavern-surface .chatDate {
+  flex: 0 0 auto;
+  color: var(--tavern-em-color, #919191);
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.8);
+}
+
+.ydltavern-surface .chatActions {
+  display: inline-flex;
+  gap: 2px;
+  opacity: 0.4;
+  transition: opacity 125ms ease;
+}
+
+.ydltavern-surface .recentChat:hover .chatActions {
+  opacity: 1;
+}
+
+.ydltavern-surface .chatMessageContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.ydltavern-surface .chatMessage {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--tavern-em-color, #b8b8b0);
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.9);
+}
+
+.ydltavern-surface .chatStats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--tavern-em-color, #919191);
+  font-size: calc(var(--tavern-main-font-size, 15px) * 0.8);
+}
+
+/* ── Welcome guide system message ─────────────────────────────────────── */
+.ydltavern-surface .mes.mes_welcome_guide {
+  margin: 8px auto 16px;
+}
+
+.ydltavern-surface .mes.mes_welcome_guide .mes_text h3 {
+  margin: 12px 0 6px;
+  font-size: calc(var(--tavern-main-font-size, 15px) * 1.1);
+  color: var(--tavern-body-color, #dcdcd2);
+  font-weight: 600;
+}
+
+.ydltavern-surface .mes.mes_welcome_guide .mes_text h3:first-child {
+  margin-top: 0;
+}
+
+.ydltavern-surface .mes.mes_welcome_guide .mes_text ol,
+.ydltavern-surface .mes.mes_welcome_guide .mes_text ul {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.ydltavern-surface .mes.mes_welcome_guide .mes_text li {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.ydltavern-surface .mes.mes_welcome_guide .mes_text .drawer-opener.inline-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 4px;
+  vertical-align: baseline;
+}
+
+/* ── Empty message list special spacing ───────────────────────────────── */
+.ydltavern-surface .ydltavern-message-list-empty {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 8px 12px;
 }

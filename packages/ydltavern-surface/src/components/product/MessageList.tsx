@@ -3,6 +3,7 @@ import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { activeVariant, type AssetRef, type SubMessage, type Turn, type TurnVariant } from '@ydltavern/types';
 import { useTavern } from '../../app/TavernProvider.js';
 import { MessageBubble } from './Message/MessageBubble.js';
+import { WelcomeScreen } from './WelcomeScreen.js';
 
 type BubbleMedia = { kind: 'image' | 'file'; url: string; alt?: string };
 
@@ -31,6 +32,15 @@ export function isNearBottom(
   return distanceFromBottom <= threshold;
 }
 
+export interface MessageListProps {
+  /** Callback to open the API Connections drawer. */
+  onOpenApiConnections?: () => void;
+  /** Callback to open the Character Management drawer. */
+  onOpenCharacters?: () => void;
+  /** Callback to open the Extensions drawer. */
+  onOpenExtensions?: () => void;
+}
+
 /**
  * MessageList renders liveChat.turns using ST-aligned MessageBubble.
  * Replaces ChatList + TurnView path.
@@ -38,10 +48,50 @@ export function isNearBottom(
  * Each turn maps to one bubble. For turns with multiple variants and/or
  * reasoning sub-messages, the bubble shows the active variant text and makes
  * reasoning available via the reasoning block.
+ *
+ * When there are no turns (empty chat), it renders a WelcomeScreen instead
+ * that mirrors SillyTavern's welcome panel + how-to-start guidance.
+ *
+ * NOTE: The early-return for empty state is done via a separate component
+ * (`EmptyMessageList`) below so that we never violate the Rules of Hooks
+ * by conditionally calling useState/useEffect/useRef.
  */
-export function MessageList(): JSX.Element {
+export function MessageList({
+  onOpenApiConnections,
+  onOpenCharacters,
+  onOpenExtensions,
+}: MessageListProps = {}): JSX.Element {
   const tavern = useTavern();
   const turns = tavern.liveChat.turns;
+
+  // Hooks-safe early return: if no turns, delegate to a sibling component
+  // that has no hooks beyond useTavern (already called above).
+  if (turns.length === 0) {
+    return (
+      <div
+        id="chat"
+        className="ydltavern-message-list ydltavern-message-list-empty"
+      >
+        <WelcomeScreen
+          version="0.0.1-alpha"
+          recentChats={[]}
+          onOpenApiConnections={onOpenApiConnections ?? (() => {})}
+          onOpenCharacters={onOpenCharacters ?? (() => {})}
+          onOpenExtensions={onOpenExtensions ?? (() => {})}
+        />
+      </div>
+    );
+  }
+
+  return <ActiveMessageList turns={turns} />;
+}
+
+/**
+ * ActiveMessageList handles the non-empty state with all its hooks.
+ * Extracted so that `MessageList` above never conditionally calls hooks.
+ */
+function ActiveMessageList({ turns }: { turns: readonly Turn[] }): JSX.Element {
+  const tavern = useTavern();
   const [editingId, setEditingId] = useState<string | number | null>(null);
   const [showJump, setShowJump] = useState(false);
   const listRef = useRef<VirtuosoHandle>(null);

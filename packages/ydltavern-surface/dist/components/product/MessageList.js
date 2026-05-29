@@ -4,6 +4,7 @@ import { Virtuoso } from 'react-virtuoso';
 import { activeVariant } from '@ydltavern/types';
 import { useTavern } from '../../app/TavernProvider.js';
 import { MessageBubble } from './Message/MessageBubble.js';
+import { WelcomeScreen } from './WelcomeScreen.js';
 const ROLE_LABEL = {
     user: 'User',
     assistant: 'Assistant',
@@ -31,10 +32,30 @@ export function isNearBottom(scrollContainer, virtuosoScrollContainer, threshold
  * Each turn maps to one bubble. For turns with multiple variants and/or
  * reasoning sub-messages, the bubble shows the active variant text and makes
  * reasoning available via the reasoning block.
+ *
+ * When there are no turns (empty chat), it renders a WelcomeScreen instead
+ * that mirrors SillyTavern's welcome panel + how-to-start guidance.
+ *
+ * NOTE: The early-return for empty state is done via a separate component
+ * (`EmptyMessageList`) below so that we never violate the Rules of Hooks
+ * by conditionally calling useState/useEffect/useRef.
  */
-export function MessageList() {
+export function MessageList({ onOpenApiConnections, onOpenCharacters, onOpenExtensions, } = {}) {
     const tavern = useTavern();
     const turns = tavern.liveChat.turns;
+    // Hooks-safe early return: if no turns, delegate to a sibling component
+    // that has no hooks beyond useTavern (already called above).
+    if (turns.length === 0) {
+        return (_jsx("div", { id: "chat", className: "ydltavern-message-list ydltavern-message-list-empty", children: _jsx(WelcomeScreen, { version: "0.0.1-alpha", recentChats: [], onOpenApiConnections: onOpenApiConnections ?? (() => { }), onOpenCharacters: onOpenCharacters ?? (() => { }), onOpenExtensions: onOpenExtensions ?? (() => { }) }) }));
+    }
+    return _jsx(ActiveMessageList, { turns: turns });
+}
+/**
+ * ActiveMessageList handles the non-empty state with all its hooks.
+ * Extracted so that `MessageList` above never conditionally calls hooks.
+ */
+function ActiveMessageList({ turns }) {
+    const tavern = useTavern();
     const [editingId, setEditingId] = useState(null);
     const [showJump, setShowJump] = useState(false);
     const listRef = useRef(null);

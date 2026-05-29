@@ -71,7 +71,11 @@ export function TavernShell(): JSX.Element {
         </div>
 
         <Sheld>
-          <MessageList />
+          <MessageList
+            onOpenApiConnections={() => drawers.open('api-connections')}
+            onOpenCharacters={() => drawers.open('characters')}
+            onOpenExtensions={() => drawers.open('extensions')}
+          />
           <QuickReplyBar sets={qrSets} onTrigger={handleQuickReply} />
           <SendForm
             onSend={(text) => tavern.sendMessage(text)}
